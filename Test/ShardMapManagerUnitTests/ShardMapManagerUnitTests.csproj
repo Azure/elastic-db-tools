@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{EA7DA8D7-6B11-4AF7-9C24-6FEEBDA7E188}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests</RootNamespace>
+    <AssemblyName>Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <EnableFakes>true</EnableFakes>
+    <!--
+    There's a pending question to cbt alias about this - http://answer/questions/507808
+    <VisualStudioVersion Condition="'$(t)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    -->
+    <IsCodedUITest>False</IsCodedUITest>
+    <TestProjectType>UnitTest</TestProjectType>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Build.props))\Build.props" />
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Azure.SqlDatabase.ElasticScale.Client.Fakes, Version=$(VersionMajor).$(VersionMinor).0.0, Culture=neutral, PublicKeyToken=0ae41878053f6703, processorArchitecture=MSIL" />
+    <Reference Include="$(NugetPack)\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll">
+      <Name>Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling</Name>
+    </Reference>
+    <Reference Include="$(NugetPack)\EnterpriseLibrary.WindowsAzure.TransientFaultHandling.5.1.1212.0\lib\NET4\Microsoft.Practices.EnterpriseLibrary.WindowsAzure.TransientFaultHandling.dll">
+      <Name>Microsoft.Practices.EnterpriseLibrary.WindowsAzure.TransientFaultHandling</Name>
+    </Reference>
+    <Reference Include="$(NugetPack)\CommonServiceLocator.1.0\lib\NET35\Microsoft.Practices.ServiceLocation.dll">
+      <Name>Microsoft.Practices.ServiceLocation</Name>
+    </Reference>
+    <Reference Include="$(NugetPack)\TransientFaultHandling.Core.5.1.1209.1\lib\NET4\Microsoft.Practices.TransientFaultHandling.Core.dll">
+      <Name>Microsoft.Practices.TransientFaultHandling.Core</Name>
+    </Reference>
+    <Reference Include="$(NugetPack)\Unity.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.dll">
+      <Name>Microsoft.Practices.Unity</Name>
+    </Reference>
+    <Reference Include="$(NugetPack)\Unity.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.Configuration.dll">
+      <Name>Microsoft.Practices.Unity.Configuration</Name>
+    </Reference>
+    <Reference Include="$(NugetPack)\Unity.Interception.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.Interception.dll">
+      <Name>Microsoft.Practices.Unity.Interception</Name>
+    </Reference>
+    <Reference Include="$(NugetPack)\Unity.Interception.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.Interception.Configuration.dll">
+      <Name>Microsoft.Practices.Unity.Interception.Configuration</Name>
+    </Reference>
+    <Reference Include="Microsoft.QualityTools.Testing.Fakes, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.XML" />
+  </ItemGroup>
+  <Choose>
+    <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+  <ItemGroup>
+    <Compile Include="DateTimeShardMapperTests.cs" />
+    <Compile Include="Decorators\CacheStoreDecorator.cs" />
+    <Compile Include="Decorators\CountingCacheStore.cs" />
+    <Compile Include="Decorators\StoreOperationDecorator.cs" />
+    <Compile Include="RecoveryManagerTests.cs" />
+    <Compile Include="Globals.cs" />
+    <Compile Include="ScenarioTests.cs" />
+    <Compile Include="ShardKeyTests.cs" />
+    <Compile Include="ShardMapFaultHandlingTests.cs" />
+    <Compile Include="ShardMapManagerConcurrencyTests.cs" />
+    <Compile Include="ShardMapManagerTests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShardMapManagerUpgradeTests.cs" />
+    <Compile Include="ShardMapperTests.cs" />
+    <Compile Include="ShardMapManagerLoadTests.cs" />
+    <Compile Include="ShardMapTests.cs" />
+    <Compile Include="ShardMapManagerFactoryTests.cs" />
+    <Compile Include="SchemaInfoCollectionTests.cs" />
+    <Compile Include="ShardRangeTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ClientTestCommon\ClientTestCommon.csproj">
+      <Project>{13200c7c-8606-47b8-a004-570b56e3a9a8}</Project>
+      <Name>ClientTestCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Src\Client.csproj">
+      <Project>{663d22bb-483a-46b0-a504-861c5335dad1}</Project>
+      <Name>Client</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <Fakes Include="Fakes\Microsoft.Azure.SqlDatabase.ElasticScale.Client.fakes">
+      <SubType>Designer</SubType>
+    </Fakes>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <Choose>
+    <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.CodedUITestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Extension, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITesting, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
