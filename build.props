@@ -22,6 +22,7 @@
     <DefineConstants>$(DefineConstants);EXTERNAL_BUILD</DefineConstants>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <TargetFrameworkProfile />
+    <NugetPack>$(MSBuildThisFileDirectory)\packages</NugetPack>
   </PropertyGroup>
   <PropertyGroup Condition="'$(ExternalBuild)' == 'false'">
     <!-- Enable flag that sets the version number of the built assemblies. -->
