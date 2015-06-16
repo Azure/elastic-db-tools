@@ -12,10 +12,16 @@
     <ExternalBuild Condition="Exists('$(MSBuildThisFileDirectory)\..\Build.props')">false</ExternalBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(ExternalBuild)' == 'true'">
+    <!-- 
+      Properties that are implicitly defined in the Microsoft Azure SQL Database team's build system
+      that need to be defined here for external build to work.
+    --> 
     <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)\obj</BaseIntermediateOutputPath>
     <BaseOutputPath>$(MSBuildThisFileDirectory)\bin</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)\$(Configuration)\$(AssemblyName)</OutputPath>
     <DefineConstants>$(DefineConstants);EXTERNAL_BUILD</DefineConstants>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(ExternalBuild)' == 'false'">
     <!-- Enable flag that sets the version number of the built assemblies. -->
