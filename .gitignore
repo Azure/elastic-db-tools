@@ -2,5 +2,6 @@ FakesAssemblies
 bin
 obj
 packages
+TestResults
 *.GhostDoc.xml
 *.suo
