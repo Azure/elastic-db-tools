@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Src\Client.csproj", "{663D22BB-483A-46B0-A504-861C5335DAD1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientTestCommon", "Test\ClientTestCommon\ClientTestCommon.csproj", "{13200C7C-8606-47B8-A004-570B56E3A9A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiShardQueryTests", "Test\MultiShardQueryTests\MultiShardQueryTests.csproj", "{56DDEC7E-0B14-4636-B287-DB38DEC55192}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardMapManagerLoadTests", "Test\ShardMapManagerLoadTests\ShardMapManagerLoadTests.csproj", "{6C6E8D75-DF7B-4841-A254-D0D54746B417}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardMapManagerUnitTests", "Test\ShardMapManagerUnitTests\ShardMapManagerUnitTests.csproj", "{EA7DA8D7-6B11-4AF7-9C24-6FEEBDA7E188}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{663D22BB-483A-46B0-A504-861C5335DAD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{663D22BB-483A-46B0-A504-861C5335DAD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{663D22BB-483A-46B0-A504-861C5335DAD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{663D22BB-483A-46B0-A504-861C5335DAD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13200C7C-8606-47B8-A004-570B56E3A9A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13200C7C-8606-47B8-A004-570B56E3A9A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13200C7C-8606-47B8-A004-570B56E3A9A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13200C7C-8606-47B8-A004-570B56E3A9A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56DDEC7E-0B14-4636-B287-DB38DEC55192}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56DDEC7E-0B14-4636-B287-DB38DEC55192}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56DDEC7E-0B14-4636-B287-DB38DEC55192}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56DDEC7E-0B14-4636-B287-DB38DEC55192}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C6E8D75-DF7B-4841-A254-D0D54746B417}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C6E8D75-DF7B-4841-A254-D0D54746B417}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C6E8D75-DF7B-4841-A254-D0D54746B417}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C6E8D75-DF7B-4841-A254-D0D54746B417}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA7DA8D7-6B11-4AF7-9C24-6FEEBDA7E188}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA7DA8D7-6B11-4AF7-9C24-6FEEBDA7E188}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA7DA8D7-6B11-4AF7-9C24-6FEEBDA7E188}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA7DA8D7-6B11-4AF7-9C24-6FEEBDA7E188}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
