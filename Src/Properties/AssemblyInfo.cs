@@ -3,10 +3,6 @@ using System.Reflection;
 using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-<<<<<<< HEAD
-using Microsoft.Azure.SqlDatabase.ElasticScale;
-=======
->>>>>>> refs/remotes/tfs/default
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -22,10 +18,6 @@ using Microsoft.Azure.SqlDatabase.ElasticScale;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("4599fe76-62a2-4da8-8a0f-dd190c0c6c58")]
 
-<<<<<<< HEAD
-[assembly: InternalsVisibleTo("Microsoft.Azure.SqlDatabase.ElasticScale.Client.Fakes" + AssemblyRef.ProductPublicKey)]
-=======
->>>>>>> refs/remotes/tfs/default
 [assembly: InternalsVisibleTo("Microsoft.Azure.SqlDatabase.ElasticScale.ServiceCommon" + AssemblyRef.ProductPublicKey)]
 [assembly: InternalsVisibleTo("Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests" + AssemblyRef.ProductPublicKey)]
 [assembly: InternalsVisibleTo("Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests" + AssemblyRef.ProductPublicKey)]
