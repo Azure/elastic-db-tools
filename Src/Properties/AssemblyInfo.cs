@@ -3,7 +3,10 @@ using System.Reflection;
 using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+<<<<<<< HEAD
 using Microsoft.Azure.SqlDatabase.ElasticScale;
+=======
+>>>>>>> refs/remotes/tfs/default
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -19,7 +22,10 @@ using Microsoft.Azure.SqlDatabase.ElasticScale;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("4599fe76-62a2-4da8-8a0f-dd190c0c6c58")]
 
+<<<<<<< HEAD
 [assembly: InternalsVisibleTo("Microsoft.Azure.SqlDatabase.ElasticScale.Client.Fakes" + AssemblyRef.ProductPublicKey)]
+=======
+>>>>>>> refs/remotes/tfs/default
 [assembly: InternalsVisibleTo("Microsoft.Azure.SqlDatabase.ElasticScale.ServiceCommon" + AssemblyRef.ProductPublicKey)]
 [assembly: InternalsVisibleTo("Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests" + AssemblyRef.ProductPublicKey)]
 [assembly: InternalsVisibleTo("Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests" + AssemblyRef.ProductPublicKey)]
@@ -29,6 +35,8 @@ using Microsoft.Azure.SqlDatabase.ElasticScale;
 [assembly: InternalsVisibleTo("Microsoft.Azure.SqlDatabase.ElasticScale.SplitMerge.Client" + AssemblyRef.ProductPublicKey)]
 [assembly: InternalsVisibleTo("SplitMergeWorker" + AssemblyRef.ProductPublicKey)]
 [assembly: InternalsVisibleTo("ShardSplitMergeTests" + AssemblyRef.ProductPublicKey)]
+
+[assembly: InternalsVisibleTo("Microsoft.Azure.SqlDatabase.ElasticScale.Client.Fakes" + AssemblyRef.FakesPublicKey)]
 
 // No-op, purely for Resharper's intellisense, as it does not understand AssemblyRef.ProductPublicKey
 #if DEBUG
@@ -60,17 +68,15 @@ using Microsoft.Azure.SqlDatabase.ElasticScale;
 // The Microsoft Azure SQL Database team's build system automatically creates the AssemblyRef class during the build process.
 // This class contains the values of the public keys that the assemblies are signed with. When building externally, we manually define it here.
 #if STANDALONE_BUILD
-namespace Microsoft.Azure.SqlDatabase.ElasticScale
+internal static class AssemblyRef
 {
-    internal static class AssemblyRef
-    {
-        public const string ProductPublicKey = "";
-        public const string TestPublicKey = "";
-    }
+    public const string ProductPublicKey = "";
+    public const string TestPublicKey = "";
+    public const string FakesPublicKey = "";
+}
 
-    internal static class ElasticScaleVersionInfo
-    {
-        public const string ProductVersion = "1.0.0";
-    }
+internal static class ElasticScaleVersionInfo
+{
+    public const string ProductVersion = "1.0.0";
 }
 #endif
