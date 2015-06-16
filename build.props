@@ -4,7 +4,19 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup>
+    <!-- 
+      Determine whether we are building in the Microsoft Azure SQL Database team's build system
+      or externally.
+    --> 
+    <ExternalBuild Condition="!Exists('$(MSBuildThisFileDirectory)\..\Build.props')">true</ExternalBuild>
+    <ExternalBuild Condition="Exists('$(MSBuildThisFileDirectory)\..\Build.props')">false</ExternalBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ExternalBuild)' == 'true'">
+    
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ExternalBuild)' == 'false'">
+    <!-- Enable flag that sets the version number of the built assemblies. -->
     <EnableElasticScaleClientHardcodedVersioning>true</EnableElasticScaleClientHardcodedVersioning>
   </PropertyGroup>
-  <Import Project="$(MSBuildThisFileDirectory)\..\Build.props" />
+  <Import Condition="'$(ExternalBuild)' == 'false'" Project="$(MSBuildThisFileDirectory)\..\Build.props" />
 </Project>
