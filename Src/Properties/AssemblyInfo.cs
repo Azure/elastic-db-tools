@@ -67,5 +67,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
         public const string ProductPublicKey = "";
         public const string TestPublicKey = "";
     }
+
+    internal static class ElasticScaleVersionInfo
+    {
+        public const string ProductVersion = "1.0.0";
+    }
 }
 #endif
