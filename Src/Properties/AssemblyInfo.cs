@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Microsoft.Azure.SqlDatabase.ElasticScale;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -55,3 +56,16 @@ using System.Runtime.InteropServices;
 // Associated VSTS #2466045
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1824:MarkAssembliesWithNeutralResourcesLanguage", Justification = "Too many dubious spelling errors.")]
 // [assembly: NeutralResourcesLanguageAttribute("en-US")]
+
+// The Microsoft Azure SQL Database team's build system automatically creates the AssemblyRef class during the build process.
+// This class contains the values of the public keys that the assemblies are signed with. When building externally, we manually define it here.
+#if EXTERNAL_BUILD
+namespace Microsoft.Azure.SqlDatabase.ElasticScale
+{
+    internal static class AssemblyRef
+    {
+        public const string ProductPublicKey = "";
+        public const string TestPublicKey = "";
+    }
+}
+#endif

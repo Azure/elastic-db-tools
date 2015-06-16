@@ -15,6 +15,7 @@
     <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)\obj</BaseIntermediateOutputPath>
     <BaseOutputPath>$(MSBuildThisFileDirectory)\bin</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)\$(Configuration)\$(AssemblyName)</OutputPath>
+    <DefineConstants>$(DefineConstants);EXTERNAL_BUILD</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(ExternalBuild)' == 'false'">
     <!-- Enable flag that sets the version number of the built assemblies. -->
