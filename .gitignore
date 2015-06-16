@@ -1,0 +1,8 @@
+FakesAssemblies
+bin
+obj
+packages
+Src/Microsoft.Azure.SqlDatabase.ElasticScale.Client.xml
+TestResults
+*.GhostDoc.xml
+*.suo
