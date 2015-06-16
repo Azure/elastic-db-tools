@@ -4,7 +4,29 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup>
+    <!-- 
+      Determine whether we are building in the Microsoft Azure SQL Database team's build system
+      or standalone (i.e. from open source).
+    --> 
+    <StandaloneBuild Condition="!Exists('$(MSBuildThisFileDirectory)\..\Build.props')">true</StandaloneBuild>
+    <StandaloneBuild Condition="Exists('$(MSBuildThisFileDirectory)\..\Build.props')">false</StandaloneBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(StandaloneBuild)' == 'true'">
+    <!-- 
+      Properties that are implicitly defined in the Microsoft Azure SQL Database team's build system
+      that need to be defined here for standalone build to work.
+    --> 
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)\obj</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)\bin</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)\$(Configuration)\$(AssemblyName)</OutputPath>
+    <DefineConstants>$(DefineConstants);STANDALONE_BUILD</DefineConstants>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+    <NugetPack>$(MSBuildThisFileDirectory)\packages</NugetPack>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(StandaloneBuild)' == 'false'">
+    <!-- Enable flag that sets the version number of the built assemblies. -->
     <EnableElasticScaleClientHardcodedVersioning>true</EnableElasticScaleClientHardcodedVersioning>
   </PropertyGroup>
-  <Import Project="$(MSBuildThisFileDirectory)\..\Build.props" />
+  <Import Condition="'$(StandaloneBuild)' == 'false'" Project="$(MSBuildThisFileDirectory)\..\Build.props" />
 </Project>
