@@ -6,27 +6,27 @@
   <PropertyGroup>
     <!-- 
       Determine whether we are building in the Microsoft Azure SQL Database team's build system
-      or externally.
+      or standalone (i.e. from open source).
     --> 
-    <ExternalBuild Condition="!Exists('$(MSBuildThisFileDirectory)\..\Build.props')">true</ExternalBuild>
-    <ExternalBuild Condition="Exists('$(MSBuildThisFileDirectory)\..\Build.props')">false</ExternalBuild>
+    <StandaloneBuild Condition="!Exists('$(MSBuildThisFileDirectory)\..\Build.props')">true</StandaloneBuild>
+    <StandaloneBuild Condition="Exists('$(MSBuildThisFileDirectory)\..\Build.props')">false</StandaloneBuild>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(ExternalBuild)' == 'true'">
+  <PropertyGroup Condition="'$(StandaloneBuild)' == 'true'">
     <!-- 
       Properties that are implicitly defined in the Microsoft Azure SQL Database team's build system
-      that need to be defined here for external build to work.
+      that need to be defined here for standalone build to work.
     --> 
     <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)\obj</BaseIntermediateOutputPath>
     <BaseOutputPath>$(MSBuildThisFileDirectory)\bin</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)\$(Configuration)\$(AssemblyName)</OutputPath>
-    <DefineConstants>$(DefineConstants);EXTERNAL_BUILD</DefineConstants>
+    <DefineConstants>$(DefineConstants);STANDALONE_BUILD</DefineConstants>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <TargetFrameworkProfile />
     <NugetPack>$(MSBuildThisFileDirectory)\packages</NugetPack>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(ExternalBuild)' == 'false'">
+  <PropertyGroup Condition="'$(StandaloneBuild)' == 'false'">
     <!-- Enable flag that sets the version number of the built assemblies. -->
     <EnableElasticScaleClientHardcodedVersioning>true</EnableElasticScaleClientHardcodedVersioning>
   </PropertyGroup>
-  <Import Condition="'$(ExternalBuild)' == 'false'" Project="$(MSBuildThisFileDirectory)\..\Build.props" />
+  <Import Condition="'$(StandaloneBuild)' == 'false'" Project="$(MSBuildThisFileDirectory)\..\Build.props" />
 </Project>

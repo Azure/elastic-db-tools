@@ -59,7 +59,7 @@ using Microsoft.Azure.SqlDatabase.ElasticScale;
 
 // The Microsoft Azure SQL Database team's build system automatically creates the AssemblyRef class during the build process.
 // This class contains the values of the public keys that the assemblies are signed with. When building externally, we manually define it here.
-#if EXTERNAL_BUILD
+#if STANDALONE_BUILD
 namespace Microsoft.Azure.SqlDatabase.ElasticScale
 {
     internal static class AssemblyRef
