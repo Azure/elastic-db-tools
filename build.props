@@ -12,7 +12,9 @@
     <ExternalBuild Condition="Exists('$(MSBuildThisFileDirectory)\..\Build.props')">false</ExternalBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(ExternalBuild)' == 'true'">
-    
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)\obj</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)\bin</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)\$(Configuration)\$(AssemblyName)</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(ExternalBuild)' == 'false'">
     <!-- Enable flag that sets the version number of the built assemblies. -->
