@@ -7,8 +7,11 @@ This page outlines how the elastic database tools client library (EDCL) team thi
 As noted above, we don't close issues just because we don't plan to address them in an upcoming release. So why do we close issues? There are few major reasons:
 
 1. Issues unrelated to elastic database tools client library. When possible, we'll try to find a better home for the issue and open it there on your behalf.
+
 2. Cross cutting work better suited for another team. Sometimes the line between the scenarios covered by elastic database tools client library and others blurs. For some issues, we may feel that the work is better suited for some other team than us. In these cases, we'll close the issue and open it with the partner team. If they end up not deciding to take on the issue, we can reconsider it here.
+
 3. Nebulous and Large open issues. Large open issues are sometimes better suited for [User Voice](http://feedback.azure.com/forums/217321-sql-database), especially when the work will cross the boundaries of different areas and teams. 
+
 4. Duplicate issues to the already logged ones. If the similar issue exist already in the issue log, the new issue will be closed with the information of the existing one.
 
 Sometimes after debate, we'll decide an issue isn't a good fit for elastic database tools client library. In that case, we'll also close it. Because of this, we ask that you don't start working on an issue until it's tagged with "up for grabs" or "feature approved". Both you and the team will be unhappy if you spend time and effort working on a change we'll ultimately be unable to take. We try to avoid that.
