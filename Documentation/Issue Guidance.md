@@ -53,13 +53,13 @@ We use GitHub labels on our issues in order to classify them. We have the follow
 	
 	* [3 - Done](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/3%20-%20Done): Tasks that are finished. There should be no open issues in the Done stage.
 	
-	* [Community](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Community): Community Engagement & Open Development Swim Lane. 
+	* [Community](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Community): Community Engagement & Open Development Swim Lane. :swimmer: 
 		
-	* [Port to GitHub](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Port%20to%20GitHub): Swim lane tracking the work remaining to open source elastic database tools client library
+	* [Port to GitHub](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Port%20to%20GitHub): Swim lane :swimmer: tracking the work remaining to open source elastic database tools client library
 	
-	* [Infrastructure](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Infrastructure): Swim lane tracking OSS Engineering and Infrastructure
+	* [Infrastructure](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Infrastructure): Swim lane :swimmer: tracking OSS Engineering and Infrastructure
 	
-	* [X-Plat](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/X-Plat): Swim lane for Cross Platform Support
+	* [X-Plat](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/X-Plat): Swim lane :swimmer: for Cross Platform Support
 
 In addition to the above, we have a handful of other labels we use to help classify our issues. Some of these tag cross cutting concerns (e.g. cross platform, performance, serialization impact) where as others are used to help us track additional work needed before closing an issue (e.g. needs API review). Finally, we have the "needs more info" label. We use this label to mark issues where we need more information in order to proceed. Usually this will be because we can't reproduce a reported bug. We'll close these issues after a little bit if we haven't gotten actionable information, but we welcome folks who have acquired more information to reopen the issue.
 
