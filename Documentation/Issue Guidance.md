@@ -1,13 +1,18 @@
 This page outlines how the elastic database tools client library (EDCL) team thinks about and handles issues. For us, issues on GitHub represent actionable work that should be done at some future point. It may be as simple as a small product or test bug or as large as the work tracking the design of a new feature. However, it should be work that falls under the charter of elastic database tools client libraries. We will keep issues open even if the EDCL team internally has no plans to address them in an upcoming release, as long as we consider the issue to fall under our purview.
-When we close issues
+
+#When we close issues
 As noted above, we don't close issues just because we don't plan to address them in an upcoming release. So why do we close issues? There are few major reasons:
+
 	1. Issues unrelated to elastic database tools client library. When possible, we'll try to find a better home for the issue and open it there on your behalf.
 	2. Cross cutting work better suited for another team. Sometimes the line between the scenarios covered by elastic database tools client library and others blurs. For some issues, we may feel that the work is better suited for some other team than us. In these cases, we'll close the issue and open it with the partner team. If they end up not deciding to take on the issue, we can reconsider it here.
 	3. Nebulous and Large open issues. Large open issues are sometimes better suited for User Voice, especially when the work will cross the boundaries of different areas and teams. 
 	4. Duplicate issues to the already logged ones. If the similar issue exist already in the issue log, the new issue will be closed with the information of the existing one.
+
 Sometimes after debate, we'll decide an issue isn't a good fit for elastic database tools client library. In that case, we'll also close it. Because of this, we ask that you don't start working on an issue until it's tagged with "up for grabs" or "feature approved". Both you and the team will be unhappy if you spend time and effort working on a change we'll ultimately be unable to take. We try to avoid that.
-Labels
+
+#Labels
 We use GitHub labels on our issues in order to classify them. We have the following categories per issue:
+
 	• Area: These labels call out the feature areas the issue applies to. In addition to tags per feature, we have a few other tags: Infrastructure, for issues that relate to our build or test infrastructure, and Meta for issues that deal with the repository itself, the direction of the elastic database tools client library, our processes, etc.
 	• Type: These labels classify the type of issue. We use the following types: 
 		○ api addition: Issues which would add APIs to the assembly.
@@ -36,6 +41,8 @@ We use GitHub labels on our issues in order to classify them. We have the follow
 		○ X-Plat: Swim lane 
 		
 		for Cross Platform Support
+
 In addition to the above, we have a handful of other labels we use to help classify our issues. Some of these tag cross cutting concerns (e.g. cross platform, performance, serialization impact) where as others are used to help us track additional work needed before closing an issue (e.g. needs API review). Finally, we have the "needs more info" label. We use this label to mark issues where we need more information in order to proceed. Usually this will be because we can't reproduce a reported bug. We'll close these issues after a little bit if we haven't gotten actionable information, but we welcome folks who have acquired more information to reopen the issue.
-Assignee
+
+#Assignee
 We assign each issue to a EDCL team member. In most cases, the assignee will not be the one who ultimately fixes the issue (that only happens in the case where the issue is tagged "grabbed by assignee"). The purpose of the assignee is to act as a point of contact between the EDCL team and the community for the issue and make sure it's driven to resolution. If you're working on an issue and get stuck, please reach out to the assignee (just at mention them) and they will work to help you out.
