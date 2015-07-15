@@ -19,7 +19,12 @@ Sometimes after debate, we'll decide an issue isn't a good fit for elastic datab
 ###Labels
 We use GitHub labels on our issues in order to classify them. We have the following categories per issue:
 
-* **Area**: These labels call out the feature areas the issue applies to. In addition to tags per feature, we have a few other tags: Infrastructure, for issues that relate to our build or test infrastructure, and Meta for issues that deal with the repository itself, the direction of the elastic database tools client library, our processes, etc.
+* **Area**: These labels call out the feature areas the issue applies to. In addition to tags per feature, we have a few other tags: **Infrastructure**, for issues that relate to our build or test infrastructure, and **Meta** for issues that deal with the repository itself, the direction of the elastic database tools client library, our processes, etc.
+	* [EDCL](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20EDCL) - Elastic database tools client library code
+	* [Split-Merge](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20Split-Merge)
+	* [Shard Map Management](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20Shard%20Map%20Management)
+	* [Multi-Shard Query](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20Multi-Shard%20Query)
+
 
 * **Type**: These labels classify the type of issue. We use the following types: 
 
