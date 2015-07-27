@@ -5,11 +5,11 @@ The EDCL team maintains several guidelines for contributing to the EDCL repos, w
 
 Contribution Guidelines
 =======================
-* Contribution Bar describes the bar that the team uses to accept changes.
-* Contributing Ports describes the slightly different bar for contributing changes that enable EDCL to work on other OSes and chips.
-* General Contribution Guidance describes general contribution guidance, including more subjective stylistic guidelines.
-* DOs and DON'Ts provides a partial checklist summary of contributing guidelines, in classic framework guidelines do/don't style.
-* Contributor License Agreement (CLA) describes the requirement and process of signing a Contributor License Agreement (CLA).
+* [Contribution Bar](#contribution-bar) describes the bar that the team uses to accept changes.
+* [Contributing Ports](#contributing-ports) describes the slightly different bar for contributing changes that enable EDCL to work on other OSes and chips.
+* [General Contribution Guidance](#general-contribution-guidance) describes general contribution guidance, including more subjective stylistic guidelines.
+* [DOs and DON'Ts](#dos-and-donts) provides a partial checklist summary of contributing guidelines, in classic framework guidelines do/don't style.
+* [Contributor License Agreement (CLA)](#contributor-license-agreement) describes the requirement and process of signing a Contributor License Agreement (CLA).
 * Contribution Workflow describes the workflow that the team uses for considering and accepting changes.
 	
 Contribution "Bar"
