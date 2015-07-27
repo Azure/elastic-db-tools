@@ -5,3 +5,5 @@ Elastic database tools client library allows ADO.NET developers to create applic
 
 
 [Branching Guidance] (https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/blob/master/Documentation/Branching%20Guidance.md)
+
+[Contribution Guidance](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/blob/master/Documentation/Contribution%20Guidance.md)
