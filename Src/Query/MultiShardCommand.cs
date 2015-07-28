@@ -52,12 +52,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <summary>
         /// Default command timeout per shard in seconds
         /// </summary>
-        private const int s_defaultCommandTimeoutPerShard = 30;
+        private const int DefaultCommandTimeoutPerShard = 30;
 
         /// <summary>
         /// Default command timeout in seconds
         /// </summary>
-        private const int s_defaultCommandTimeout = 300;
+        private const int DefaultCommandTimeout = 300;
 
         /// <summary>
         /// The ILogger
@@ -67,32 +67,32 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <summary>
         /// The sql command to be executed against shards
         /// </summary>
-        private readonly DbCommand m_dbCommand;
+        private readonly DbCommand dbCommand;
 
         /// <summary>
         /// Lock to enable thread-safe Cancel()
         /// </summary>
-        private readonly object m_cancellationLock = new Object();
+        private readonly object cancellationLock = new Object();
 
         /// <summary>
         /// Global token source to enable cancellation of commands being executed 
         /// </summary>
-        private CancellationTokenSource m_innerCts = new CancellationTokenSource();
+        private CancellationTokenSource innerCts = new CancellationTokenSource();
 
         /// <summary>
         /// Task associated with current command invocation 
         /// </summary>
-        private Task m_currentCommandTask = Task.FromResult<object>(null);
+        private Task currentCommandTask = Task.FromResult<object>(null);
 
         /// <summary>
         /// ActivityId of the current command being executed
         /// </summary>
-        private Guid m_activityId;
+        private Guid activityId;
 
         /// <summary>
         /// Whether this command has already been disposed.
         /// </summary>
-        private bool m_disposed = false;
+        private bool disposed = false;
 
         #endregion
 
@@ -107,9 +107,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// against ALL shards</param>
         private MultiShardCommand(MultiShardConnection connection, DbCommand command, int commandTimeout)
         {
-            Connection = connection;
-            CommandTimeout = commandTimeout;
-            m_dbCommand = command;
+            this.Connection = connection;
+            this.CommandTimeout = commandTimeout;
+
+            this.dbCommand = command;
 
             // Set defaults
             this.RetryPolicy = RetryPolicy.DefaultRetryPolicy;
@@ -135,11 +136,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         internal static MultiShardCommand Create(MultiShardConnection connection, string commandText)
         {
-            var cmd = new SqlCommand(commandText);
-            cmd.CommandTimeout = s_defaultCommandTimeoutPerShard; // Default sql command timeout of 30secs per shard
+            SqlCommand cmd = new SqlCommand(commandText);
+            cmd.CommandTimeout = MultiShardCommand.DefaultCommandTimeoutPerShard; // Default sql command timeout of 30secs per shard
             cmd.CommandType = CommandType.Text;
 
-            return Create(connection, cmd, s_defaultCommandTimeout /* Default timeout for command to run against all shards */);
+            return MultiShardCommand.Create(
+                connection, 
+                cmd,
+                MultiShardCommand.DefaultCommandTimeout);
         }
 
         // Suppression rationale:
@@ -154,29 +158,32 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <param name="commandTimeout">Command timeout for given commandText to be run 
         /// against ALL shards</param>
         /// <returns></returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities"), 
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         internal static MultiShardCommand Create(MultiShardConnection connection, string commandText, int commandTimeout)
         {
-            var cmd = new SqlCommand(commandText);
-            cmd.CommandTimeout = s_defaultCommandTimeoutPerShard; // Default sql command timeout of 30secs per shard
+            SqlCommand cmd = new SqlCommand(commandText);
+            cmd.CommandTimeout = MultiShardCommand.DefaultCommandTimeoutPerShard; // Default sql command timeout of 30secs per shard
             cmd.CommandType = CommandType.Text;
 
-            return Create(connection, cmd, commandTimeout);
+            return MultiShardCommand.Create(
+                connection, 
+                cmd, 
+                commandTimeout);
         }
 
         /// <summary>
         /// Creates an instance of this class
         /// </summary>
         /// <param name="connection">The connection handle to all shards</param>
-        /// <param name="command">A sql command from which the commandText, commandTimeout,
-        /// commandType will be inferred. Should implement ICloneable</param>
-        /// <param name="commandTimeout">Command timeout for given commandText to be run 
-        /// against ALL shards</param>
+        /// <param name="command">A sql command from which the commandText, commandTimeout, commandType will be inferred. Should implement ICloneable</param>
+        /// <param name="commandTimeout">Command timeout for given commandText to be run against ALL shards</param>
         /// <returns></returns>
         /// <remarks>DEVNOTE: Should we expose a DbCommand instead? Do we even want to expose this at all?</remarks>
         internal static MultiShardCommand Create(MultiShardConnection connection, DbCommand command, int commandTimeout)
         {
             Contract.Requires(command is ICloneable);
+
             return new MultiShardCommand(connection, command, commandTimeout);
         }
 
@@ -193,11 +200,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             get
             {
-                return m_dbCommand.CommandText;
+                return this.dbCommand.CommandText;
             }
             set
             {
-                m_dbCommand.CommandText = value;
+                this.dbCommand.CommandText = value;
             }
         }
 
@@ -205,7 +212,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// Time in seconds to wait for the command to be executed on ALL shards.
         /// A value of 0 indicates no wait time limit. The default is 300 seconds.
         /// </summary>
-        public override int CommandTimeout { get; set; }
+        public override int CommandTimeout 
+        { 
+            get; 
+            set; 
+        }
 
         /// <summary>
         /// This property controls the timeout for running
@@ -215,11 +226,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             get
             {
-                return m_dbCommand.CommandTimeout;
+                return this.dbCommand.CommandTimeout;
             }
             set
             {
-                m_dbCommand.CommandTimeout = value;
+                this.dbCommand.CommandTimeout = value;
             }
         }
 
@@ -230,11 +241,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             get
             {
-                return m_dbCommand.CommandType;
+                return this.dbCommand.CommandType;
             }
             set
             {
-                m_dbCommand.CommandType = value;
+                this.dbCommand.CommandType = value;
             }
         }
 
@@ -245,7 +256,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             get
             {
-                return (SqlParameterCollection)m_dbCommand.Parameters;
+                return (SqlParameterCollection)this.dbCommand.Parameters;
             }
         }
 
@@ -256,7 +267,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <remarks>
         /// The <see cref="Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior.DefaultRetryBehavior"/> is the default.
         /// </remarks>
-        public RetryBehavior RetryBehavior { get; set; }
+        public RetryBehavior RetryBehavior 
+        { 
+            get; 
+            set; 
+        }
 
         /// <summary>
         /// The execution policy to use when executing
@@ -264,19 +279,31 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// users can control whether complete results are required,
         /// or whether partial results are acceptable.
         /// </summary>
-        public MultiShardExecutionPolicy ExecutionPolicy { get; set; }
+        public MultiShardExecutionPolicy ExecutionPolicy 
+        { 
+            get; 
+            set; 
+        }
 
         /// <summary>
         /// Gets the current instance of the <see cref="MultiShardConnection"/> associated with this command.
         /// </summary>
-        public new MultiShardConnection Connection { get; private set; }
+        public new MultiShardConnection Connection 
+        { 
+            get; 
+            private set; 
+        }
 
         /// <summary>
         /// Gets or sets options that control how the command is executed.
         /// For instance, you can use this to include the shard name as 
         /// an additional column into the result.
         /// </summary>
-        public MultiShardExecutionOptions ExecutionOptions { get; set; }
+        public MultiShardExecutionOptions ExecutionOptions 
+        { 
+            get; 
+            set; 
+        }
 
         /// <summary>
         /// The event handler invoked when execution has begun on a given shard.
@@ -336,7 +363,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             get
             {
-                return Parameters;
+                return this.Parameters;
             }
         }
 
@@ -361,7 +388,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <exception cref="System.TimeoutException">thrown if the CommandTimeout elapsed prior to completion</exception>
         public new MultiShardDataReader ExecuteReader()
         {
-            return ExecuteReader(CommandBehavior.Default);
+            return this.ExecuteReader(CommandBehavior.Default);
         }
 
         /// <summary>
@@ -378,7 +405,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
-            return ExecuteReader(behavior);
+            return this.ExecuteReader(behavior);
         }
 
         /// <summary>
@@ -394,7 +421,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <param name="behavior"> specifies the <see cref="CommandBehavior"/> to use.</param>
         public new MultiShardDataReader ExecuteReader(CommandBehavior behavior)
         {
-            return ExecuteReader(
+            return this.ExecuteReader(
                 behavior, 
                 MultiShardUtils.GetSqlCommandRetryPolicy(this.RetryPolicy, this.RetryBehavior),
                 MultiShardUtils.GetSqlConnectionRetryPolicy(this.RetryPolicy, this.RetryBehavior), 
@@ -417,19 +444,27 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <exception cref="System.InvalidOperationException">If the commandText is null or empty</exception>
         /// <exception cref="System.TimeoutException">If the CommandTimeout elapsed prior to completion</exception>
         /// <exception cref="MultiShardAggregateException">If one or more errors occured while executing the command</exception>
-        internal MultiShardDataReader ExecuteReader(CommandBehavior behavior, TransientFaultHandling.RetryPolicy commandRetryPolicy, TransientFaultHandling.RetryPolicy connectionRetryPolicy,
+        internal MultiShardDataReader ExecuteReader(
+            CommandBehavior behavior, 
+            TransientFaultHandling.RetryPolicy commandRetryPolicy, 
+            TransientFaultHandling.RetryPolicy connectionRetryPolicy,
             MultiShardExecutionPolicy executionPolicy)
         {
             Contract.Requires(commandRetryPolicy != null && connectionRetryPolicy != null);
 
             try
             {
-                return ExecuteReaderAsync(behavior, CancellationToken.None, commandRetryPolicy, connectionRetryPolicy,
+                return this.ExecuteReaderAsync(
+                    behavior, 
+                    CancellationToken.None, 
+                    commandRetryPolicy, 
+                    connectionRetryPolicy,
                     executionPolicy).Result;
             }
             catch (Exception ex)
             {
                 AggregateException aex = ex as AggregateException;
+                
                 if (null != aex)
                 {
                     throw aex.Flatten().InnerException;
@@ -456,7 +491,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <remarks>Any exceptions during command execution are conveyed via the returned Task.</remarks>
         public new Task<MultiShardDataReader> ExecuteReaderAsync()
         {
-            return ExecuteReaderAsync(CancellationToken.None);
+            return this.ExecuteReaderAsync(CancellationToken.None);
         }
 
         /// <summary>
@@ -473,7 +508,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <remarks>Any exceptions during command execution are conveyed via the returned Task.</remarks>
         public new Task<MultiShardDataReader> ExecuteReaderAsync(CancellationToken cancellationToken)
         {
-            return ExecuteReaderAsync(CommandBehavior.Default, cancellationToken);
+            return this.ExecuteReaderAsync(CommandBehavior.Default, cancellationToken);
         }
 
         /// <summary>
@@ -488,16 +523,20 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <exception cref="System.InvalidOperationException">If the commandText is null or empty</exception>
         protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
         {
-            return ExecuteReaderAsync(behavior, cancellationToken).ContinueWith<DbDataReader>((t) =>
-                {
-                    if (t.IsFaulted)
+            return this.ExecuteReaderAsync(behavior, cancellationToken)
+                .ContinueWith<DbDataReader>(
+                    (t) =>
                     {
-                        throw t.Exception.InnerException;
-                    }
+                        if (t.IsFaulted)
+                        {
+                            throw t.Exception.InnerException;
+                        }
 
-                    return t.Result;
-                }, CancellationToken.None,
-                    TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnCanceled, TaskScheduler.Default);
+                        return t.Result;
+                    }, 
+                    CancellationToken.None,
+                    TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnCanceled, 
+                    TaskScheduler.Default);
         }
 
         /// <summary>
@@ -515,7 +554,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <remarks>Any exceptions during command execution are conveyed via the returned Task.</remarks>
         public new Task<MultiShardDataReader> ExecuteReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
         {
-            return ExecuteReaderAsync(
+            return this.ExecuteReaderAsync(
                 behavior, 
                 cancellationToken, 
                 MultiShardUtils.GetSqlCommandRetryPolicy(this.RetryPolicy, this.RetryBehavior),
@@ -540,12 +579,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <remarks>Any exceptions during command execution are conveyed via the returned Task</remarks>
         /// <exception cref="System.InvalidOperationException">If the commandText is null or empty</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"),
-        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"),
-        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-        internal Task<MultiShardDataReader> ExecuteReaderAsync(CommandBehavior behavior, CancellationToken outerCancellationToken,
-            TransientFaultHandling.RetryPolicy commandRetryPolicy, TransientFaultHandling.RetryPolicy connectionRetryPolicy, MultiShardExecutionPolicy executionPolicy)
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"),
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        internal Task<MultiShardDataReader> ExecuteReaderAsync(
+            CommandBehavior behavior, 
+            CancellationToken outerCancellationToken,
+            TransientFaultHandling.RetryPolicy commandRetryPolicy, 
+            TransientFaultHandling.RetryPolicy connectionRetryPolicy, 
+            MultiShardExecutionPolicy executionPolicy)
         {
-            var currentCompletion = new TaskCompletionSource<MultiShardDataReader>();
+            TaskCompletionSource<MultiShardDataReader> currentCompletion = new TaskCompletionSource<MultiShardDataReader>();
 
             // Check if cancellation has already been requested by the user
             if (outerCancellationToken.IsCancellationRequested)
@@ -556,86 +599,132 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
             try
             {
-                ValidateCommand(behavior);
+                this.ValidateCommand(behavior);
 
                 // Create a list of sql commands to run against each of the shards
-                List<Tuple<ShardLocation, DbCommand>> shardCommands = GetShardDbCommands();
+                List<Tuple<ShardLocation, DbCommand>> shardCommands = this.GetShardDbCommands();
 
                 // Don't allow a new invocation if a Cancel() is already in progress
-                lock (m_cancellationLock)
+                lock (this.cancellationLock)
                 {
                     // Set the activity id
-                    m_activityId = Guid.NewGuid();
-                    using (var activityIdScope = new ActivityIdScope(m_activityId))
+                    this.activityId = Guid.NewGuid();
+                    using (var activityIdScope = new ActivityIdScope(this.activityId))
                     {
                         DateTime executionStartTime = DateTime.UtcNow;
 
                         // Setup the Cancellation manager
-                        CommandCancellationMgr cmdCancellationMgr = new CommandCancellationMgr(m_innerCts.Token,
-                            outerCancellationToken, executionPolicy, CommandTimeout);
+                        CommandCancellationManager cmdCancellationMgr = new CommandCancellationManager(
+                            this.innerCts.Token,
+                            outerCancellationToken, 
+                            executionPolicy, 
+                            this.CommandTimeout);
 
-                        s_tracer.TraceInfo("MultiShardCommand.ExecuteReaderAsync", "Start; Command Timeout: {0}; Command Text: {1}; Execution Policy: {2}",
-                            CommandTimeout, CommandText, ExecutionPolicy);
+                        s_tracer.TraceInfo(
+                            "MultiShardCommand.ExecuteReaderAsync", 
+                            "Start; Command Timeout: {0}; Command Text: {1}; Execution Policy: {2}",
+                            this.CommandTimeout, 
+                            this.CommandText, 
+                            this.ExecutionPolicy);
 
-                        Task<MultiShardDataReader> commandTask = ExecuteReaderAsyncInternal(behavior, shardCommands,
-                            cmdCancellationMgr, commandRetryPolicy, connectionRetryPolicy, executionPolicy).ContinueWith<Task<MultiShardDataReader>>((t) =>
-                        {
-                            string completionTrace = string.Format("Complete; Execution Time: {0}", DateTime.UtcNow - executionStartTime);
+                        FanOutTask fanOutTask = this.ExecuteReaderAsyncInternal(
+                            behavior,
+                            shardCommands,
+                            cmdCancellationMgr,
+                            commandRetryPolicy,
+                            connectionRetryPolicy,
+                            executionPolicy);
 
-                            switch (t.Status)
+                        Task<MultiShardDataReader> commandTask = fanOutTask
+                            .OuterTask
+                            .ContinueWith<Task<MultiShardDataReader>>(
+                            (t) =>
                             {
-                                case TaskStatus.Faulted:
-                                    HandleCommandExecutionException(currentCompletion,
-                                            new MultiShardAggregateException(t.Exception.InnerExceptions), completionTrace);
-                                    break;
-                                case TaskStatus.Canceled:
-                                    HandleCommandExecutionCanceled(currentCompletion, cmdCancellationMgr, completionTrace);
-                                    break;
-                                case TaskStatus.RanToCompletion:
-                                    try
-                                    {
-                                        s_tracer.TraceInfo("MultiShardCommand.ExecuteReaderAsync", completionTrace);
+                                string completionTrace = string.Format("Complete; Execution Time: {0}", DateTime.UtcNow - executionStartTime);
 
-                                        // If all child readers have exceptions, then aggregate the exceptions into this parent task.
-                                        IEnumerable<MultiShardException> childExceptions = t.Result.Select(r => r.Exception);
-                                        if (childExceptions.All(e => e != null))
+                                switch (t.Status)
+                                {
+                                    case TaskStatus.Faulted:
+                                        // Close any active readers.
+                                        if (this.ExecutionPolicy == MultiShardExecutionPolicy.CompleteResults)
                                         {
-                                            // All child readers have exceptions
-
-                                            // This should only happen on PartialResults, because if we were in 
-                                            // CompleteResults then any failed child reader should have caused
-                                            // the task to be in TaskStatus.Faulted
-                                            Debug.Assert(ExecutionPolicy == MultiShardExecutionPolicy.PartialResults);
-
-                                            HandleCommandExecutionException(
-                                                currentCompletion,
-                                                new MultiShardAggregateException(childExceptions),
-                                                completionTrace);
+                                            MultiShardCommand.TerminateActiveCommands(fanOutTask.InnerTasks);
                                         }
-                                        else
+
+                                        this.HandleCommandExecutionException(
+                                            currentCompletion,
+                                            new MultiShardAggregateException(t.Exception.InnerExceptions),
+                                            completionTrace);
+                                        break;
+
+                                    case TaskStatus.Canceled:
+                                        // Close any active readers.
+                                        if (this.ExecutionPolicy == MultiShardExecutionPolicy.CompleteResults)
                                         {
-                                            // At least one child reader has succeeded
-                                            bool includeShardNameColumn = (ExecutionOptions &
-                                            MultiShardExecutionOptions.IncludeShardNameColumn) != 0;
-                                            MultiShardDataReader shardedReader = new MultiShardDataReader(this, t.Result,
-                                                executionPolicy, includeShardNameColumn);
-                                            currentCompletion.SetResult(shardedReader);
+                                            MultiShardCommand.TerminateActiveCommands(fanOutTask.InnerTasks);
                                         }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        HandleCommandExecutionException(currentCompletion, new MultiShardAggregateException(ex));
-                                    }
-                                    break;
-                                default:
-                                    currentCompletion.SetException(new InvalidOperationException("Unexpected task status."));
-                                    break;
-                            }
 
-                            return currentCompletion.Task;
-                        }, TaskContinuationOptions.ExecuteSynchronously).Unwrap();
+                                        this.HandleCommandExecutionCanceled(
+                                            currentCompletion, 
+                                            cmdCancellationMgr, 
+                                            completionTrace);
+                                        break;
 
-                        m_currentCommandTask = commandTask;
+                                    case TaskStatus.RanToCompletion:
+                                        try
+                                        {
+                                            s_tracer.TraceInfo("MultiShardCommand.ExecuteReaderAsync", completionTrace);
+
+                                            // If all child readers have exceptions, then aggregate the exceptions into this parent task.
+                                            IEnumerable<MultiShardException> childExceptions = t.Result.Select(r => r.Exception);
+                                            
+                                            if (childExceptions.All(e => e != null))
+                                            {
+                                                // All child readers have exceptions
+
+                                                // This should only happen on PartialResults, because if we were in 
+                                                // CompleteResults then any failed child reader should have caused
+                                                // the task to be in TaskStatus.Faulted
+                                                Debug.Assert(this.ExecutionPolicy == MultiShardExecutionPolicy.PartialResults);
+
+                                                this.HandleCommandExecutionException(
+                                                    currentCompletion,
+                                                    new MultiShardAggregateException(childExceptions),
+                                                    completionTrace);
+                                            }
+                                            else
+                                            {
+                                                // At least one child reader has succeeded
+                                                bool includeShardNameColumn = (this.ExecutionOptions & MultiShardExecutionOptions.IncludeShardNameColumn) != 0;
+                                                
+                                                // Hand-off the responsibility of cleanup to the MultiShardDataReader.
+                                                MultiShardDataReader shardedReader = new MultiShardDataReader(
+                                                    this, 
+                                                    t.Result,
+                                                    executionPolicy, 
+                                                    includeShardNameColumn);
+
+                                                currentCompletion.SetResult(shardedReader);
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            HandleCommandExecutionException(currentCompletion, new MultiShardAggregateException(ex));
+                                        }
+                                        break;
+
+                                    default:
+                                        currentCompletion.SetException(new InvalidOperationException("Unexpected task status."));
+                                        break;
+                                }
+
+                                return currentCompletion.Task;
+                            }, 
+                            TaskContinuationOptions.ExecuteSynchronously)
+                        .Unwrap();
+
+                        this.currentCommandTask = commandTask;
+
                         return commandTask;
                     }
                 }
@@ -649,20 +738,72 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
         #endregion
 
-        private Task<LabeledDbDataReader[]> ExecuteReaderAsyncInternal(CommandBehavior behavior, List<Tuple<ShardLocation, DbCommand>> commands,
-            CommandCancellationMgr cancellationToken, TransientFaultHandling.RetryPolicy commandRetryPolicy,
-            TransientFaultHandling.RetryPolicy connectionRetryPolicy, MultiShardExecutionPolicy executionPolicy)
+        /// <summary>
+        /// Terminates any active commands/readers for scenarios where we fail the request due to
+        /// strict execution policy or cancellation.
+        /// </summary>
+        /// <param name="readerTasks">Collection of reader tasks associated with execution across all shards.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification="We do not want to throw Close or Cancel errors.")]
+        private static void TerminateActiveCommands(Task<LabeledDbDataReader>[] readerTasks)
+        {
+            for (int i = 0; i < readerTasks.Length; i++)
+            {
+                if (readerTasks[i].Status == TaskStatus.RanToCompletion)
+                {
+                    Debug.Assert(readerTasks[i].Result != null, "Must have a LabeledDbDataReader if task finished.");
+                    LabeledDbDataReader labeledReader = readerTasks[i].Result;
+
+                    // This is a candidate for closing since we are in a faulted state.
+                    Debug.Assert(labeledReader.DbDataReader != null, "Expecting reader for completed task.");
+
+                    try
+                    {
+                        using (labeledReader.Command)
+                        using (labeledReader.DbDataReader)
+                        {
+                            // Invoke cancellation before closing the reader. This is safe from deadlocks that
+                            // arise potentially due to parallel Cancel and Close calls because this is the only
+                            // thread that will be responsible for cleanup.
+                            labeledReader.Command.Cancel();
+                            labeledReader.DbDataReader.Close();
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // Catch everything for Cancel/Close.
+                    }
+                }
+            }
+        }
+
+        private FanOutTask ExecuteReaderAsyncInternal(
+            CommandBehavior behavior, 
+            List<Tuple<ShardLocation, DbCommand>> commands,
+            CommandCancellationManager cancellationToken, 
+            TransientFaultHandling.RetryPolicy commandRetryPolicy,
+            TransientFaultHandling.RetryPolicy connectionRetryPolicy, 
+            MultiShardExecutionPolicy executionPolicy)
         {
             Task<LabeledDbDataReader>[] shardCommandTasks = new Task<LabeledDbDataReader>[commands.Count];
 
             for (int i = 0; i < shardCommandTasks.Length; i++)
             {
-                var shardCommand = commands[i];
-                shardCommandTasks[i] = GetLabeledDbDataReaderTask(behavior, shardCommand, cancellationToken,
-                    commandRetryPolicy, connectionRetryPolicy, executionPolicy);
+                Tuple<ShardLocation, DbCommand> shardCommand = commands[i];
+
+                shardCommandTasks[i] = this.GetLabeledDbDataReaderTask(
+                    behavior, 
+                    shardCommand, 
+                    cancellationToken,
+                    commandRetryPolicy, 
+                    connectionRetryPolicy, 
+                    executionPolicy);
             }
 
-            return Task.WhenAll<LabeledDbDataReader>(shardCommandTasks);
+            return new FanOutTask 
+            { 
+                OuterTask = Task.WhenAll<LabeledDbDataReader>(shardCommandTasks), 
+                InnerTasks = shardCommandTasks 
+            };
         }
 
         // Suppression rationale: We are returning the LabeledDataReader via the task.  We don't want to dispose it.
@@ -683,11 +824,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), 
          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-        private Task<LabeledDbDataReader> GetLabeledDbDataReaderTask(CommandBehavior behavior, Tuple<ShardLocation, DbCommand> commandTuple,
-            CommandCancellationMgr cmdCancellationMgr, TransientFaultHandling.RetryPolicy commandRetryPolicy,
-            TransientFaultHandling.RetryPolicy connectionRetryPolicy, MultiShardExecutionPolicy executionPolicy)
+        private Task<LabeledDbDataReader> GetLabeledDbDataReaderTask(
+            CommandBehavior behavior, 
+            Tuple<ShardLocation, DbCommand> commandTuple,
+            CommandCancellationManager cmdCancellationMgr, 
+            TransientFaultHandling.RetryPolicy commandRetryPolicy,
+            TransientFaultHandling.RetryPolicy connectionRetryPolicy, 
+            MultiShardExecutionPolicy executionPolicy)
         {
             TaskCompletionSource<LabeledDbDataReader> currentCompletion = new TaskCompletionSource<LabeledDbDataReader>();
+
             ShardLocation shard = commandTuple.Item1;
             DbCommand command = commandTuple.Item2;
             DateTime executionStartTime = DateTime.UtcNow;
@@ -704,14 +850,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             // 
             // behavior |= CommandBehavior.CloseConnection;
 
-            s_tracer.TraceInfo("MultiShardCommand.GetLabeledDbDataReaderTask",
+            s_tracer.TraceInfo(
+                "MultiShardCommand.GetLabeledDbDataReaderTask",
                 "Starting command execution for Shard: {0}; Behavior: {1}; Retry Policy: {2}",
-                        shard, behavior, this.RetryPolicy);
+                shard, 
+                behavior, 
+                this.RetryPolicy);
 
-            Task<DbDataReader> commandExecutionTask = commandRetryPolicy.ExecuteAsync<DbDataReader>(() =>
+            Task<Tuple<DbDataReader, DbCommand>> commandExecutionTask = commandRetryPolicy.ExecuteAsync<Tuple<DbDataReader, DbCommand>>(
+            () =>
             {
-                // throw command execution work to the threadpool
-                return Task.Run(async () =>
+                // Execute command in the Threadpool
+                return Task.Run(
+                async () =>
                 {
                     // In certain cases sqlcommand doesn't reset its internal state correctly upon 
                     // failure of an async command (especially if the connection is still open). 
@@ -719,30 +870,42 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     // The recommendation from the Sqlclient team is to either start off with a new sqlcommand instance 
                     // on every retry or close and reopen the connection. 
                     // We're going with the former approach here. 
-                    DbCommand commandToExecute = (DbCommand)(command as ICloneable).Clone();
+                    DbCommand commandToExecute = MultiShardUtils.CloneDbCommand(command, command.Connection);
 
                     // Open the connection if it isn't already
-                    await OpenConnectionWithRetryAsync(commandToExecute, cmdCancellationMgr.Token, connectionRetryPolicy).ConfigureAwait(false);
+                    await this.OpenConnectionWithRetryAsync(
+                        commandToExecute, 
+                        cmdCancellationMgr.Token, 
+                        connectionRetryPolicy)
+                        .ConfigureAwait(false);
                     
                     // The connection to the shard has been successfully opened and the per-shard command is about to execute.
                     // Raise the ShardExecutionBegan event.
-                    OnShardExecutionBegan(shard);
+                    this.OnShardExecutionBegan(shard);
 
-                    DbDataReader perShardReader = await commandToExecute.ExecuteReaderAsync(behavior, cmdCancellationMgr.Token).ConfigureAwait(false);
+                    DbDataReader perShardReader = await commandToExecute.ExecuteReaderAsync(
+                        behavior, 
+                        cmdCancellationMgr.Token)
+                        .ConfigureAwait(false);
 
-                    return perShardReader;
+                    return new Tuple<DbDataReader, DbCommand>(perShardReader, commandToExecute);
                 });
-            }, cmdCancellationMgr.Token);
+            }, 
+            cmdCancellationMgr.Token);
 
-            return commandExecutionTask.ContinueWith<Task<LabeledDbDataReader>>((t) =>
+            return commandExecutionTask.ContinueWith<Task<LabeledDbDataReader>>(
+            (t) =>
             {
-                string traceMsg = string.Format("Completed command execution for Shard: {0}; Execution Time: {1}; Task Status: {2}",
-                    shard, DateTime.UtcNow - executionStartTime, t.Status);
+                string traceMsg = string.Format(
+                    "Completed command execution for Shard: {0}; Execution Time: {1}; Task Status: {2}",
+                    shard, 
+                    DateTime.UtcNow - executionStartTime, 
+                    t.Status);
 
                 switch (t.Status)
                 {
                     case TaskStatus.Faulted:
-                        var exception = new MultiShardException(shard, t.Exception.InnerException);
+                        MultiShardException exception = new MultiShardException(shard, t.Exception.InnerException);
 
                         // Close the connection
                         command.Connection.Close();
@@ -751,18 +914,24 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                         // canceled while ExecuteReaderAsync was in progress. Interpret it and raise a canceled event instead.
                         if (cmdCancellationMgr.Token.IsCancellationRequested)
                         {
-                            s_tracer.TraceError("MultiShardCommand.GetLabeledDbDataReaderTask", exception,
-                                "Command was canceled. {0}", traceMsg);
+                            s_tracer.TraceError(
+                                "MultiShardCommand.GetLabeledDbDataReaderTask", 
+                                exception,
+                                "Command was canceled. {0}", 
+                                traceMsg);
 
                             currentCompletion.SetCanceled();
 
                             // Raise the ShardExecutionCanceled event.
-                            OnShardExecutionCanceled(shard);
+                            this.OnShardExecutionCanceled(shard);
                         }
                         else
                         {
-                            s_tracer.TraceError("MultiShardCommand.GetLabeledDbDataReaderTask", exception,
-                                "Command failed. {0}", traceMsg);
+                            s_tracer.TraceError(
+                                "MultiShardCommand.GetLabeledDbDataReaderTask", 
+                                exception,
+                                "Command failed. {0}", 
+                                traceMsg);
 
                             if (executionPolicy == MultiShardExecutionPolicy.CompleteResults)
                             {
@@ -773,48 +942,69 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                             }
                             else
                             {
-                                var failedLabeledReader = new LabeledDbDataReader(exception, shard, command.Connection);
+                                LabeledDbDataReader failedLabeledReader = new LabeledDbDataReader(exception, shard, command);
+
                                 currentCompletion.SetResult(failedLabeledReader);
                             }
 
                             // Raise the ShardExecutionFaulted event.
-                            OnShardExecutionFaulted(shard, t.Exception.InnerException);
+                            this.OnShardExecutionFaulted(shard, t.Exception.InnerException);
                         }
 
                         break;
+
                     case TaskStatus.Canceled:
-                        s_tracer.TraceWarning("MultiShardCommand.GetLabeledDbDataReaderTask", "Command was canceled. {0}", traceMsg);
+                        s_tracer.TraceWarning(
+                            "MultiShardCommand.GetLabeledDbDataReaderTask", 
+                            "Command was canceled. {0}", 
+                            traceMsg);
+
                         command.Connection.Close();
+
                         currentCompletion.SetCanceled();
 
                         // Raise the ShardExecutionCanceled event.
-                        OnShardExecutionCanceled(shard);
+                        this.OnShardExecutionCanceled(shard);
                         break;
+
                     case TaskStatus.RanToCompletion:
                         s_tracer.TraceInfo("MultiShardCommand.GetLabeledDbDataReaderTask", traceMsg);
-                        var labeledReader = new LabeledDbDataReader(t.Result, shard, command.Connection);
+
+                        LabeledDbDataReader labeledReader = new LabeledDbDataReader(t.Result.Item1, shard, t.Result.Item2);
                         
                         // Raise the ShardExecutionReaderReturned event.
-                        OnShardExecutionReaderReturned(shard, labeledReader);
+                        this.OnShardExecutionReaderReturned(shard, labeledReader);
+
                         currentCompletion.SetResult(labeledReader);
 
                         // Raise the ShardExecutionSucceeded event.
-                        OnShardExecutionSucceeded(shard, labeledReader);
+                        this.OnShardExecutionSucceeded(shard, labeledReader);
                         break;
+
                     default:
                         currentCompletion.SetException(new InvalidOperationException("Unexpected task status.."));
                         break;
                 }
+
                 return currentCompletion.Task;
-            }, TaskContinuationOptions.ExecuteSynchronously).Unwrap();
+            }, 
+            TaskContinuationOptions.ExecuteSynchronously)
+            .Unwrap();
         }
 
-        private async Task OpenConnectionWithRetryAsync(DbCommand shardCommand, CancellationToken cancellationToken,
+        private async Task OpenConnectionWithRetryAsync(
+            DbCommand shardCommand, 
+            CancellationToken cancellationToken,
             TransientFaultHandling.RetryPolicy connectionRetryPolicy)
         {
             var shardConnection = shardCommand.Connection;
-            await connectionRetryPolicy.ExecuteAsync(() => MultiShardUtils.OpenShardConnectionAsync(
-                shardConnection, cancellationToken), cancellationToken).ConfigureAwait(false);
+
+            await connectionRetryPolicy.ExecuteAsync(
+            () => MultiShardUtils.OpenShardConnectionAsync(
+                shardConnection, 
+                cancellationToken), 
+            cancellationToken)
+            .ConfigureAwait(false);
         }
 
         #endregion ExecuteReader Methods
@@ -828,20 +1018,42 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public override void Cancel()
         {
-            lock (m_cancellationLock)
+            lock (this.cancellationLock)
             {
                 try
                 {
-                    Task currentCommandTask = m_currentCommandTask;
-                    if (currentCommandTask != null && IsExecutionInProgress())
+                    Task currentTask = this.currentCommandTask;
+
+                    if (currentTask != null)
                     {
-                        // Call could've been made from a worker thread
-                        using (ActivityIdScope activityId = new ActivityIdScope(m_activityId))
+                        if (IsExecutionInProgress())
                         {
-                            s_tracer.TraceWarning("MultiShardCommand.Cancel", "Command was canceled; Current task status: {0}",
-                                m_currentCommandTask.Status);
-                            m_innerCts.Cancel();
-                            m_currentCommandTask.Wait();
+                            // Call could've been made from a worker thread
+                            using (ActivityIdScope activityIdScope = new ActivityIdScope(this.activityId))
+                            {
+                                s_tracer.TraceWarning(
+                                    "MultiShardCommand.Cancel",
+                                    "Command was canceled; Current task status: {0}",
+                                    currentTask.Status);
+
+                                this.innerCts.Cancel();
+
+                                currentTask.Wait();
+                            }
+                        }
+
+                        Debug.Assert(currentTask.IsCompleted, "Current task should be complete.");
+
+                        // For tasks that failed or were cancelled we assume that they are already cleaned up.
+                        if (currentTask.Status == TaskStatus.RanToCompletion)
+                        {
+                            Task<MultiShardDataReader> executeReaderTask = currentTask as Task<MultiShardDataReader>;
+
+                            if (currentTask != null)
+                            {
+                                // Cancel all the active readers on MultiShardDataReader.
+                                executeReaderTask.Result.Cancel();
+                            }
                         }
                     }
                 }
@@ -850,9 +1062,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 }
                 finally
                 {
-                    if (m_innerCts.IsCancellationRequested)
+                    if (this.innerCts.IsCancellationRequested)
                     {
-                        m_innerCts = new CancellationTokenSource();
+                        this.innerCts = new CancellationTokenSource();
                     }
                 }
             }
@@ -885,28 +1097,29 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         protected override void Dispose(bool disposing)
         {
-            if (!m_disposed)
+            if (!this.disposed)
             {
                 if (disposing)
                 {
                     try
                     {
                         // Cancel any commands that are in progress
-                        Cancel();
+                        this.Cancel();
 
                         // Close any open connections
-                        Connection.Close();
+                        this.Connection.Close();
                     }
                     catch (Exception) // Ignore any exceptions
                     {
                     }
 
                     // Dispose the cancellation token source
-                    using (m_innerCts)
+                    using (this.innerCts)
                     {
                     }
 
-                    m_disposed = true;
+                    this.disposed = true;
+
                     s_tracer.TraceWarning("MultiShardCommand.Dispose", "Command disposed");
                 }
 
@@ -922,7 +1135,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         public void ResetCommandTimeout()
         {
-            CommandTimeout = s_defaultCommandTimeout;
+            this.CommandTimeout = MultiShardCommand.DefaultCommandTimeout;
         }
 
         /// <summary>
@@ -931,7 +1144,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         public void ResetCommandTimeoutPerShard()
         {
-            CommandTimeoutPerShard = s_defaultCommandTimeoutPerShard;
+            this.CommandTimeoutPerShard = MultiShardCommand.DefaultCommandTimeoutPerShard;
         }
 
         #endregion APIs
@@ -943,9 +1156,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             // Enforce only one async invocation at a time
             if (IsExecutionInProgress())
             {
-                var ex = new InvalidOperationException(
-                    "The command execution cannot proceed due to a pending asynchronous operation already in progress.");
-                s_tracer.TraceError("MultiShardCommand.ValidateCommand", ex, "Current Task Status: {0}", m_currentCommandTask.Status);
+                var ex = new InvalidOperationException("The command execution cannot proceed due to a pending asynchronous operation already in progress.");
+                
+                s_tracer.TraceError(
+                    "MultiShardCommand.ValidateCommand", 
+                    ex, 
+                    "Current Task Status: {0}", 
+                    this.currentCommandTask.Status);
+
                 throw ex;
             }
 
@@ -988,10 +1206,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
                 // We don't allow streaming to sqlserver
                 if (parameter.Value != null &&
-                        (parameter.Value is Stream ||
-                        parameter.Value is TextReader ||
-                        parameter.Value is XmlReader ||
-                        parameter.Value is DbDataReader))
+                   (parameter.Value is Stream ||
+                    parameter.Value is TextReader ||
+                    parameter.Value is XmlReader ||
+                    parameter.Value is DbDataReader))
                 {
                     throw new NotSupportedException(string.Format("Streaming to sql server is currently not supported. Parameter Name: {0} Value type: {1}",
                         parameter.ParameterName, parameter.Value.GetType()));
@@ -1006,41 +1224,45 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <returns>True if execution is in progress</returns>
         private bool IsExecutionInProgress()
         {
-            Task currentTask = m_currentCommandTask;
+            Task currentTask = this.currentCommandTask;
+
             return currentTask != null && !currentTask.IsCompleted;
         }
 
+        /// <summary>
+        /// Creates a list of commands to be executed against the shards associated with the connection.
+        /// </summary>
+        /// <returns>Pairs of shard locations and associated commands.</returns>
         private List<Tuple<ShardLocation, DbCommand>> GetShardDbCommands()
         {
-            // Create a list of sql commands to be run against each of the shards
-            // These will be cached copies of m_dbcommand with the appropriate connection property to the shards set
-            var shardCommands = new List<Tuple<ShardLocation, DbCommand>>();
-            foreach (Tuple<ShardLocation, DbConnection> shardConnection in Connection.ShardConnections)
-            {
-                DbCommand command = (DbCommand)(m_dbCommand as ICloneable).Clone();
-                command.Connection = shardConnection.Item2;
-                shardCommands.Add(new Tuple<ShardLocation, DbCommand>(shardConnection.Item1, command));
-            }
-
-            return shardCommands;
+            return this.Connection
+                       .ShardConnections
+                       .Select(sc => new Tuple<ShardLocation, DbCommand>(sc.Item1, MultiShardUtils.CloneDbCommand(this.dbCommand, sc.Item2)))
+                       .ToList();
         }
 
-        private void HandleCommandExecutionException<TResult>(TaskCompletionSource<TResult> tcs, Exception ex, string trace = "")
+        private void HandleCommandExecutionException<TResult>(
+            TaskCompletionSource<TResult> tcs, 
+            Exception ex, 
+            string trace = "")
         {
             // Close any open connections
-            Connection.Close();
+            this.Connection.Close();
             s_tracer.TraceError("MultiShardCommand.ExecuteReaderAsync", ex, trace);
             tcs.SetException(ex);
         }
 
-        private void HandleCommandExecutionCanceled<TResult>(TaskCompletionSource<TResult> tcs,
-            CommandCancellationMgr cancellationMgr, string trace = "")
+        private void HandleCommandExecutionCanceled<TResult>(
+            TaskCompletionSource<TResult> tcs,
+            CommandCancellationManager cancellationMgr, 
+            string trace = "")
         {
             // Close any open connections
-            Connection.Close();
+            this.Connection.Close();
+
             s_tracer.TraceWarning("MultiShardCommand.ExecuteReaderAsync", "Command was canceled; {0}", trace);
 
-            if (cancellationMgr.HasTimeoutExpired())
+            if (cancellationMgr.HasTimeoutExpired)
             {
                 // The ConnectionTimeout elapsed
                 tcs.SetException(new TimeoutException
@@ -1248,33 +1470,50 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 ValidateCommand(behavior);
 
                 // Create a list of sql commands to run against each of the shards
-                List<Tuple<ShardLocation, DbCommand>> shardCommands = GetShardDbCommands();
+                List<Tuple<ShardLocation, DbCommand>> shardCommands = this.GetShardDbCommands();
 
                 // Don't allow a new invocation if a Cancel() is already in progress
-                lock (m_cancellationLock)
+                lock (this.cancellationLock)
                 {
                     // Setup the Cancellation manager
-                    CommandCancellationMgr cmdCancellationMgr = new CommandCancellationMgr(m_innerCts.Token,
-                        cancellationToken, executionPolicy, CommandTimeout);
+                    CommandCancellationManager cmdCancellationMgr = new CommandCancellationManager(
+                        this.innerCts.Token,
+                        cancellationToken, 
+                        executionPolicy, 
+                        CommandTimeout);
 
-                    var commandTask = ExecuteReaderAsyncInternal(behavior, shardCommands, cmdCancellationMgr,
-                        commandRetryPolicy, connectionRetryPolicy, executionPolicy).ContinueWith<Task<int>>((t) =>
+                    var commandTask = ExecuteReaderAsyncInternal(
+                        behavior, 
+                        shardCommands, 
+                        cmdCancellationMgr,
+                        commandRetryPolicy, 
+                        connectionRetryPolicy, 
+                        executionPolicy)
+                        .OuterTask
+                        .ContinueWith<Task<int>>(
+                        (t) =>
                         {
                             switch (t.Status)
                             {
                                 case TaskStatus.Faulted:
-                                    HandleCommandExecutionException(currentCompletion,
+                                    HandleCommandExecutionException(
+                                        currentCompletion,
                                         new MultiShardAggregateException(t.Exception.InnerExceptions));
                                     break;
+
                                 case TaskStatus.Canceled:
-                                    HandleCommandExecutionCanceled(currentCompletion, cmdCancellationMgr);
+                                    HandleCommandExecutionCanceled(
+                                        currentCompletion, 
+                                        cmdCancellationMgr);
                                     break;
+
                                 case TaskStatus.RanToCompletion:
                                     // Close all connections to shards
                                     Connection.Close();
 
                                     // Check for any exceptions if this is a partial results execution policy
                                     bool success = true;
+
                                     if (executionPolicy == MultiShardExecutionPolicy.PartialResults)
                                     {
                                         var exceptions = new List<Exception>();
@@ -1305,9 +1544,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                             }
 
                             return currentCompletion.Task;
-                        }, cancellationToken).Unwrap();
 
-                    m_currentCommandTask = commandTask;
+                        }, cancellationToken)
+                        .Unwrap();
+
+                    this.currentCommandTask = commandTask;
                     return commandTask;
                 }
             }
@@ -1416,39 +1657,39 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         #region Inner Helper Classes
 
         /// <summary>
-        /// Sets up and manages the 
-        /// cancellation of the Execute* methods
+        /// Sets up and manages the cancellation of the Execute* methods.
         /// </summary>
-        private class CommandCancellationMgr : IDisposable
+        private class CommandCancellationManager : IDisposable
         {
-            private readonly CancellationTokenSource m_timeoutCts;
-            private readonly CancellationTokenSource m_completeResultsCts;
+            private readonly CancellationTokenSource timeoutCts;
+            private readonly CancellationTokenSource completeResultsCts;
 
-            private readonly CancellationToken m_linkedToken;
+            private readonly CancellationToken linkedToken;
 
-            private bool m_disposed;
+            private bool disposed;
 
-            public CommandCancellationMgr(CancellationToken innerCts, CancellationToken outerCts,
-                MultiShardExecutionPolicy executionPolicy, int commandTimeout)
+            public CommandCancellationManager(
+                CancellationToken innerCts, 
+                CancellationToken outerCts,
+                MultiShardExecutionPolicy executionPolicy, 
+                int commandTimeout)
             {
                 // Create a Cts to cancel any tasks in-progress if a
                 // complete results execution policy is used
                 if (executionPolicy == MultiShardExecutionPolicy.CompleteResults)
                 {
-                    m_completeResultsCts = new CancellationTokenSource();
+                    this.completeResultsCts = new CancellationTokenSource();
                 }
 
                 // Setup the command timeout Cts
                 if (commandTimeout > 0)
                 {
-                    m_timeoutCts = new CancellationTokenSource();
-                    m_timeoutCts.CancelAfter(TimeSpan.FromSeconds(commandTimeout));
+                    this.timeoutCts = new CancellationTokenSource();
+                    this.timeoutCts.CancelAfter(TimeSpan.FromSeconds(commandTimeout));
                 }
 
                 // Create the uber-token
-                m_linkedToken = CreateLinkedToken(innerCts, outerCts);
-
-                m_disposed = false;
+                this.linkedToken = CreateLinkedToken(innerCts, outerCts);
             }
 
             #region Properties
@@ -1457,7 +1698,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             {
                 get
                 {
-                    return m_linkedToken;
+                    return this.linkedToken;
                 }
             }
 
@@ -1465,37 +1706,39 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             {
                 get
                 {
-                    if (m_completeResultsCts == null)
+                    if (this.completeResultsCts == null)
                     {
                         throw new InvalidOperationException("No CancellationTokenSource exists for specified execution policy.");
                     }
 
-                    return m_completeResultsCts;
+                    return this.completeResultsCts;
+                }
+            }
+            public bool HasTimeoutExpired
+            {
+                get
+                {
+                    return this.timeoutCts != null && this.timeoutCts.IsCancellationRequested;
                 }
             }
 
             #endregion
 
-            public bool HasTimeoutExpired()
-            {
-                return m_timeoutCts != null && m_timeoutCts.IsCancellationRequested;
-            }
-
             public void Dispose()
             {
-                if (!m_disposed)
+                if (!this.disposed)
                 {
-                    if (null != m_timeoutCts)
+                    if (null != this.timeoutCts)
                     {
-                        m_timeoutCts.Dispose();
+                        this.timeoutCts.Dispose();
                     }
 
-                    if (null != m_completeResultsCts)
+                    if (null != this.completeResultsCts)
                     {
-                        m_completeResultsCts.Dispose();
+                        this.completeResultsCts.Dispose();
                     }
 
-                    m_disposed = true;
+                    this.disposed = true;
                 }
             }
 
@@ -1504,18 +1747,35 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
             private CancellationToken CreateLinkedToken(CancellationToken innerToken, CancellationToken outerToken)
             {
-                CancellationToken completeResultsToken = (m_completeResultsCts == null) ? CancellationToken.None :
-                    m_completeResultsCts.Token;
+                CancellationToken completeResultsToken = (this.completeResultsCts == null) ? CancellationToken.None : this.completeResultsCts.Token;
 
-                CancellationToken timeoutToken = (m_timeoutCts == null) ? CancellationToken.None :
-                    m_timeoutCts.Token;
+                CancellationToken timeoutToken = (this.timeoutCts == null) ? CancellationToken.None : this.timeoutCts.Token;
 
-                return CancellationTokenSource.CreateLinkedTokenSource(innerToken, outerToken,
-                    completeResultsToken, timeoutToken).Token;
+                return CancellationTokenSource.CreateLinkedTokenSource(
+                    innerToken, 
+                    outerToken,
+                    completeResultsToken, 
+                    timeoutToken)
+                    .Token;
             }
-
         }
 
-        #endregion
+        /// <summary>
+        /// Encapsulates data structures representing state of tasks executing across all the shards.
+        /// </summary>
+        private class FanOutTask
+        {
+            /// <summary>
+            /// Parent task of all per-shard tasks.
+            /// </summary>
+            internal Task<LabeledDbDataReader[]> OuterTask { get; set; }
+
+            /// <summary>
+            /// Collection of inner tasks that run against each shard.
+            /// </summary>
+            internal Task<LabeledDbDataReader>[] InnerTasks { get; set; }
+        }
+
+        #endregion Inner Helper Classes
     }
 }

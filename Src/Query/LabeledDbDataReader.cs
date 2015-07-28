@@ -31,100 +31,135 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
     internal class LabeledDbDataReader : IDisposable
     {
         /// <summary>
-        /// Whether DbDataReader has been disposed or not
+        /// Whether DbDataReader has been disposed or not.
         /// </summary>
-        private bool m_isDisposed = false;
+        private bool disposed;
 
         #region Constructors
 
         /// <summary>
         /// Simple constructor to set up an immutable LabeledDbDataReader object.
         /// </summary>
-        /// <param name="theReader">The DbDataReader to keep track of.</param>
+        /// <param name="reader">The DbDataReader to keep track of.</param>
         /// <param name="shardLocation">The Shard this reader belongs to</param>
-        /// <param name="connection">The DbConnection associated with this reader</param>
+        /// <param name="cmd">The command object that produced ther reader.</param>
         /// <exception cref="ArgumentNullException">
         /// If either of the arguments is null.
         /// </exception>
-        public LabeledDbDataReader(DbDataReader theReader, ShardLocation shardLocation, DbConnection connection)
-            : this(shardLocation, connection)
+        internal LabeledDbDataReader(DbDataReader reader, ShardLocation shardLocation, DbCommand cmd)
+            : this(shardLocation, cmd)
         {
-            if (null == theReader)
+            if (null == reader)
             {
-                throw new ArgumentNullException("theReader");
+                throw new ArgumentNullException("reader");
             }
 
-            DbDataReader = theReader;
+            this.DbDataReader = reader;
         }
 
-        public LabeledDbDataReader(MultiShardException exception, ShardLocation shardLocation, DbConnection connection)
-            : this(shardLocation, connection)
+        internal LabeledDbDataReader(MultiShardException exception, ShardLocation shardLocation, DbCommand cmd)
+            : this(shardLocation, cmd)
         {
             if (null == exception)
             {
                 throw new ArgumentNullException("exception");
             }
 
-            Exception = exception;
+            this.Exception = exception;
         }
 
-        private LabeledDbDataReader(ShardLocation shardLocation, DbConnection connection)
+        private LabeledDbDataReader(ShardLocation shardLocation, DbCommand cmd)
         {
             if (null == shardLocation)
             {
                 throw new ArgumentNullException("shardLocation");
             }
 
-            if(null == connection)
+            if (null == cmd)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException("cmd");
             }
 
-            ShardLocation = shardLocation;
-            ShardLabel = ShardLocation.ToString();
-            Connection = connection;
+            this.ShardLocation = shardLocation;
+            this.ShardLabel = ShardLocation.ToString();
+            this.Command = cmd;
         }
 
         #endregion Constructors
 
-        #region Public Properties
+        #region Internal Properties
 
         /// <summary>
         /// The location of the shard
         /// </summary>
-        public ShardLocation ShardLocation { get; private set; }
+        internal ShardLocation ShardLocation 
+        { 
+            get; 
+            private set; 
+        }
 
         /// <summary>
         /// The Shard location information
         /// </summary>
-        public string ShardLabel { get; private set; }
+        internal string ShardLabel 
+        { 
+            get; 
+            private set; 
+        }
 
         /// <summary>
         /// The exception encountered when trying to execute against this reader
         /// Could be null if the DbDataReader was instantiated successfully for this Shard
         /// </summary>
-        public MultiShardException Exception { get; private set; }
+        internal MultiShardException Exception 
+        { 
+            get; 
+            private set; 
+        }
 
         /// <summary>
         /// The DbDataReader to keep track of.
         /// Could be null if we encountered an exception whilst executing the command against this shard
         /// </summary>
-        public DbDataReader DbDataReader { get; private set; }
+        internal DbDataReader DbDataReader 
+        { 
+            get; 
+            private set; 
+        }
 
         /// <summary>
         /// The DbConnection associated with this reader
         /// </summary>
-        public DbConnection Connection { get; private set; }
+        internal DbConnection Connection 
+        {
+            get
+            {
+                return this.Command.Connection;
+            }
+        }
 
-        #endregion Public Properties
+        /// <summary>
+        /// The command object that produces this reader.
+        /// </summary>
+        internal DbCommand Command 
+        { 
+            get; 
+            private set; 
+        }
+
+        #endregion Internal Properties
+
+        #region IDisposable
 
         public void Dispose()
         {
-            if (!(m_isDisposed))
+            if (!this.disposed)
             {
-                DbDataReader.Dispose();
-                m_isDisposed = true;
+                this.DbDataReader.Dispose();
+                this.disposed = true;
             }
         }
+
+        #endregion IDisposable
     }
 }

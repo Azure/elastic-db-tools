@@ -18,7 +18,6 @@
 //
 //******************************************************************************
 
-using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -33,8 +32,9 @@ using System.Runtime.Remoting;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 
-// DEVNOTE (VSTS 2202707): : This should go into the namespace that we are using for all the Wrapper classes.  Since we aren't integrated
+// DEVNOTE (VSTS 2202707): This should go into the namespace that we are using for all the Wrapper classes. Since we aren't integrated
 // with those classes yet, we'll just use this namespace and have it change later when we integrate.
 //
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
@@ -47,9 +47,59 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
     /// <summary>
     /// Provides a way of reading a forward-only stream of rows that is retrieved from a shard set. 
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Multi"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1010:CollectionsShouldImplementGenericInterface")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), 
+     System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix"), 
+     System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Multi"), 
+     System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1010:CollectionsShouldImplementGenericInterface")]
     public sealed class MultiShardDataReader : DbDataReader, IDataReader, IDisposable, IDataRecord
     {
+        /// <summary>
+        /// Name of Shard Id pseudo column.
+        /// </summary>
+        private const String NameOfShardIdPseudoColumn = "$ShardName";
+
+        #region Private Fields
+
+        private readonly static ILogger s_tracer = TraceHelper.Tracer;
+
+        /// <summary>
+        /// Collection of labeled readers.
+        /// </summary>
+        private ConcurrentQueue<LabeledDbDataReader> labeledReaders;
+
+        /// <summary>
+        /// Lock for mutually exclusive access to labeled readers collection.
+        /// </summary>
+        private object addLabeledReaderLock = new object();
+
+        /// <summary>
+        /// Lock for mutual exclusion between cancellation request and close of readers while trying
+        /// to read next row from MultiShardDataReader object.
+        /// </summary>
+        private object cancelLock = new object();
+
+        /// <summary>
+        /// Whether the reader has a shard-id column.
+        /// </summary>
+        private readonly bool hasShardIdPseudoColumn;
+
+        private int numReadersExpected;
+        private int numReadersAdded;
+        private int numReadersFinished;
+        private bool anyReaderHasRows;
+
+        private readonly ConcurrentBag<MultiShardException> multiShardExceptions;
+
+        private int indexOfShardIdPseudoColumn;
+        private DataTable schemaComparisonTemplate;
+        private DataTable finalSchemaTable;
+        private bool foundNullSchemaReader;
+
+        private bool closed;
+        private bool disposed;
+        
+        #endregion Private Fields
+
         #region Constructors
 
         /// <summary>
@@ -65,17 +115,24 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// specified, the MultiShardDataReader is left open for additional calls to AddReader at a later time.</param>
         /// <exception cref="MultiShardSchemaMismatchException">If the complete results execution policy is used and 
         /// the schema isn't the same across shards</exception>
-        internal MultiShardDataReader(MultiShardCommand command, LabeledDbDataReader[] inputReaders,
-            MultiShardExecutionPolicy executionPolicy, bool addShardNamePseudoColumn, int expectedReaderCount = -1)
+        internal MultiShardDataReader(
+            MultiShardCommand command, 
+            LabeledDbDataReader[] inputReaders,
+            MultiShardExecutionPolicy executionPolicy, 
+            bool addShardNamePseudoColumn, 
+            int expectedReaderCount = -1)
         {
             Contract.Requires(command != null);
 
-            m_connection = command.Connection;
-            m_inputReaders = new ConcurrentQueue<LabeledDbDataReader>();
-            m_executionPolicy = executionPolicy;
-            m_multiShardExceptions = new ConcurrentBag<MultiShardException>();
-            m_hasShardIdPseudoColumn = addShardNamePseudoColumn;
-            m_inputReadersExpectedCount = Math.Max(inputReaders.Length, expectedReaderCount);
+            this.Connection = command.Connection;
+            
+            this.labeledReaders = new ConcurrentQueue<LabeledDbDataReader>();
+
+            this.ExecutionPolicy = executionPolicy;
+            this.hasShardIdPseudoColumn = addShardNamePseudoColumn;
+
+            this.multiShardExceptions = new ConcurrentBag<MultiShardException>();
+            this.numReadersExpected = Math.Max(inputReaders.Length, expectedReaderCount);
 
             // Add the readers
             foreach (LabeledDbDataReader reader in inputReaders)
@@ -84,13 +141,51 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
 
             // Transition the reader to closed if there are no readers
-            if (m_inputReadersExpectedCount == 0)
+            if (this.numReadersExpected == 0)
             {
                 this.Close();
             }
         }
 
         #endregion Constructors
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the <see cref="MultiShardConnection"/> associated with the MultiShardDataReader.
+        /// </summary>
+        public MultiShardConnection Connection
+        {
+            get;
+            private set;
+        }
+
+        // Suppression rationale: "Multi" is the spelling we want.
+        //
+        /// <summary>
+        /// Gets the collection of exceptions encountered when processing the command across the shards.
+        /// The collection is populated when <see cref="MultiShardExecutionPolicy.PartialResults"/> is chosen
+        /// as the execution policy for the command.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Multi")]
+        public IReadOnlyCollection<MultiShardException> MultiShardExceptions
+        {
+            get 
+            {
+                return this.multiShardExceptions.ToArray(); 
+            }
+        }
+
+        /// <summary>
+        /// Gets the execution policy that will be used to execute commands.
+        /// </summary>
+        public MultiShardExecutionPolicy ExecutionPolicy
+        {
+            get;
+            private set;
+        }
+
+        #endregion
 
         #region Public Methods
 
@@ -102,7 +197,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </remarks>
         public override void Close()
         {
-            if (m_isClosed)
+            if (this.IsClosed)
             {
                 s_tracer.Verbose("MultiShardDataReader is already closed");
                 return;
@@ -111,19 +206,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             // Make sure we are not in the middle of an AddReader call when we attempt to Close this reader.
             // This is _theoretically_ safe since any exceptions thrown here should be expected.
             //
-            lock (m_addReaderLock)
+            lock (this.addLabeledReaderLock)
             {
-                if (m_isClosed)
+                if (this.IsClosed)
                 {
                     s_tracer.Verbose("MultiShardDataReader is already closed");
                     return;
                 }
 
+                // Perform cancellation before close on all the active readers.
+                this.Cancel();
+
                 // Then close the current DataReader and all subsequent DataReaders.
                 //
                 LabeledDbDataReader currentReader;
                 LabeledDbDataReader arbitraryClosedReader = null;
-                while (m_inputReaders.TryPeek(out currentReader))
+                while (this.labeledReaders.TryPeek(out currentReader))
                 {
                     this.CloseCurrentDataReader();
                     arbitraryClosedReader = currentReader;
@@ -134,14 +232,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 // If we don't, then default to the "No Data Reader" terminal state instead of introducing
                 // the possibility of a new NullReferenceException.
                 //
-                if (m_inputReadersExpectedCount > 0 && arbitraryClosedReader != null)
+                if (this.numReadersExpected > 0 && arbitraryClosedReader != null)
                 {
-                    m_inputReaders.Enqueue(arbitraryClosedReader);
+                    this.labeledReaders.Enqueue(arbitraryClosedReader);
+
+                    Monitor.Pulse(this.addLabeledReaderLock);
                 }
 
                 // Finally, set the Closed flag to true.
                 //
-                m_isClosed = true;
+                this.closed = true;
             }
 
         }
@@ -289,7 +389,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             if (this.IsPseudoColumnReference(ordinal))
             {
 
-                return m_schemaTableToExpose.Rows[ordinal]["DataTypeName"] as string;
+                return this.finalSchemaTable.Rows[ordinal]["DataTypeName"] as string;
             }
             else
             {
@@ -493,7 +593,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <returns>The name of the specified column.</returns>
         public override string GetName(int ordinal)
         {
-            return ProcessPotentialPseudoColumnReference(ordinal, m_shardIdPseudoColumnName, GetCurrentDataReader().GetName);
+            return ProcessPotentialPseudoColumnReference(ordinal, MultiShardDataReader.NameOfShardIdPseudoColumn, GetCurrentDataReader().GetName);
         }
 
         /// <summary>
@@ -507,10 +607,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
             // TODO: May need to revisit our StringComparison logic here.
             //
-            if (m_hasShardIdPseudoColumn &&
-                (string.Equals(name, m_shardIdPseudoColumnName, StringComparison.OrdinalIgnoreCase)))
+            if (this.hasShardIdPseudoColumn &&
+                (string.Equals(name, MultiShardDataReader.NameOfShardIdPseudoColumn, StringComparison.OrdinalIgnoreCase)))
             {
-                return m_shardIdPseudoColumnIndex;
+                return this.indexOfShardIdPseudoColumn;
             }
             else
             {
@@ -554,7 +654,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <returns>A <see cref="DataTable"/> that describes the column metadata.</returns>
         public override DataTable GetSchemaTable()
             {
-            return GetPropertyOrVariableWithStateCheck<DataTable>(m_schemaTableToExpose);
+            return GetPropertyOrVariableWithStateCheck<DataTable>(this.finalSchemaTable);
         }
 
         /// <summary>
@@ -892,6 +992,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             return Task.Run(async () =>
                 {
                     InduceErrorIfClosed();
+
                     WaitForReaderOrThrow();
 
                     bool hasNextResult = await GetCurrentDataReader().NextResultAsync(cancellationToken);
@@ -901,6 +1002,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                         // Invalidate this instance of the MultiShardDataReader and throw an exception. 
                         // We currently do not support multiple result sets
                         this.Close();
+
                         throw new NotSupportedException("Commands with multiple result sets are currently not supported");
                     }
 
@@ -942,7 +1044,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             // If not, then we need to stop on the last reader without closing it (we may already be there) which is why
             // the loop terminates on the "-1" condition.
             //
-            while (m_inputsCompletedReadingCount < (m_inputReadersExpectedCount - 1))
+            while (this.numReadersFinished < (this.numReadersExpected - 1))
             {
                 // We are not on the last reader, so we have more to check.
                 // First close this reader (which will automatically advance our m_inputsCompletedReadingCount counter).
@@ -1012,14 +1114,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         #region Public Properties
 
         /// <summary>
-        /// Gets the <see cref="MultiShardConnection"/> associated with the MultiShardDataReader.
-        /// </summary>
-        public MultiShardConnection Connection
-        {
-            get { return m_connection; }
-        }
-
-        /// <summary>
         /// Gets a value indicating the depth of nesting for the current row.
         /// </summary>
         public override int Depth
@@ -1048,14 +1142,20 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             get
             {
-                return GetPropertyOrVariableWithStateCheck<bool>(m_anyReaderHasRows);
+                return GetPropertyOrVariableWithStateCheck<bool>(this.anyReaderHasRows);
             }
         }
 
         /// <summary>
         /// Gets a value indicating whether the specified MultiShardDataReader is closed.
         /// </summary>
-        public override bool IsClosed { get { return m_isClosed; } }
+        public override bool IsClosed
+        {
+            get
+            {
+                return this.closed;
+            }
+        }
 
         /// <summary>
         /// Gets the value of the specified column in its native format as an instance of Object.
@@ -1101,31 +1201,32 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        // Suppression rationale: "Multi" is the spelling we want.
-        //
-        /// <summary>
-        /// Gets the collection of exceptions encountered when processing the command across the shards.
-        /// The collection is populated when <see cref="MultiShardExecutionPolicy.PartialResults"/> is chosen
-        /// as the execution policy for the command.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Multi")]
-        public IReadOnlyCollection<MultiShardException> MultiShardExceptions
-        {
-            get { return m_multiShardExceptions.ToArray(); }
-        }
-
-        /// <summary>
-        /// Gets the execution policy that will be used to execute commands.
-        /// </summary>
-        public MultiShardExecutionPolicy ExecutionPolicy
-        {
-            get
-            {
-                return m_executionPolicy;
-        }
-        }
-
         #endregion Public Properties
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Cancels all the active commands executing for this reader.
+        /// </summary>
+        internal void Cancel()
+        {
+            lock (this.addLabeledReaderLock)
+            {
+                lock (this.cancelLock)
+                {
+                    // Cancel all the currently open readers.
+                    foreach (LabeledDbDataReader currentReader in this.labeledReaders)
+                    {
+                        if (!currentReader.DbDataReader.IsClosed)
+                        {
+                            currentReader.Command.Cancel();
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion Internal Methods
 
         #region Protected Methods
 
@@ -1137,23 +1238,21 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </param>
         protected override void Dispose(bool disposing)
         {
-            if (!m_disposed)
+            if (!this.disposed)
             {
-                // Also calls Close, so technically
-                // no need to call it again if this instance has
-                // been disposed
+                // Also calls Close, so technically no need to call it again if this instance has been disposed.
                 base.Dispose(disposing);
 
                 // Close out our readers if they are not already closed.
                 //
-                if (!(this.IsClosed))
+                if (!this.IsClosed)
                 {
                     this.Close();
                 }
 
                 // Then dispose all the readers.
                 //
-                foreach (LabeledDbDataReader inputReader in m_inputReaders)
+                foreach (LabeledDbDataReader inputReader in this.labeledReaders)
                 {
                     inputReader.Dispose();
                 }
@@ -1162,12 +1261,21 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 // An extra safety-net just in-case
                 // callers don't dispose failed sqlclient readers properly or
                 // we failed to keep track of all active readers in m_inputReaders
-                m_connection.Close();
+                this.Connection.Close();
 
-                m_schemaComparisonTemplate = null;
-                m_schemaTableToExpose = null;
+                if (this.schemaComparisonTemplate != null)
+                {
+                    this.schemaComparisonTemplate.Dispose();
+                    this.schemaComparisonTemplate = null;
+                }
 
-                m_disposed = true;
+                if (this.finalSchemaTable != null)
+                {
+                    this.finalSchemaTable.Dispose();
+                    this.finalSchemaTable = null;
+                }
+
+                this.disposed = true;
                 s_tracer.Warning("MultiShardDataReader.Dispose; Reader was disposed");
             }
         }
@@ -1201,9 +1309,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 if (toAdd.Exception != null)
                 {
                     // We tried adding a reader that we expected, but it was invalid. Let's expect one fewer inputReader as a result.
-                    //
-                    m_inputReadersExpectedCount--;
-                    m_multiShardExceptions.Add(toAdd.Exception);
+                    this.DecrementExpectedReaders();
+                    this.multiShardExceptions.Add(toAdd.Exception);
                     return;
                 }
 
@@ -1211,13 +1318,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 if (toAdd.DbDataReader != null && toAdd.DbDataReader.IsClosed)
                 {
                     // We tried adding a reader that we expected, but it was invalid. Let's expect one fewer inputReader as a result.
-                    //
-                    m_inputReadersExpectedCount--;
+                    this.DecrementExpectedReaders();
 
                     MultiShardDataReaderClosedException closedException = new MultiShardDataReaderClosedException(
-                        string.Format("The reader for {0} was closed and could not be added.", toAdd.ShardLocation));
+                        String.Format(
+                            "The reader for {0} was closed and could not be added.", 
+                            toAdd.ShardLocation));
+
                     MultiShardException reportedException = new MultiShardException(toAdd.ShardLocation, closedException);
-                    m_multiShardExceptions.Add(reportedException);
+
+                    this.multiShardExceptions.Add(reportedException);
+
                     return;
                 }
 
@@ -1225,13 +1336,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 if (toAdd.DbDataReader != null && toAdd.DbDataReader.GetSchemaTable() == null)
                 {
                     // We tried adding a reader that we expected, but it was invalid. Let's expect one fewer inputReader as a result.
-                    //
-                    m_inputReadersExpectedCount--;
+                    this.DecrementExpectedReaders(); 
 
                     // Validate schema for each reader, logging an exception if the schema is null.
                     //
                     ValidateNullSchematable(toAdd.ShardLocation);
+
                     toAdd.DbDataReader.Close();
+
                     return;
                 }
 
@@ -1243,14 +1355,23 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 {
                     // We tried adding a reader that we expected, but it was invalid. Let's expect one fewer inputReader as a result.
                     //
-                    m_inputReadersExpectedCount--;
-                    s_tracer.Error(smex, "MultiShardDataReader.Ctor.Failed to add reader; Execution Policy: {0}; Shard: {1}; Exception: {2}",
-                        this.ExecutionPolicy, toAdd.ShardLocation, smex.ToString());
+                    this.DecrementExpectedReaders();
+
+                    s_tracer.Error(
+                        smex, 
+                        "MultiShardDataReader.Ctor.Failed to add reader; Execution Policy: {0}; Shard: {1}; Exception: {2}",
+                        this.ExecutionPolicy, 
+                        toAdd.ShardLocation, 
+                        smex.ToString());
 
                     if (this.ExecutionPolicy == MultiShardExecutionPolicy.PartialResults)
                     {
+                        // Perform cancellation in order to avoid flushing of large resultsets.
+                        toAdd.Command.Cancel();
+
                         toAdd.DbDataReader.Close();
-                        m_multiShardExceptions.Add(smex);
+
+                        this.multiShardExceptions.Add(smex);
                     }
                     else
                     {
@@ -1267,7 +1388,20 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 // somewhere.  
                 // Likely related to VSTS 2616238.  Philip will be modifying logic/augmenting tests in this area.
                 //
-                m_inputReadersExpectedCount--;
+                this.DecrementExpectedReaders();
+            }
+        }
+
+        /// <summary>
+        /// Decrements the number of expected readers.
+        /// </summary>
+        private void DecrementExpectedReaders()
+        {
+            lock (this.addLabeledReaderLock)
+            {
+                this.numReadersExpected--;
+
+                Monitor.Pulse(this.addLabeledReaderLock);
             }
         }
 
@@ -1281,14 +1415,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             // Make sure calls to Close and AddReader and ExpectNoMoreReaders are synchronized.
             // Any exceptions we throw here are expected, so it should _theoretically_ play nicely with the mutex.
             //
-            lock (m_addReaderLock)
+            lock (this.addLabeledReaderLock)
             {
-                if (m_inputReadersAddedCount >= m_inputReadersExpectedCount)
+                if (this.numReadersAdded >= this.numReadersExpected)
                 {
                     throw new MultiShardDataReaderInternalException("Cannot add a new reader after marking the reader set complete.");
                 }
 
-                if (m_isClosed)
+                if (this.IsClosed)
                 {
                     throw new MultiShardDataReaderInternalException("Cannot add a new reader after marking the reader as closed.");
                 }
@@ -1296,15 +1430,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 ValidateReaderSchema(toAdd);
 
                 // If we are here, then the schema was OK, so add it to the ones we will process.
-                // Also, check if this reader has any rows so that we can set the m_anyReaderHasRows property up-front.
+                // Also, check if this reader has any rows so that we can set the anyReaderHasRows property up-front.
                 //
-                m_inputReaders.Enqueue(toAdd);
+                this.labeledReaders.Enqueue(toAdd);
+
                 if (toAdd.DbDataReader.HasRows)
                 {
-                    m_anyReaderHasRows = true;
+                    this.anyReaderHasRows = true;
                 }
 
-                m_inputReadersAddedCount++;
+                Monitor.Pulse(this.addLabeledReaderLock);
+
+                this.numReadersAdded++;
             }
         }
 
@@ -1313,9 +1450,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             // Make sure calls to Close and AddReader and ExpectNoMoreReaders are synchronized.
             // Any exceptions we throw here are expected, so it should _theoretically_ play nicely with the mutex.
             //
-            lock (m_addReaderLock)
+            lock (this.addLabeledReaderLock)
             {
-                m_inputReadersExpectedCount = m_inputReadersAddedCount;
+                this.numReadersExpected = this.numReadersAdded;
+                Monitor.Pulse(this.addLabeledReaderLock);
             }
         }
 
@@ -1342,7 +1480,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
             // Check if we encountered a reader with a null schema earlier
             //
-            if (m_nullSchemaReaderFound)
+            if (this.foundNullSchemaReader)
             {
                 throw new MultiShardDataReaderInternalException("Unexpected reader with null schema encountered among non-null readers");
             }
@@ -1356,7 +1494,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 throw new MultiShardDataReaderInternalException("Unexpected null DataRowCollection encountered in ValidateReaderSchema.");
             }
 
-            if (null == m_schemaComparisonTemplate)
+            if (null == this.schemaComparisonTemplate)
             {
                 // This is our first call to validate, so grab the table template off of this guy and use it as the 
                 // expected schema for our results.  No need to validate since we are using this one as ground truth.
@@ -1367,12 +1505,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
             // First let's make sure that the formats of the schema tables are the same.
             //
-            ValidateSchemaTableStructure(shard, currentDataTable, m_schemaComparisonTemplate);
+            ValidateSchemaTableStructure(shard, currentDataTable, this.schemaComparisonTemplate);
 
             // Now Validate that the same columns exist with the same name and type in the same ordinal position
             // on the retruned result sets themsleves.
             //
-            ValidateSchemaTableContents(shard, currentDataTable, m_schemaComparisonTemplate);
+            ValidateSchemaTableContents(shard, currentDataTable, this.schemaComparisonTemplate);
         }
 
         /// <summary>
@@ -1497,13 +1635,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 throw new ArgumentNullException("shard");
             }
 
-            if (m_inputReadersAddedCount != 0)
+            if (this.numReadersAdded != 0)
             {
                 throw new MultiShardDataReaderInternalException
                     ("Unexpected reader with null schema encountered among non-null readers");
             }
 
-            m_nullSchemaReaderFound = true;
+            this.foundNullSchemaReader = true;
         }
 
         /// <summary>
@@ -1511,29 +1649,31 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         private void CloseCurrentDataReader()
         {
-            if (0 == m_inputReadersExpectedCount)
+            if (0 == this.numReadersExpected)
             {
                 // If we happen to be in the special case where we have 0 inputs, then we can throw.
                 // We should have thrown already, but we'll throw here just in case.
-                //
                 throw new MultiShardDataReaderInternalException("No input readers present.");
             }
 
-            LabeledDbDataReader toClose = this.GetCurrentLabeledDbDataReader();
+            LabeledDbDataReader toClose = this.RemoveCurrentLabeledDbDataReader();
 
             Contract.Requires(null != toClose, "Null DbDataReader encountered in call to CloseDataReader.");
 
             if (!toClose.DbDataReader.IsClosed)
             {
-                toClose.DbDataReader.Close();
+                // Avoid the race condition resulting in dead-locks in SqlClient that might occur between Cancellation and Close.
+                lock (this.cancelLock)
+                {
+                    toClose.DbDataReader.Close();
 
-                // Close the connection associated with this reader as well
-                //
-                toClose.Connection.Close();
+                    // Close the connection associated with this reader as well
+                    toClose.Connection.Close();
+                }
             }
             else
             {
-                if (m_isClosed)
+                if (this.IsClosed)
                 {
                     // If we want to throw on duplicate closes, we would do that right here.  For now, let's just
                     // let it slide.
@@ -1544,12 +1684,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 // no way to close, so just ignore that it's already closed.
             }
 
-            m_inputsCompletedReadingCount++;
-
-            // Pop off this item of the queue.
-            //
-            LabeledDbDataReader ignoredReader;
-            m_inputReaders.TryDequeue(out ignoredReader);
+            this.numReadersFinished++;
         }
 
         /// <summary>
@@ -1558,7 +1693,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <returns>The current DbDataReader.</returns>
         private DbDataReader GetCurrentDataReader()
         {
-            return GetCurrentLabeledDbDataReader().DbDataReader;
+            return PeekCurrentLabeledDbDataReader().DbDataReader;
         }
 
         /// <summary>
@@ -1567,7 +1702,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <returns>The current Shard Label.</returns>
         private ShardLocation GetCurrentShardLocation()
         {
-            return GetCurrentLabeledDbDataReader().ShardLocation;
+            return PeekCurrentLabeledDbDataReader().ShardLocation;
         }
 
         /// <summary>
@@ -1576,22 +1711,40 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <returns>The current Shard Label.</returns>
         private string GetCurrentShardLabel()
         {
-            return GetCurrentLabeledDbDataReader().ShardLabel;
+            return PeekCurrentLabeledDbDataReader().ShardLabel;
         }
 
         /// <summary>
-        /// Helper to grab the LabaeledDataReader based on the m_currentIndex pointer into the m_inputReaders array.
+        /// Helper to grab the active LabaeledDataReader without removing it from the collection.
         /// </summary>
         /// <returns>The current LabeledDbDataReader.</returns>
-        private LabeledDbDataReader GetCurrentLabeledDbDataReader()
+        private LabeledDbDataReader PeekCurrentLabeledDbDataReader()
         {
             LabeledDbDataReader outputDataReader;
-            if (!m_inputReaders.TryPeek(out outputDataReader))
+
+            if (!this.labeledReaders.TryPeek(out outputDataReader))
             {
                 // Should never happen.
-                //
                 throw new MultiShardDataReaderInternalException("Did not have a current LabeledDbDataReader.");
             }
+
+            return outputDataReader;
+        }
+
+        /// <summary>
+        /// Helper to grab the active LabaeledDataReader without removing it from the collection.
+        /// </summary>
+        /// <returns>The current LabeledDbDataReader.</returns>
+        private LabeledDbDataReader RemoveCurrentLabeledDbDataReader()
+        {
+            LabeledDbDataReader outputDataReader;
+
+            if (!this.labeledReaders.TryDequeue(out outputDataReader))
+            {
+                // Should never happen.
+                throw new MultiShardDataReaderInternalException("Did not have a current LabeledDbDataReader.");
+            }
+
             return outputDataReader;
         }
 
@@ -1607,7 +1760,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </exception>
         private SqlDataReader GetCurrentDataReaderAsSqlDataReader()
         {
-            return ((SqlDataReader)GetCurrentDataReader());
+            return GetCurrentDataReader() as SqlDataReader;
         }
 
         /// <summary>
@@ -1620,10 +1773,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </param>
         private void InitSchemaTemplate(DbDataReader templateReader)
         {
-            m_schemaComparisonTemplate = templateReader.GetSchemaTable().Copy();
-            m_schemaTableToExpose = templateReader.GetSchemaTable().Copy();
+            this.schemaComparisonTemplate = templateReader.GetSchemaTable().Copy();
+            this.finalSchemaTable = templateReader.GetSchemaTable().Copy();
 
-            if (m_hasShardIdPseudoColumn)
+            if (this.hasShardIdPseudoColumn)
             {
                 AddShardIdPseudoColumnRecordToSchemaTable();
             }
@@ -1653,7 +1806,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <returns>True if the input matches the shard id pseudo column ordinal, False if not.</returns>
         private bool IsPseudoColumnReference(int ordinal)
         {
-            return (m_hasShardIdPseudoColumn && (ordinal == m_shardIdPseudoColumnIndex));
+            return (this.hasShardIdPseudoColumn && (ordinal == this.indexOfShardIdPseudoColumn));
         }
 
         /// <summary>
@@ -1694,7 +1847,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         private int GetFieldCountAdjustedForPseudoColumnWithStateCheck(int value)
         {
             int rawValue = GetPropertyOrVariableWithStateCheck<int>(value);
-            if (m_hasShardIdPseudoColumn)
+            if (this.hasShardIdPseudoColumn)
             {
                 // If we have a pseudo-column then we need to add 1 to our value.
                 //
@@ -1755,12 +1908,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             InduceErrorIfClosed();
             WaitForReaderOrThrow();
             int valuesObtained = getValuesColl(values);
-            if (m_hasShardIdPseudoColumn && (values.Length > m_shardIdPseudoColumnIndex))
+            if (this.hasShardIdPseudoColumn && (values.Length > this.indexOfShardIdPseudoColumn))
             {
                 // If there is enough room for the pseudo-column, then let's add
                 // the pseudo column.
                 //
-                values[m_shardIdPseudoColumnIndex] = getIndividualValue(m_shardIdPseudoColumnIndex);
+                values[this.indexOfShardIdPseudoColumn] = getIndividualValue(this.indexOfShardIdPseudoColumn);
                 valuesObtained++;
             }
             return valuesObtained;
@@ -1771,7 +1924,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         private void InduceErrorIfClosed() 
         {
-            if (m_isClosed)
+            if (this.IsClosed)
             {
                 throw new MultiShardDataReaderClosedException();
             }
@@ -1782,31 +1935,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         private void WaitForReaderOrThrow()
         {
-            // If there are no data readers available and we aren't expecting any more, throw.
-            //
-            if (0 == m_inputReaders.Count && m_inputReadersAddedCount >= m_inputReadersExpectedCount)
+            lock (this.addLabeledReaderLock)
             {
-                throw new MultiShardDataReaderInternalException("This MultiShardDataReader object has no available readers.");
-            }
-            
-            while (0 == m_inputReaders.Count)
-            {
-                // DEV NOTE: Optimization opportunity here...
-                // We can use a ResetEvent or Monitor/Pulse to wake up explicitly, saving us a few milliseconds
-                // but this should be good enough for now.
-                //
-                Thread.Sleep(TimeSpan.FromMilliseconds(50));
-                        
-                lock (m_addReaderLock)
+                while (this.labeledReaders.Count == 0)
                 {
-                    int count = m_inputReaders.Count;
-                    if (m_inputReadersAddedCount >= m_inputReadersExpectedCount && count == 0)
+                    if (this.numReadersAdded >= this.numReadersExpected)
                     {
                         // If at any point, we find that we should not be expecting more rows, we also throw.
                         // Enterring this code block implies that we were told to stop expecting more readers.
-                        //
-                        throw new MultiShardDataReaderInternalException("This MultiShardDataReader object expects no more available readers.");
+                        throw new MultiShardDataReaderInternalException("This MultiShardDataReader object has no available readers.");
                     }
+
+                    Monitor.Wait(this.addLabeledReaderLock);
                 }
             }
         }
@@ -1835,10 +1975,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             catch (Exception ex)
             {
                 // Throw the exception only if a CompleteResults execution policy is in effect
-                if (m_executionPolicy == MultiShardExecutionPolicy.PartialResults)
+                if (this.ExecutionPolicy == MultiShardExecutionPolicy.PartialResults)
                 {
-                    m_multiShardExceptions.Add(new MultiShardPartialReadException(this.GetCurrentShardLocation(),
-                        "Error encountered while reading from a shard.", ex));
+                    this.multiShardExceptions.Add(
+                        new MultiShardPartialReadException(
+                            this.GetCurrentShardLocation(),
+                            "Error encountered while reading from a shard.", 
+                            ex));
+
                     return false; // since we didn't get a new row
                 }
                 else
@@ -1854,14 +1998,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         private void AddShardIdPseudoColumnRecordToSchemaTable()
         {
-            m_shardIdPseudoColumnIndex = m_schemaTableToExpose.Rows.Count;
-            m_shardIdPseudoColumnName = "$ShardName";
+            this.indexOfShardIdPseudoColumn = this.finalSchemaTable.Rows.Count;
 
-            DataRow theRow = m_schemaTableToExpose.NewRow();
+            DataRow theRow = this.finalSchemaTable.NewRow();
 
             #region Shard Id Pseudo Column Schema Table information
-            theRow[SchemaTableColumn.ColumnName] = (String)m_shardIdPseudoColumnName;
-            theRow[SchemaTableColumn.ColumnOrdinal] = (Int32)m_shardIdPseudoColumnIndex;
+            theRow[SchemaTableColumn.ColumnName] = MultiShardDataReader.NameOfShardIdPseudoColumn;
+            theRow[SchemaTableColumn.ColumnOrdinal] = this.indexOfShardIdPseudoColumn;
             theRow[SchemaTableColumn.ColumnSize] = (Int32)4000;
             theRow[SchemaTableColumn.NumericPrecision] = (Int16)255;
             theRow[SchemaTableColumn.NumericScale] = (Int16)255;
@@ -1869,7 +2012,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             theRow[SchemaTableColumn.IsKey] = DBNull.Value; //Boolean 
             theRow[SchemaTableOptionalColumn.BaseServerName] = null; //string 
             theRow[SchemaTableOptionalColumn.BaseCatalogName] = null; //string 
-            theRow[SchemaTableColumn.BaseColumnName] = (String)m_shardIdPseudoColumnName;
+            theRow[SchemaTableColumn.BaseColumnName] = MultiShardDataReader.NameOfShardIdPseudoColumn;
             theRow[SchemaTableColumn.BaseSchemaName] = null; //string 
             theRow[SchemaTableColumn.BaseTableName] = null; //string 
             theRow[SchemaTableColumn.DataType] = typeof(string); //System.Type
@@ -1891,35 +2034,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             theRow["UdtAssemblyQualifiedName"] = null; //string 
             theRow[SchemaTableColumn.NonVersionedProviderType] = (Int32)12;
             theRow["IsColumnSet"] = (Boolean)false;
+
             #endregion Shard Id Pseudo Column Schema Table information
 
-            m_schemaTableToExpose.Rows.Add(theRow);
-            m_schemaTableToExpose.AcceptChanges();
+            this.finalSchemaTable.Rows.Add(theRow);
+            this.finalSchemaTable.AcceptChanges();
         }
 
         #endregion Private Methods
-
-        #region Private Fields
-
-        private ConcurrentQueue<LabeledDbDataReader> m_inputReaders;
-        private object m_addReaderLock = new object();
-        private int m_inputReadersExpectedCount;
-        private int m_inputReadersAddedCount = 0;
-        private bool m_nullSchemaReaderFound = false; 
-        private readonly ConcurrentBag<MultiShardException> m_multiShardExceptions;
-        private readonly MultiShardExecutionPolicy m_executionPolicy;
-        private DataTable m_schemaComparisonTemplate;
-        private DataTable m_schemaTableToExpose;
-        private int m_shardIdPseudoColumnIndex;
-        private string m_shardIdPseudoColumnName;
-        private bool m_hasShardIdPseudoColumn;
-        private int m_inputsCompletedReadingCount;
-        private bool m_anyReaderHasRows = false;
-        private bool m_disposed = false;
-        private bool m_isClosed = false;
-        private readonly MultiShardConnection m_connection;
-        private readonly static ILogger s_tracer = TraceHelper.Tracer;
-
-        #endregion Private Fields
     }
 }
