@@ -22,37 +22,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
     internal static class MultiShardUtils
     {
         /// <summary>
-        /// Creates a task that will complete when all <paramref name="tasks"/>
-        /// have completed.
-        /// However, upon failure of even a single task, the rest of the tasks 
-        /// that haven't been completed will be cancelled and we'll move on
-        /// </summary>
-        /// <param name="tasks"></param>
-        /// <returns></returns>
-        internal static Task WhenAllOrError(params Task[] tasks)
-        {
-            var errorCompletion = new TaskCompletionSource<object>();
-
-            foreach (var task in tasks)
-            {
-                task.ContinueWith((t) =>
-                {
-                    if (t.IsFaulted)
-                    {
-                        errorCompletion.TrySetException(t.Exception.InnerExceptions);
-                    }
-                    else if (t.IsCanceled)
-                    {
-                        errorCompletion.TrySetCanceled();
-                    }
-
-                }, TaskContinuationOptions.ExecuteSynchronously);
-            }
-
-            return Task.WhenAny(errorCompletion.Task, Task.WhenAll(tasks)).Unwrap();
-        }
-
-        /// <summary>
         /// Asynchronously opens the given connection.
         /// </summary>
         /// <param name="shardConnection">The connection to Open</param>
@@ -96,6 +65,20 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             return new TransientFaultHandling.RetryPolicy(
                 new MultiShardQueryTransientErrorDetectionStrategy(retryBehavior), 
                 retryPolicyPerShard.GetRetryStrategy());
+        }
+
+        /// <summary>
+        /// Clones the given command object and associates with the given connection.
+        /// </summary>
+        /// <param name="cmd">Command object to clone.</param>
+        /// <param name="conn">Connection associated with the cloned command.</param>
+        /// <returns>Clone of <paramref name="cmd"/>.</returns>
+        internal static DbCommand CloneDbCommand(DbCommand cmd, DbConnection conn)
+        {
+            DbCommand clone = (DbCommand)(cmd as ICloneable).Clone();
+            clone.Connection = conn;
+
+            return clone;
         }
     }
 

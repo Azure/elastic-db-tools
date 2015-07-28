@@ -37,33 +37,15 @@
     <Otherwise>
       <ItemGroup>
         <Reference Include="Microsoft.Azure.SqlDatabase.ElasticScale.Client.Fakes, Version=$(VersionMajor).$(VersionMinor).0.0, Culture=neutral, PublicKeyToken=0ae41878053f6703, processorArchitecture=MSIL" />
-      </ItemGroup>        
+      </ItemGroup>
     </Otherwise>
   </Choose>
   <ItemGroup>
     <Reference Include="$(NugetPack)\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll">
       <Name>Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling</Name>
     </Reference>
-    <Reference Include="$(NugetPack)\EnterpriseLibrary.WindowsAzure.TransientFaultHandling.5.1.1212.0\lib\NET4\Microsoft.Practices.EnterpriseLibrary.WindowsAzure.TransientFaultHandling.dll">
-      <Name>Microsoft.Practices.EnterpriseLibrary.WindowsAzure.TransientFaultHandling</Name>
-    </Reference>
-    <Reference Include="$(NugetPack)\CommonServiceLocator.1.0\lib\NET35\Microsoft.Practices.ServiceLocation.dll">
-      <Name>Microsoft.Practices.ServiceLocation</Name>
-    </Reference>
-    <Reference Include="$(NugetPack)\TransientFaultHandling.Core.5.1.1209.1\lib\NET4\Microsoft.Practices.TransientFaultHandling.Core.dll">
-      <Name>Microsoft.Practices.TransientFaultHandling.Core</Name>
-    </Reference>
-    <Reference Include="$(NugetPack)\Unity.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.dll">
-      <Name>Microsoft.Practices.Unity</Name>
-    </Reference>
-    <Reference Include="$(NugetPack)\Unity.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.Configuration.dll">
-      <Name>Microsoft.Practices.Unity.Configuration</Name>
-    </Reference>
-    <Reference Include="$(NugetPack)\Unity.Interception.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.Interception.dll">
-      <Name>Microsoft.Practices.Unity.Interception</Name>
-    </Reference>
-    <Reference Include="$(NugetPack)\Unity.Interception.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.Interception.Configuration.dll">
-      <Name>Microsoft.Practices.Unity.Interception.Configuration</Name>
+    <Reference Include="$(NugetPack)\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\net45\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data.dll">
+      <Name>Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data</Name>
     </Reference>
     <Reference Include="Microsoft.QualityTools.Testing.Fakes, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -122,9 +104,7 @@
     <Fakes Include="Fakes\Microsoft.Azure.SqlDatabase.ElasticScale.Client.fakes">
       <SubType>Designer</SubType>
     </Fakes>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

@@ -625,10 +625,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             mockReader1.ExecuteOnGetColumn = ExecuteOnGetColumn;
             mockReader2.ExecuteOnReadAsync = ExecuteOnReadAsync;
             var labeledDataReaders = new LabeledDbDataReader[2];
+            
             labeledDataReaders[0] = new LabeledDbDataReader(mockReader1, new ShardLocation("test", "Shard1"),
-                new MockSqlConnection("", () => { }));
+                new MockSqlCommand() { Connection = new MockSqlConnection("", () => { }) });
             labeledDataReaders[1] = new LabeledDbDataReader(mockReader2, new ShardLocation("test", "Shard2"),
-                new MockSqlConnection("", () => { }));
+                new MockSqlCommand() { Connection = new MockSqlConnection("", () => { }) });
 
             // Create the MultiShardDataReader
             var mockMultiShardCmd = MultiShardCommand.Create(null, "test");
@@ -698,7 +699,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             {
                 var mockReader = new MockSqlDataReader(string.Format("Reader{0}", i), null /* Null schema */);
                 labeledDataReaders[i] = new LabeledDbDataReader(mockReader,
-                    new ShardLocation("test", string.Format("Shard{0}", i)), new MockSqlConnection("", () => { }));
+                    new ShardLocation("test", string.Format("Shard{0}", i)), new MockSqlCommand() { Connection = new MockSqlConnection("", () => { }) });
             }
 
             // Case #1

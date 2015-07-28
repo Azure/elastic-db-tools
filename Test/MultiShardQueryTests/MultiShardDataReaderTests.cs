@@ -564,8 +564,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             // Pass a reader with an exception that read does not hang.
             LabeledDbDataReader[] readers = new LabeledDbDataReader[2];
             readers[0] = GetReader(this.conn1, "select 1");
-            readers[1] = new LabeledDbDataReader(new MultiShardException(), 
-                new ShardLocation("foo", "bar"), this.conn2);
+            readers[1] = new LabeledDbDataReader(new MultiShardException(),
+                new ShardLocation("foo", "bar"), new SqlCommand() { Connection = this.conn2 });
 
             using (MultiShardDataReader sdr = new MultiShardDataReader(this.dummyCommand, readers, MultiShardExecutionPolicy.CompleteResults, true))
             {
@@ -624,7 +624,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             readers[1] = GetReader(this.conn2, selectSql);
             DbDataReader nothing = null;
             readers[2] = new LabeledDbDataReader(nothing, new ShardLocation(this.conn2.DataSource, this.conn2.Database),
-                this.conn2);
+                new SqlCommand() { Connection = this.conn2 });
 
             using (MultiShardDataReader sdr = new MultiShardDataReader(this.dummyCommand, readers, MultiShardExecutionPolicy.CompleteResults, true))
             {
@@ -1427,7 +1427,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             DbCommand cmd = conn.CreateCommand();
             cmd.CommandText = tsql;
             DbDataReader sdr = cmd.ExecuteReader();
-            return new LabeledDbDataReader(sdr, new ShardLocation(cmd.Connection.DataSource, cmd.Connection.Database), conn);
+            return new LabeledDbDataReader(sdr, new ShardLocation(cmd.Connection.DataSource, cmd.Connection.Database), new MockSqlCommand() { Connection = conn });
         }
 
         /// <summary>

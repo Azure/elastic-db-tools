@@ -15,13 +15,13 @@
 //
 //******************************************************************************
 
-using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 {
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <summary>
         /// Whether this instance has already been disposed
         /// </summary>
-        private bool m_disposed = false;
+        private bool disposed = false;
 
         #endregion
 
@@ -86,20 +86,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 connectionStringBuilder.ApplicationName,
                 ApplicationNameSuffix);
 
-            SqlConnectionStringBuilder builder;
-            List<Tuple<ShardLocation, DbConnection>> shardConnections = new List<Tuple<ShardLocation, DbConnection>>();
-            Shards = shards;
-            foreach (Shard shard in shards)
-            {
-                builder = new SqlConnectionStringBuilder(connectionStringBuilder.ConnectionString);
-                builder.ApplicationName = applicationName;
-                builder.DataSource = shard.Location.DataSource;
-                builder.InitialCatalog = shard.Location.Database;
-                shardConnections.Add(new Tuple<ShardLocation, DbConnection>(shard.Location, 
-                    new SqlConnection(builder.ConnectionString)));
-            }
+            this.Shards = shards;
+            this.ShardConnections = shards.Select(
+                s =>
+                new Tuple<ShardLocation, DbConnection>
+                    (
+                    s.Location,
+                    new SqlConnection(
+                        new SqlConnectionStringBuilder(connectionStringBuilder.ConnectionString)
+                        {
+                            ApplicationName = applicationName,
+                            DataSource = s.Location.DataSource,
+                            InitialCatalog = s.Location.Database
 
-            ShardConnections = shardConnections;
+                        }.ConnectionString)
+                    ))
+                    .ToList();
         }
 
         /// <summary>
@@ -109,7 +111,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <param name="shardConnections">Connections to the shards</param>
         internal MultiShardConnection(List<Tuple<ShardLocation, DbConnection>> shardConnections)
         {
-            ShardConnections = shardConnections;
+            this.ShardConnections = shardConnections;
         }
 
         #endregion
@@ -119,9 +121,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <summary>
         /// Gets the collection of <see cref="Shard"/>s associated with this connection.
         /// </summary>
-        public IEnumerable<Shard> Shards { get; private set; }
+        public IEnumerable<Shard> Shards 
+        { 
+            get; 
+            private set; 
+        }
 
-        internal List<Tuple<ShardLocation, DbConnection>> ShardConnections { get; private set; }
+        internal List<Tuple<ShardLocation, DbConnection>> ShardConnections 
+        { 
+            get; 
+            private set; 
+        }
 
         #endregion
 
@@ -143,10 +153,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         public void Dispose()
         {
-            if (!m_disposed)
+            if (!this.disposed)
             {
                 // Dispose off the shard connections
-                ShardConnections.ForEach((c) =>
+                this.ShardConnections.ForEach(
+                (c) =>
                 {
                     if (c.Item2 != null)
                     {
@@ -154,7 +165,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     }
                 });
 
-                m_disposed = true;
+                this.disposed = true;
+
                 s_tracer.Warning("MultiShardConnection.Dispose", "Connection was disposed");
             }
         }
@@ -163,7 +175,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
         #region Helpers
 
-        private static void ValidateConnectionArguments(IEnumerable<Shard> shards,
+        private static void ValidateConnectionArguments(
+            IEnumerable<Shard> shards,
             SqlConnectionStringBuilder connectionStringBuilder)
         {
             if (shards == null)
@@ -171,7 +184,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 throw new ArgumentNullException("shards");
             }
 
-            if (0 == shards.Count<Shard>())
+            if (0 == shards.Count())
             {
                 throw new ArgumentException("No shards provided.");
             }
@@ -195,10 +208,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// Closes any open connections to shards
         /// </summary>
         /// <remarks>Does a best-effort close and doesn't throw</remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification="We do not want to throw on Close.")]
         internal void Close()
         {
-            foreach (var conn in ShardConnections)
+            foreach (var conn in this.ShardConnections)
             {
                 if (conn.Item2 != null && conn.Item2.State != ConnectionState.Closed)
                 {
@@ -206,7 +219,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     {
                         conn.Item2.Close();
                     }
-                    catch
+                    catch (Exception)
                     {
                     }
                 }
@@ -214,6 +227,5 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         }
 
         #endregion
-
     }
 }

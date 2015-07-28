@@ -4,5 +4,6 @@ obj
 packages
 Src/Microsoft.Azure.SqlDatabase.ElasticScale.Client.xml
 TestResults
+*.exe
 *.GhostDoc.xml
 *.suo
