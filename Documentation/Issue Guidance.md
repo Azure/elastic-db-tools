@@ -23,7 +23,7 @@ We use GitHub labels on our issues in order to classify them. We have the follow
 	* [EDCL](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20EDCL) - Elastic database tools client library code.
 	 * 	[Shard Map Management](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20Shard%20Map%20Management)
 	 * 	[Multi-Shard Query](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20Multi-Shard%20Query)
-	 * 	Data Dependent Routing
+	 * 	[Data Dependent Routing](https://github.com/Azure/elastic-db-tools/labels/Area%3A%20Data%20Dependent%20Routing)
 
 	* [Split-Merge](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20Split-Merge)
 	
