@@ -1,7 +1,7 @@
 Issue Guidance
 =============
 
-This page outlines how the elastic database tools client library (EDCL) team thinks about and handles issues. For us, issues on GitHub represent actionable work that should be done at some future point. It may be as simple as a small product or test bug or as large as the work tracking the design of a new feature. However, it should be work that falls under the charter of elastic database tools client libraries. We will keep issues open even if the EDCL team internally has no plans to address them in an upcoming release, as long as we consider the issue to fall under our purview.
+This page outlines how the elastic database tools (EDT) team thinks about and handles issues. For us, issues on GitHub represent actionable work that should be done at some future point. It may be as simple as a small product or test bug or as large as the work tracking the design of a new feature. However, it should be work that falls under the charter of elastic database tools client libraries. We will keep issues open even if the EDCL team internally has no plans to address them in an upcoming release, as long as we consider the issue to fall under our purview.
 
 ###When we close issues
 As noted above, we don't close issues just because we don't plan to address them in an upcoming release. So why do we close issues? There are few major reasons:
@@ -19,11 +19,14 @@ Sometimes after debate, we'll decide an issue isn't a good fit for elastic datab
 ###Labels
 We use GitHub labels on our issues in order to classify them. We have the following categories per issue:
 
-* **Area**: These labels call out the feature areas the issue applies to. In addition to tags per feature, we have a few other tags: **Infrastructure**, for issues that relate to our build or test infrastructure, and **Meta** for issues that deal with the repository itself, the direction of the elastic database tools client library, our processes, etc.
-	* [EDCL](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20EDCL) - Elastic database tools client library code
+* **Area**: These labels call out the feature areas the issue applies to. In addition to tags per feature, we have a few other tags: **Infrastructure**, for issues that relate to our build or test infrastructure, and **Meta** for issues that deal with the repository itself, the direction of the elastic database tools, our processes, etc.
+	* [EDCL](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20EDCL) - Elastic database tools client library code.
+	 * 	[Shard Map Management](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20Shard%20Map%20Management)
+	 * 	[Multi-Shard Query](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20Multi-Shard%20Query)
+	 * 	Data Dependent Routing
+
 	* [Split-Merge](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20Split-Merge)
-	* [Shard Map Management](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20Shard%20Map%20Management)
-	* [Multi-Shard Query](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Area%3A%20Multi-Shard%20Query)
+	
 
 
 * **Type**: These labels classify the type of issue. We use the following types: 
