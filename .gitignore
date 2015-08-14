@@ -1,9 +1,16 @@
-FakesAssemblies
+# Build folders
 bin
-obj
+FakesAssemblies
 packages
+obj
+
+# Other misc build output
+msbuild.log
 Src/Microsoft.Azure.SqlDatabase.ElasticScale.Client.xml
+
+# Test output
 TestResults
-*.exe
+
+# Temporary tools files
 *.GhostDoc.xml
 *.suo
