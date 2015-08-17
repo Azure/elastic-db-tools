@@ -1,7 +1,7 @@
 Issue Guidance
 =============
 
-This page outlines how the elastic database tools (EDT) team thinks about and handles issues. For us, issues on GitHub represent actionable work that should be done at some future point. It may be as simple as a small product or test bug or as large as the work tracking the design of a new feature. However, it should be work that falls under the charter of elastic database tools client libraries. We will keep issues open even if the EDCL team internally has no plans to address them in an upcoming release, as long as we consider the issue to fall under our purview.
+This page outlines how the elastic database tools (EDT) team thinks about and handles issues. For us, issues on GitHub represent actionable work that should be done at some future point. It may be as simple as a small product or test bug or as large as the work tracking the design of a new feature. However, it should be work that falls under the charter of elastic database tools client libraries. We will keep issues open even if the EDT team internally has no plans to address them in an upcoming release, as long as we consider the issue to fall under our purview.
 
 ###When we close issues
 As noted above, we don't close issues just because we don't plan to address them in an upcoming release. So why do we close issues? There are few major reasons:
@@ -47,9 +47,9 @@ We use GitHub labels on our issues in order to classify them. We have the follow
 	
 	* [feature approved](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Feature%20Approved): Larger scale issues. Like up for grabs, anyone is free to work on these issues, but they may be trickier or require more work.
 	
-	* [grabbed by community](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Grabbed%20by%20Community): Someone outside the EDCL team has assumed responsibility for addressing this issue and is working on a fix. The comments for the issue will call out who is working on it. You shouldn't try to address the issue without coordinating with the owner.
+	* [grabbed by community](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Grabbed%20by%20Community): Someone outside the EDT team has assumed responsibility for addressing this issue and is working on a fix. The comments for the issue will call out who is working on it. You shouldn't try to address the issue without coordinating with the owner.
 	
-	* [grabbed by assignee](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Grabbed%20by%20Assignee): Like grabbed by community, except the person the issue is assigned to is making a fix. This will be someone on the EDCL team.
+	* [grabbed by assignee](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Grabbed%20by%20Assignee): Like grabbed by community, except the person the issue is assigned to is making a fix. This will be someone on the EDT team.
 
 * **Project Management**: These labels are used to facilitate the team's Kanban Board. Labels indicate the current status and swim lane.
 	
@@ -72,4 +72,4 @@ We use GitHub labels on our issues in order to classify them. We have the follow
 In addition to the above, we have a handful of other labels we use to help classify our issues. Some of these tag cross cutting concerns (e.g. cross platform, performance, serialization impact) where as others are used to help us track additional work needed before closing an issue (e.g. needs API review). Finally, we have the "needs more info" label. We use this label to mark issues where we need more information in order to proceed. Usually this will be because we can't reproduce a reported bug. We'll close these issues after a little bit if we haven't gotten actionable information, but we welcome folks who have acquired more information to reopen the issue.
 
 ###Assignee
-We assign each issue to a EDCL team member. In most cases, the assignee will not be the one who ultimately fixes the issue (that only happens in the case where the issue is tagged "grabbed by assignee"). The purpose of the assignee is to act as a point of contact between the EDCL team and the community for the issue and make sure it's driven to resolution. If you're working on an issue and get stuck, please reach out to the assignee (just at mention them) and they will work to help you out.
+We assign each issue to a EDT team member. In most cases, the assignee will not be the one who ultimately fixes the issue (that only happens in the case where the issue is tagged "grabbed by assignee"). The purpose of the assignee is to act as a point of contact between the EDT team and the community for the issue and make sure it's driven to resolution. If you're working on an issue and get stuck, please reach out to the assignee (just at mention them) and they will work to help you out.
