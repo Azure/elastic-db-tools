@@ -3,7 +3,7 @@
 SETLOCAL
 
 SET CACHED_NUGET=%LocalAppData%\NuGet\NuGet.exe
-SET SOLUTION_PATH="%~dp0Client.sln"
+SET SOLUTION_PATH="%~dp0ElasticDatabaseTools.sln"
 SET MSBUILD12_TOOLS_PATH="%ProgramFiles(x86)%\MSBuild\12.0\bin\MSBuild.exe"
 SET BUILD_TOOLS_PATH=%MSBUILD14_TOOLS_PATH%
 
