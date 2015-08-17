@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Src\Client.csproj", "{663D22BB-483A-46B0-A504-861C5335DAD1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticScale.Client", "Src\ElasticScale.Client\ElasticScale.Client.csproj", "{663D22BB-483A-46B0-A504-861C5335DAD1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientTestCommon", "Test\ClientTestCommon\ClientTestCommon.csproj", "{13200C7C-8606-47B8-A004-570B56E3A9A8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticScale.ClientTestCommon", "Test\ElasticScale.ClientTestCommon\ElasticScale.ClientTestCommon.csproj", "{13200C7C-8606-47B8-A004-570B56E3A9A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiShardQueryTests", "Test\MultiShardQueryTests\MultiShardQueryTests.csproj", "{56DDEC7E-0B14-4636-B287-DB38DEC55192}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticScale.Query.UnitTests", "Test\ElasticScale.Query.UnitTests\ElasticScale.Query.UnitTests.csproj", "{56DDEC7E-0B14-4636-B287-DB38DEC55192}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardMapManagerLoadTests", "Test\ShardMapManagerLoadTests\ShardMapManagerLoadTests.csproj", "{6C6E8D75-DF7B-4841-A254-D0D54746B417}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticScale.ShardManagement.LoadTests", "Test\ElasticScale.ShardManagement.LoadTests\ElasticScale.ShardManagement.LoadTests.csproj", "{6C6E8D75-DF7B-4841-A254-D0D54746B417}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardMapManagerUnitTests", "Test\ShardMapManagerUnitTests\ShardMapManagerUnitTests.csproj", "{EA7DA8D7-6B11-4AF7-9C24-6FEEBDA7E188}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticScale.ShardManagement.UnitTests", "Test\ElasticScale.ShardManagement.UnitTests\ElasticScale.ShardManagement.UnitTests.csproj", "{EA7DA8D7-6B11-4AF7-9C24-6FEEBDA7E188}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
