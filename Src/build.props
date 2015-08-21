@@ -3,5 +3,8 @@
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
+  <PropertyGroup> 
+    <RelativeOutputPath>Product\$(RelativeOutputPath)</RelativeOutputPath>
+  </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)\..\Build.props" />
 </Project>

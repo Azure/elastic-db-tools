@@ -2,9 +2,7 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Build.props))\Build.props" />
   <ItemGroup>
-    <ProjectFile Include="Samples\dirs.proj" />
-    <ProjectFile Include="Src\dirs.proj" />
-    <ProjectFile Include="Test\dirs.proj" />
+    <ProjectFile Include="ElasticScaleStarterKit\ElasticScaleStarterKit.csproj" />
   </ItemGroup>
   <Import Project="$(BuildExtensionsPath)\Traversal.targets" />
 </Project>
