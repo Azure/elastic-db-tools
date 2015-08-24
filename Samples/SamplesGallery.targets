@@ -15,17 +15,9 @@
       <SamplesGalleryFilesDir>$(IntermediateOutputPath)\SamplesGallery</SamplesGalleryFilesDir>
       
       <!-- Output path of the zip file that we produce from these files -->
-      <SamplesGalleryZipPath>$(OutDir)\$(AssemblyName)SamplesGallery</SamplesGalleryZipPath>
+      <SamplesGalleryZipPath>$(OutDir)\$(AssemblyName)SamplesGallery.zip</SamplesGalleryZipPath>
     </PropertyGroup>
     
-    <!-- Define zip tools -->
-    <PropertyGroup>
-      <VsixZipToolsPackage Condition="'$(VsixZipToolsPackage)' == ''">Microsoft.Zip.SQLIS.5.52</VsixZipToolsPackage>
-      <VsixZipToolsPath>$(NuGetPack)\$(VsixZipToolsPackage)\tools</VsixZipToolsPath>
-      <VsixZipCommand>$(VsixZipToolsPath)\zip.exe</VsixZipCommand>
-      <VsixUnzipCommand>$(VsixZipToolsPath)\unzip.exe</VsixUnzipCommand>
-    </PropertyGroup>
-  
     <!-- Verify that input .csproj and .sln are defined -->
     <Error Condition="'@(SamplesGalleryProjectInput)' == ''" Text="SamplesGalleryProjectInput is not defined in $(MSBuildProjectFullPath)" />
     <Error Condition="'@(SamplesGallerySolutionInput)' == ''" Text="SamplesGallerySolutionInput is not defined in $(MSBuildProjectFullPath)" />
@@ -53,14 +45,15 @@
       SourceFiles="@(SamplesGallerySolutionInput)" 
       DestinationFiles="$(SamplesGalleryFilesDir)\$(SamplesGallerySolutionOutput)" />
 
-    <Error Text="Zip package required to compress VSIX. Either set CompressVsixOutput to false or add $(VsixZipToolsPath) to packages.config"
-           Condition="!Exists('$(VsixZipToolsPath)')" />
-
     <!-- Zip the files into $(SamplesGalleryZipPath) -->
-    <Exec WorkingDirectory="$(SamplesGalleryFilesDir)" Command="&quot;$(VsixZipCommand)&quot; -9 -q -R &quot;$(SamplesGalleryZipPath)&quot; &quot;*&quot;" />
-    
-    <!-- Run MSBuild on the output project to verify that it builds correctly -->
-    <Exec WorkingDirectory="$(SamplesGalleryFilesDir)\$(MSBuildProjectName)\" Command="$(NugetBin) restore -PackagesDirectory ..\packages -Verbosity detailed" />
+    <Exec WorkingDirectory="$(SamplesGalleryFilesDir)" Command="powershell Add-Type -Assembly System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('$(SamplesGalleryFilesDir)', '$(SamplesGalleryZipPath)', [System.IO.Compression.CompressionLevel]::Optimal, $false)" />
+
+    <!-- Run MSBuild on the output project to verify that it builds correctly
+         We only do nuget restore in CBT because we need $(NugetBin). 
+         If we could conveniently get $(NugetBin) in external build then we should just do that. 
+         Instead we just xcopy the entire top-level packages folder to the location that the csproj expects. -->
+    <Exec Condition="'$(StandaloneBuild)' != 'true'" WorkingDirectory="$(SamplesGalleryFilesDir)\$(MSBuildProjectName)\" Command="$(NugetBin) restore -PackagesDirectory ..\packages -Verbosity detailed" />
+    <Exec Condition="'$(StandaloneBuild)' == 'true'" Command="powershell Copy-Item $(NugetPack) $(SamplesGalleryFilesDir)\packages -Recurse" />
     <MSBuild Projects="$(SamplesGalleryFilesDir)\$(MSBuildProjectName)\$(SamplesGalleryProjectOutput)" />
   </Target>
 </Project>

@@ -16,7 +16,7 @@
       Properties that are implicitly defined in the Microsoft Azure SQL Database team's build system
       that need to be defined here for standalone build to work.
     --> 
-    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)\obj</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)\obj\$(MSBuildProjectFile)</BaseIntermediateOutputPath>
     <BaseOutputPath>$(MSBuildThisFileDirectory)\bin</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)\$(Configuration)\$(AssemblyName)</OutputPath>
     <DefineConstants>$(DefineConstants);STANDALONE_BUILD</DefineConstants>
