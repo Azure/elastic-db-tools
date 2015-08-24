@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet ToolsVersion="10.0"
+  Name="Template for custom ruleset"
+  Description="This template includes everything (including SDL ruleset, if enabled) but the rules that are explicitly disabled.">
+  
+  <!--
+    To use: copy template to a location of the tree, and,
+    for a build.props, add this to the build.props:
+    <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)'==''">$(MSBuildThisFileDirectory)CodeAnalysis.ruleset</CodeAnalysisRuleSet>
+    for a leaf msbuild project, add this to the project file:
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)CodeAnalysis.ruleset</CodeAnalysisRuleSet>
+  -->
+  
+  <!-- this node ensures all rules (including SDL ones if CodeAnalysisUseFxCopForSdl is set to true) are imported -->
+  <IncludeAll Action="Warning" />
+  
+  <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
+
+    <!-- 
+      These are examples of disabled rules 
+      The pro of implicitly importing all and explicitly silencing some rules is auto-getting new rules when setting
+      properties (such as CodeAnalysisUseFxCopForSdl to true) and picking up new versions of the code analysis tools.
+    -->
+        
+    <Rule Id="CA1014" Action="None" /> <!-- MarkAssembliesWithClsCompliant -->
+    <Rule Id="CA1026" Action="None" /> <!-- DefaultParametersShouldNotBeUsed -->
+    <Rule Id="CA1303" Action="None" /> <!-- DoNotPassLiteralsAsLocalizedParameters -->
+    <Rule Id="CA1305" Action="None" /> <!-- SpecifyIFormatProvider -->
+    <Rule Id="CA2204" Action="None" /> <!-- LiteralsShouldBeSpelledCorrectly -->
+    <Rule Id="CA2210" Action="None" /> <!-- AssembliesShouldHaveValidStrongNames -->
+
+    <Rule Id="CA904" Action="None" /> <!-- Redefine types in name space in the Microsoft or System namespace -->
+    <Rule Id="CA908" Action="None" /> <!-- Replace with a type that does not require JIT compilation at runtime for precompiled assemblies -->
+    <Rule Id="CA1006" Action="None" /> <!-- DoNotNestGenericTypesInMemberSignatures -->
+    <Rule Id="CA1017" Action="None" /> <!-- MarkAssembliesWithComVisible -->
+    <Rule Id="CA1024" Action="None" /> <!-- UsePropertiesWhereAppropriate -->
+    <Rule Id="CA1062" Action="None" /> <!-- ValidateArgumentsOfPublicMethods -->
+    <Rule Id="CA1812" Action="None" /> <!-- AvoidUninstantiatedInternalClasses -->
+    <Rule Id="CA1822" Action="None" /> <!-- MarkMembersAsStatic -->
+    <Rule Id="CA2100" Action="None" /> <!-- ReviewSqlQueriesForSecurityVulnerabilities -->
+  </Rules>
+</RuleSet>
