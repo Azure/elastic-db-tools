@@ -4,6 +4,7 @@
   <ItemGroup>
     <ProjectFile Include="EFCodeFirst\EntityFrameworkCodeFirst.csproj" />
     <ProjectFile Include="ElasticScaleStarterKit\ElasticScaleStarterKit.csproj" />
+    <ProjectFile Include="ShardSqlCmd\ShardSqlCmd.csproj" />
   </ItemGroup>
   <Import Project="$(BuildExtensionsPath)\Traversal.targets" />
 </Project>

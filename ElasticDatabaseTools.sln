@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticScale.Client", "Src\ElasticScale.Client\ElasticScale.Client.csproj", "{663D22BB-483A-46B0-A504-861C5335DAD1}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticScaleStarterKit", "Samples\ElasticScaleStarterKit\ElasticScaleStarterKit.csproj", "{115A0283-AC42-4D37-97F2-106D168E04D2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFrameworkCodeFirst", "Samples\EFCodeFirst\EntityFrameworkCodeFirst.csproj", "{904469F9-427C-4B9F-A30D-B63E53BEB489}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardSqlCmd", "Samples\ShardSqlCmd\ShardSqlCmd.csproj", "{A95C04CC-3CEE-42ED-BB17-2B9850E374FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,6 +68,12 @@ Global
 		{904469F9-427C-4B9F-A30D-B63E53BEB489}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{904469F9-427C-4B9F-A30D-B63E53BEB489}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{904469F9-427C-4B9F-A30D-B63E53BEB489}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A95C04CC-3CEE-42ED-BB17-2B9850E374FB}.Cover|Any CPU.ActiveCfg = Cover|Any CPU
+		{A95C04CC-3CEE-42ED-BB17-2B9850E374FB}.Cover|Any CPU.Build.0 = Cover|Any CPU
+		{A95C04CC-3CEE-42ED-BB17-2B9850E374FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A95C04CC-3CEE-42ED-BB17-2B9850E374FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A95C04CC-3CEE-42ED-BB17-2B9850E374FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A95C04CC-3CEE-42ED-BB17-2B9850E374FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
