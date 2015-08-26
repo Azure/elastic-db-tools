@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFrameworkCodeFirst", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardSqlCmd", "Samples\ShardSqlCmd\ShardSqlCmd.csproj", "{A95C04CC-3CEE-42ED-BB17-2B9850E374FB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFrameworkMultiTenant", "Samples\EFMultiTenant\EntityFrameworkMultiTenant.csproj", "{9AD1DDF3-213C-47B1-B136-733C9FFF9FD1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Cover|Any CPU = Cover|Any CPU
@@ -74,6 +76,12 @@ Global
 		{A95C04CC-3CEE-42ED-BB17-2B9850E374FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A95C04CC-3CEE-42ED-BB17-2B9850E374FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A95C04CC-3CEE-42ED-BB17-2B9850E374FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AD1DDF3-213C-47B1-B136-733C9FFF9FD1}.Cover|Any CPU.ActiveCfg = Cover|Any CPU
+		{9AD1DDF3-213C-47B1-B136-733C9FFF9FD1}.Cover|Any CPU.Build.0 = Cover|Any CPU
+		{9AD1DDF3-213C-47B1-B136-733C9FFF9FD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AD1DDF3-213C-47B1-B136-733C9FFF9FD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AD1DDF3-213C-47B1-B136-733C9FFF9FD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AD1DDF3-213C-47B1-B136-733C9FFF9FD1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

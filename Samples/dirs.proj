@@ -3,6 +3,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Build.props))\Build.props" />
   <ItemGroup>
     <ProjectFile Include="EFCodeFirst\EntityFrameworkCodeFirst.csproj" />
+    <ProjectFile Include="EFMultiTenant\EntityFrameworkMultiTenant.csproj" />
     <ProjectFile Include="ElasticScaleStarterKit\ElasticScaleStarterKit.csproj" />
     <ProjectFile Include="ShardSqlCmd\ShardSqlCmd.csproj" />
   </ItemGroup>
