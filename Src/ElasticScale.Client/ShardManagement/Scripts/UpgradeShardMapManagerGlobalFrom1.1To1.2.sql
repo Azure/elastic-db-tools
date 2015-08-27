@@ -1,3 +1,6 @@
+-- Copyright (c) Microsoft. All rights reserved.
+-- Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 ---------------------------------------------------------------------------------------------------
 -- Script to upgrade Global Shard Map from version 1.1 to 1.2
 -- Fix for VSTS# 3410606

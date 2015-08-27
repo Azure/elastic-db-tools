@@ -1,3 +1,6 @@
+-- Copyright (c) Microsoft. All rights reserved.
+-- Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 ---------------------------------------------------------------------------------------------------
 -- Script to upgrade Local Shard Map from version 1000.0 to 1000.1
 ---------------------------------------------------------------------------------------------------
