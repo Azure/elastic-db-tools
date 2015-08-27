@@ -29,7 +29,7 @@
     <!-- The file that gets transformed into the user's sln when they create a new project from the samples gallery -->
     <SamplesGallerySolutionInput Include="EntityFrameworkMultiTenant.sln.SamplesGallery" />
   </ItemGroup>
-  <Import Project="$(EnlistmentRoot)\OpenSource\Client\Samples\SamplesGallery.targets" />
+  <Import Project="..\SamplesGallery.targets" />
   <!-- 
     Any changes below must be copied to EntityFrameworkMultiTenant.csproj.SamplesGallery, except:
     - $(NugetPack) must be replaced with ..\packages
