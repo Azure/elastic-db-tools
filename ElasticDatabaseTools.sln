@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardSqlCmd", "Samples\Shar
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFrameworkMultiTenant", "Samples\EFMultiTenant\EntityFrameworkMultiTenant.csproj", "{9AD1DDF3-213C-47B1-B136-733C9FFF9FD1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticDapper", "Samples\Dapper\ElasticDapper.csproj", "{7B67F0A1-A5A9-477B-9B7E-FA2E16ED34DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Cover|Any CPU = Cover|Any CPU
@@ -82,6 +84,12 @@ Global
 		{9AD1DDF3-213C-47B1-B136-733C9FFF9FD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9AD1DDF3-213C-47B1-B136-733C9FFF9FD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9AD1DDF3-213C-47B1-B136-733C9FFF9FD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B67F0A1-A5A9-477B-9B7E-FA2E16ED34DE}.Cover|Any CPU.ActiveCfg = Cover|Any CPU
+		{7B67F0A1-A5A9-477B-9B7E-FA2E16ED34DE}.Cover|Any CPU.Build.0 = Cover|Any CPU
+		{7B67F0A1-A5A9-477B-9B7E-FA2E16ED34DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B67F0A1-A5A9-477B-9B7E-FA2E16ED34DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B67F0A1-A5A9-477B-9B7E-FA2E16ED34DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B67F0A1-A5A9-477B-9B7E-FA2E16ED34DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
