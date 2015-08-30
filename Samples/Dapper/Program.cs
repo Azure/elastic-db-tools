@@ -76,11 +76,7 @@ namespace ElasticDapper
                     options: ConnectionOptions.Validate))
                 {
                     var blog = new Blog { Name = name };
-                    sqlconn.Execute(@"
-                        INSERT INTO
-                        Blog (Name)
-                        VALUES (@name)",
-                        new {name = blog.Name});
+                    sqlconn.Insert(blog);
                 }
             });
 
