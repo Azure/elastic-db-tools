@@ -6,10 +6,23 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ElasticDapper</RootNamespace>
     <AssemblyName>ElasticDapper</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Build.props))\Build.props" />
+  <!--
+    BUILD PROCESS FOR SAMPLES GALLERY
+  -->
+  <ItemGroup>
+    <!-- The file that gets transformed into the user's csproj when they create a new project from the samples gallery -->
+    <SamplesGalleryProjectInput Include="ElasticDapper.csproj.SamplesGallery" />
+    <!-- The file that gets transformed into the user's sln when they create a new project from the samples gallery -->
+    <SamplesGallerySolutionInput Include="ElasticDapper.sln.SamplesGallery" />
+  </ItemGroup>
+  <Import Project="..\SamplesGallery.targets" />
+  <!-- 
+    Any changes below must be copied to ShardSqlCmd.csproj.SamplesGallery, except:
+    - $(NugetPack) must be replaced with ..\packages 
+  -->
   <ItemGroup>
     <Reference Include="$(NugetPack)\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll">
       <Name>Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling</Name>
@@ -18,7 +31,7 @@
       <Name>Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data</Name>
     </Reference>
 	  <Reference Include="$(NugetPack)\Dapper.1.36\lib\net45\Dapper.dll">
-      <Name>$(NugetPack)\Dapper.1.36\lib\net45\Dapper.dll</Name>
+      <Name>Dapper</Name>
     </Reference>
     <Reference Include="$(NugetPack)\DapperExtensions.1.4.4\lib\net40\DapperExtensions.dll">
       <Name>DapperExtensions</Name>
