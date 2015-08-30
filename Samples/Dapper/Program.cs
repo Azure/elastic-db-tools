@@ -54,6 +54,12 @@ namespace ElasticDapper
             shardingLayer.RegisterNewShard(s_server, s_shard1, connStrBldr.ConnectionString, s_tenantId1);
             shardingLayer.RegisterNewShard(s_server, s_shard2, connStrBldr.ConnectionString, s_tenantId2);
 
+            // Create schema on each shard.
+            foreach (string shard in new[] {s_shard1, s_shard2})
+            {
+                CreateSchema(shard);
+            }
+
             // Do work for tenant 1 :-)
             // For tenant 1, let's stay with plain vanilla Dapper
             // and spell out the T-SQL we use to map into objects.
@@ -71,10 +77,10 @@ namespace ElasticDapper
                 {
                     var blog = new Blog { Name = name };
                     sqlconn.Execute(@"
-                                INSERT INTO
-                                Blog (Name)
-                                VALUES (@name)", new { name = blog.Name }
-                    );
+                        INSERT INTO
+                        Blog (Name)
+                        VALUES (@name)",
+                        new {name = blog.Name});
                 }
             });
 
@@ -87,9 +93,9 @@ namespace ElasticDapper
                 {
                     // Display all Blogs for tenant 1
                     IEnumerable<Blog> result = sqlconn.Query<Blog>(@"
-                                SELECT * 
-                                FROM Blog
-                                ORDER BY Name");
+                        SELECT * 
+                        FROM Blog
+                        ORDER BY Name");
 
                     Console.WriteLine("All blogs for tenant id {0}:", s_tenantId1);
                     foreach (var item in result)
@@ -152,6 +158,30 @@ namespace ElasticDapper
 
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
+        }
+
+        private static void CreateSchema(string shardName)
+        {
+            SqlConnectionStringBuilder connStrBldr = new SqlConnectionStringBuilder
+            {
+                UserID = s_userName,
+                Password = s_password,
+                ApplicationName = s_applicationName,
+                DataSource = s_server,
+                InitialCatalog = shardName
+            };
+
+            using (SqlConnection conn = new SqlConnection(connStrBldr.ToString()))
+            {
+                conn.Open();
+                conn.Execute(@"
+                    IF (OBJECT_ID('[dbo].[Blog]', 'U') IS NULL)
+                    CREATE TABLE [dbo].[Blog](
+	                    [BlogId] [int] IDENTITY(1,1) PRIMARY KEY,
+	                    [Name] [nvarchar](max) NULL,
+	                    [Url] [nvarchar](max) NULL,
+                    )");
+            }
         }
     }
 }
