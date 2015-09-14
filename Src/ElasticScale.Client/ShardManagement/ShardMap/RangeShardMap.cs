@@ -158,13 +158,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
                     "CreateRangeMapping", "Start; Shard: {0}", creationInfo.Shard.Location);
-                DateTime startTime = DateTime.UtcNow;
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 RangeMapping<TKey> rangeMapping = this.rsm.Add(new RangeMapping<TKey>(this.Manager, creationInfo));
 
+                stopwatch.Stop();
+
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
                     "CreateRangeMapping", "Complete; Shard: {0}; Duration: {1}",
-                    creationInfo.Shard.Location, DateTime.UtcNow - startTime);
+                    creationInfo.Shard.Location, stopwatch.Elapsed);
 
                 return rangeMapping;
             }
@@ -187,12 +190,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
                     "CreateRangeMapping", "Start; Shard: {0}", shard.Location);
-                DateTime startTime = DateTime.UtcNow;
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 RangeMapping<TKey> rangeMapping = this.rsm.Add(new RangeMapping<TKey>(this.Manager, args));
 
+                stopwatch.Stop();
+
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
-                    "CreateRangeMapping", "Complete; Shard: {0}; Duration: {1}", shard.Location, DateTime.UtcNow - startTime);
+                    "CreateRangeMapping", "Complete; Shard: {0}; Duration: {1}", shard.Location, stopwatch.Elapsed);
 
                 return rangeMapping;
             }
@@ -226,13 +232,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
                     "DeleteMapping", "Start; Shard: {0}", mapping.Shard.Location);
-                DateTime startTime = DateTime.UtcNow;
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 this.rsm.Remove(mapping, mappingLockToken.LockOwnerId);
 
+                stopwatch.Stop();
+
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
                     "DeleteMapping", "Complete; Shard: {0}; Duration: {1}",
-                    mapping.Shard.Location, DateTime.UtcNow - startTime);
+                    mapping.Shard.Location, stopwatch.Elapsed);
             }
         }
 
@@ -247,13 +256,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
                     "GetMapping", "Start; Range Mapping Key Type: {0}", typeof(TKey));
-                DateTime startTime = DateTime.UtcNow;
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 RangeMapping<TKey> rangeMapping = this.rsm.Lookup(key, false);
 
+                stopwatch.Stop();
+
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
                     "GetMapping", "Complete; Range Mapping Key Type: {0} Duration: {1}",
-                    typeof(TKey), DateTime.UtcNow - startTime);
+                    typeof(TKey), stopwatch.Elapsed);
 
                 return rangeMapping;
             }
@@ -269,16 +281,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime startTime = DateTime.UtcNow;
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
                     "TryLookupRangeMapping", "Start; ShardMap name: {0}; Range Mapping Key Type: {1}",
                     this.Name, typeof(TKey));
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 bool result = this.rsm.TryLookup(key, false, out rangeMapping);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
                     "TryLookupRangeMapping", "Complete; ShardMap name: {0}; Range Mapping Key Type: {1}; Duration: {2}",
-                    this.Name, typeof(TKey), DateTime.UtcNow - startTime);
+                    this.Name, typeof(TKey), stopwatch.Elapsed);
 
                 return result;
             }
@@ -298,14 +313,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "GetMappings", "Start;");
 
-                DateTime startTime = DateTime.UtcNow;
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 IReadOnlyList<RangeMapping<TKey>> rangeMappings = this.rsm.GetMappingsForRange(null, null);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "GetMappings", "Complete; Duration: {0}",
-                    DateTime.UtcNow - startTime);
+                    stopwatch.Elapsed);
 
                 return rangeMappings;
             }
@@ -328,15 +345,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "GetMappings", "Start; Range: {0}",
                     range);
-                DateTime startTime = DateTime.UtcNow;
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 IReadOnlyList<RangeMapping<TKey>> rangeMappings = this.rsm.GetMappingsForRange(range, null);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "GetMappings",
                     "Complete; Range: {0}; Duration: {1}",
-                    range, DateTime.UtcNow - startTime);
+                    range, stopwatch.Elapsed);
 
                 return rangeMappings;
             }
@@ -361,14 +381,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     "GetMappings", "Start; Shard: {0}",
                     shard.Location);
 
-                DateTime startTime = DateTime.UtcNow;
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 IReadOnlyList<RangeMapping<TKey>> rangeMappings = this.rsm.GetMappingsForRange(null, shard);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "GetMappings", "Complete; Shard: {0}; Duration: {1}",
-                    shard.Location, DateTime.UtcNow - startTime);
+                    shard.Location, stopwatch.Elapsed);
 
                 return rangeMappings;
             }
@@ -395,14 +417,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     "GetMappings", "Start; Shard: {0}; Range: {1}",
                     shard.Location, range);
 
-                DateTime startTime = DateTime.UtcNow;
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 IReadOnlyList<RangeMapping<TKey>> rangeMappings = this.rsm.GetMappingsForRange(range, shard);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "GetMappings", "Complete; Shard: {0}; Duration: {1}",
-                    shard.Location, DateTime.UtcNow - startTime);
+                    shard.Location, stopwatch.Elapsed);
 
                 return rangeMappings;
             }
@@ -436,14 +460,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "MarkMappingOffline", "Start; ");
 
-                DateTime startTime = DateTime.UtcNow;
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 RangeMapping<TKey> result = this.rsm.MarkMappingOffline(mapping, mappingLockToken.LockOwnerId);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "MarkMappingOffline", "Complete; Duration: {0}",
-                    DateTime.UtcNow - startTime);
+                    stopwatch.Elapsed);
 
                 return result;
             }
@@ -477,14 +503,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "MarkMappingOnline", "Start; ");
 
-                DateTime startTime = DateTime.UtcNow;
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 RangeMapping<TKey> result = this.rsm.MarkMappingOnline(mapping, mappingLockToken.LockOwnerId);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "MarkMappingOnline", "Complete; Duration: {0}",
-                    DateTime.UtcNow - startTime);
+                    stopwatch.Elapsed);
 
                 return result;
             }
@@ -505,14 +533,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "LookupLockOwner", "Start");
 
-                DateTime startTime = DateTime.UtcNow;
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 Guid storeLockOwnerId = this.rsm.GetLockOwnerForMapping(mapping);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "LookupLockOwner", "Complete; Duration: {0}; StoreLockOwnerId: {1}",
-                    DateTime.UtcNow - startTime, storeLockOwnerId);
+                    stopwatch.Elapsed, storeLockOwnerId);
 
                 return new MappingLockToken(storeLockOwnerId);
             }
@@ -539,14 +569,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "Lock", "Start; LockOwnerId: {0}", lockOwnerId);
 
-                DateTime startTime = DateTime.UtcNow;
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 this.rsm.LockOrUnlockMappings(mapping, lockOwnerId, LockOwnerIdOpType.Lock);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "Lock", "Complete; Duration: {0}; StoreLockOwnerId: {1}",
-                    DateTime.UtcNow - startTime, lockOwnerId);
+                    stopwatch.Elapsed, lockOwnerId);
             }
         }
 
@@ -568,14 +600,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "Unlock", "Start; LockOwnerId: {0}", lockOwnerId);
 
-                DateTime startTime = DateTime.UtcNow;
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 this.rsm.LockOrUnlockMappings(mapping, lockOwnerId, LockOwnerIdOpType.UnlockMappingForId);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "UnLock", "Complete; Duration: {0}; StoreLockOwnerId: {1}",
-                    DateTime.UtcNow - startTime, lockOwnerId);
+                    stopwatch.Elapsed, lockOwnerId);
             }
         }
 
@@ -595,14 +629,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "UnlockAllMappingsWithLockOwnerId", "Start; LockOwnerId: {0}", lockOwnerId);
 
-                DateTime startTime = DateTime.UtcNow;
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 this.rsm.LockOrUnlockMappings(null, lockOwnerId, LockOwnerIdOpType.UnlockAllMappingsForId);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.RangeShardMap,
                     "UnlockAllMappingsWithLockOwnerId", "Complete; Duration: {0}",
-                    DateTime.UtcNow - startTime);
+                    stopwatch.Elapsed);
             }
         }
 
@@ -642,13 +678,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
                     "UpdateMapping", "Start; Current mapping shard: {0}",
                     currentMapping.Shard.Location);
-                DateTime startTime = DateTime.UtcNow;
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 RangeMapping<TKey> rangeMapping = this.rsm.Update(currentMapping, update, mappingLockToken.LockOwnerId);
 
+                stopwatch.Stop();
+
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
                     "UpdateMapping", "Complete; Current mapping shard: {0}; Duration: {1}",
-                    currentMapping.Shard.Location, DateTime.UtcNow - startTime);
+                    currentMapping.Shard.Location, stopwatch.Elapsed);
 
                 return rangeMapping;
             }
@@ -690,13 +729,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
                     "SplitMapping", "Start; Shard: {0}", existingMapping.Shard.Location);
-                DateTime startTime = DateTime.UtcNow;
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 IReadOnlyList<RangeMapping<TKey>> rangeMapping = this.rsm.Split(existingMapping, splitAt, mappingLockToken.LockOwnerId);
 
+                stopwatch.Stop();
+
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
                     "SplitMapping", "Complete; Shard: {0}; Duration: {1}",
-                    existingMapping.Shard.Location, DateTime.UtcNow - startTime);
+                    existingMapping.Shard.Location, stopwatch.Elapsed);
 
                 return rangeMapping;
             }
@@ -744,12 +786,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
                     "SplitMapping", "Start; Left Shard: {0}; Right Shard: {1}",
                     left.Shard.Location, right.Shard.Location);
-                DateTime startTime = DateTime.UtcNow;
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 RangeMapping<TKey> rangeMapping = this.rsm.Merge(left, right, leftMappingLockToken.LockOwnerId, rightMappingLockToken.LockOwnerId);
 
+                stopwatch.Stop();
+
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
-                    "SplitMapping", "Complete; Duration: {0}", DateTime.UtcNow - startTime);
+                    "SplitMapping", "Complete; Duration: {0}", stopwatch.Elapsed);
 
                 return rangeMapping;
             }

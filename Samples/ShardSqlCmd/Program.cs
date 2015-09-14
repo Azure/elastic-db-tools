@@ -128,8 +128,6 @@ namespace ShardSqlCmd
 
                 int rowsAffected = 0;
 
-                Stopwatch sw;
-
                 using (MultiShardCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = commandText;
@@ -137,12 +135,12 @@ namespace ShardSqlCmd
                     cmd.CommandTimeoutPerShard = s_commandLine.QueryTimeout;
 
                     // Execute command and time with a stopwatch
-                    sw = Stopwatch.StartNew();
+                    Stopwatch stopwatch = Stopwatch.StartNew();
                     cmd.ExecutionPolicy = s_commandLine.ExecutionPolicy;
                     cmd.ExecutionOptions = s_commandLine.ExecutionOptions;
                     using (MultiShardDataReader reader = cmd.ExecuteReader(CommandBehavior.Default))
                     {
-                        sw.Stop();
+                        stopwatch.Stop();
 
                         // Get column names
                         IEnumerable<string> columnNames = GetColumnNames(reader).ToArray();
@@ -164,11 +162,11 @@ namespace ShardSqlCmd
                         // Write formatter output
                         output.AppendLine(tableFormatter.ToString());
                     }
-                }
 
-                output.AppendLine();
-                output.AppendFormat("({0} rows affected - {1:hh}:{1:mm}:{1:ss} elapsed)", rowsAffected, sw.Elapsed);
-                output.AppendLine();
+                    output.AppendLine();
+                    output.AppendFormat("({0} rows affected - {1:hh}:{1:mm}:{1:ss} elapsed)", rowsAffected, stopwatch.Elapsed);
+                    output.AppendLine();
+                }
 
                 return output.ToString();
             }

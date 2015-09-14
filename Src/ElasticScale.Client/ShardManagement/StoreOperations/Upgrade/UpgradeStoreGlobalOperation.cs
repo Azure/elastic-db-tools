@@ -64,7 +64,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             if (checkResult.StoreVersion.Version < _targetVersion)
             {
-                DateTime createStartTime = DateTime.UtcNow;
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 ts.ExecuteCommandBatch(SqlUtils.FilterUpgradeCommands(SqlUtils.UpgradeGlobalScript, _targetVersion, checkResult.StoreVersion.Version));
 
@@ -73,11 +73,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 // DEVNOTE(apurvs): verify (checkResult.StoreVersion == GlobalConstants.GsmVersionClient) and throw on failure.
 
+                stopwatch.Stop();
+
                 TraceHelper.Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManagerFactory,
                     this.OperationName,
                     "Finished upgrading Global Shard Map. Duration: {0}",
-                    DateTime.UtcNow - createStartTime);
+                    stopwatch.Elapsed);
             }
             else
             {

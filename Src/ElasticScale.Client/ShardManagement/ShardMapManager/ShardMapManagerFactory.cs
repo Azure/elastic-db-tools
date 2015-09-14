@@ -236,11 +236,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime getStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManagerFactory,
                     "CreateSqlShardMapManager",
                     "Start; ");
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(connectionString);
 
@@ -271,11 +272,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                         op.Do();
                     }
 
+                    stopwatch.Stop();
+
                     Tracer.TraceInfo(
                         TraceSourceConstants.ComponentNames.ShardMapManagerFactory,
                         "CreateSqlShardMapManager",
                         "Complete; Duration: {0}",
-                        DateTime.UtcNow - getStartTime);
+                        stopwatch.Elapsed);
                 }
                 finally
                 {
@@ -343,11 +346,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime getStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManagerFactory,
                     "TryGetSqlShardMapManager",
                     "Start; ");
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
                     connectionString,
@@ -356,11 +360,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     null,
                     false);
 
+                stopwatch.Stop();
+
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManagerFactory,
                     "TryGetSqlShardMapManager",
                     "Complete; Duration: {0}",
-                    DateTime.UtcNow - getStartTime);
+                    stopwatch.Elapsed);
 
                 return shardMapManager != null;
             }
@@ -393,11 +399,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime getStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManagerFactory,
                     "TryGetSqlShardMapManager",
                     "Start; ");
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
                     connectionString,
@@ -406,11 +413,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     retryEventHandler,
                     false);
 
+                stopwatch.Stop();
+
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManagerFactory,
                     "TryGetSqlShardMapManager",
                     "Complete; Duration: {0}",
-                    DateTime.UtcNow - getStartTime);
+                    stopwatch.Elapsed);
 
                 return shardMapManager != null;
             }
@@ -481,11 +490,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime getStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManagerFactory,
                     "GetSqlShardMapManager",
                     "Start; ");
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 ShardMapManager shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
                     connectionString,
@@ -494,13 +504,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     retryEventHandler,
                     true);
 
+                stopwatch.Stop();
+
                 Debug.Assert(shardMapManager != null);
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManagerFactory,
                     "GetSqlShardMapManager",
                     "Complete; Duration: {0}",
-                    DateTime.UtcNow - getStartTime);
+                    stopwatch.Elapsed);
 
                 return shardMapManager;
             }

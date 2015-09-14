@@ -168,28 +168,31 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 ListShardMap<TKey> listShardMap = new ListShardMap<TKey>(this, dssm);
 
-                DateTime createStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "CreateListShardMap",
                     "Start; ShardMap: {0}",
                     shardMapName);
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 this.AddShardMapToStore("CreateListShardMap", dssm);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "CreateListShardMap",
                     "Added ShardMap to Store; ShardMap: {0} Duration: {1}",
                     shardMapName,
-                    DateTime.UtcNow - createStartTime);
+                    stopwatch.Elapsed);
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "CreateListShardMap",
                     "Complete; ShardMap: {0} Duration: {1}",
                     shardMapName,
-                    DateTime.UtcNow - createStartTime);
+                    stopwatch.Elapsed);
 
                 return listShardMap;
             }
@@ -215,27 +218,30 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 RangeShardMap<TKey> rangeShardMap = new RangeShardMap<TKey>(this, dssm);
 
-                DateTime createStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "CreateRangeShardMap",
                     "Start; ShardMap: {0}",
                     shardMapName);
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 this.AddShardMapToStore("CreateRangeShardMap", dssm);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "CreateRangeShardMap", "Added ShardMap to Store; ShardMap: {0} Duration: {1}",
                 shardMapName,
-                    DateTime.UtcNow - createStartTime);
+                    stopwatch.Elapsed);
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "CreateRangeShardMap",
                     "Complete; ShardMap: {0} Duration: {1}",
                     shardMapName,
-                    DateTime.UtcNow - createStartTime);
+                    stopwatch.Elapsed);
 
                 return rangeShardMap;
             }
@@ -252,21 +258,24 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime deleteStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "DeleteShardMap",
                     "Start; ShardMap: {0}",
                     shardMap.Name);
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 this.RemoveShardMapFromStore(shardMap.StoreShardMap);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "DeleteShardMap",
                     "Complete; ShardMap: {0}; Duration: {1}",
                     shardMap.Name,
-                    DateTime.UtcNow - deleteStartTime);
+                    stopwatch.Elapsed);
             }
         }
 
@@ -279,19 +288,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime getStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "GetShardMaps",
                     "Start; ");
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 IEnumerable<ShardMap> result = this.GetShardMapsFromStore();
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "GetShardMaps",
                     "Complete; Duration: {0}",
-                    DateTime.UtcNow - getStartTime);
+                    stopwatch.Elapsed);
 
                 return result;
             }
@@ -517,19 +529,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime getStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "GetDistinctShardLocations",
                     "Start; ");
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 IEnumerable<ShardLocation> result = this.GetDistinctShardLocationsFromStore();
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "GetDistinctShardLocations",
                     "Complete; Duration: {0}",
-                    DateTime.Now - getStartTime);
+                    stopwatch.Elapsed);
 
                 return result;
             }
@@ -542,19 +557,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime getStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "UpgradeGlobalShardMapManager",
                     "Start; ");
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 this.UpgradeStoreGlobal(GlobalConstants.GsmVersionClient);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "UpgradeGlobalShardMapManager",
                     "Complete; Duration: {0}",
-                    DateTime.Now - getStartTime);
+                    stopwatch.Elapsed);
             }
         }
 
@@ -566,19 +584,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime getStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "UpgradeGlobalShardMapManager",
                     "Start; ");
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 this.UpgradeStoreLocal(location, GlobalConstants.LsmVersionClient);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "UpgradeGlobalShardMapManager",
                     "Complete; Duration: {0}",
-                    DateTime.Now - getStartTime);
+                    stopwatch.Elapsed);
             }
         }
 
@@ -628,13 +649,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             // Cache miss. Go to store and add entry to cache.
             if (ssm == null)
             {
-                DateTime storeLookupStartTime = DateTime.UtcNow;
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 shardMap = this.LookupShardMapByNameInStore(operationName, shardMapName);
 
+                stopwatch.Stop();
+
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager,
                     "LookupShardMapByName", "Lookup ShardMap: {0} in store complete; Duration: {1}",
-                    shardMapName, DateTime.UtcNow - storeLookupStartTime);
+                    shardMapName, stopwatch.Elapsed);
             }
             else
             {
@@ -686,19 +709,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime getStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "UpgradeGlobalShardMapManager",
                     "Start; ");
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 this.UpgradeStoreGlobal(targetVersion);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "UpgradeGlobalShardMapManager",
                     "Complete; Duration: {0}",
-                    DateTime.Now - getStartTime);
+                    stopwatch.Elapsed);
             }
         }
 
@@ -711,19 +737,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime getStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "UpgradeGlobalShardMapManager",
                     "Start; ");
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 this.UpgradeStoreLocal(location, targetVersion);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManager,
                     "UpgradeGlobalShardMapManager",
                     "Complete; Duration: {0}",
-                    DateTime.Now - getStartTime);
+                    stopwatch.Elapsed);
             }
         }
 

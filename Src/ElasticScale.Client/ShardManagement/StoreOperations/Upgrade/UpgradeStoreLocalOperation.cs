@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
@@ -58,7 +59,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 this.OperationName,
                 "Started upgrading Local Shard Map structures at location {0}", base.Location);
 
-            DateTime createStartTime = DateTime.UtcNow;
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             IStoreResults checkResult = ts.ExecuteCommandSingle(SqlUtils.CheckIfExistsLocalScript.Single());
             if (checkResult.StoreVersion == null)
@@ -78,12 +79,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 // Read LSM version again after upgrade.
                 checkResult = ts.ExecuteCommandSingle(SqlUtils.CheckIfExistsLocalScript.Single());
 
+                stopwatch.Stop();
+
                 TraceHelper.Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMapManagerFactory,
                     this.OperationName,
                     "Finished upgrading store at location {0}. Duration: {1}",
                     base.Location,
-                    DateTime.UtcNow - createStartTime);
+                    stopwatch.Elapsed);
             }
             else
             {

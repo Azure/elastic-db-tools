@@ -604,7 +604,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     _activityId = Guid.NewGuid();
                     using (var activityIdScope = new ActivityIdScope(_activityId))
                     {
-                        DateTime executionStartTime = DateTime.UtcNow;
+                        Stopwatch stopwatch = Stopwatch.StartNew();
 
                         // Setup the Cancellation manager
                         CommandCancellationManager cmdCancellationMgr = new CommandCancellationManager(
@@ -633,7 +633,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                             .ContinueWith<Task<MultiShardDataReader>>(
                             (t) =>
                             {
-                                string completionTrace = string.Format("Complete; Execution Time: {0}", DateTime.UtcNow - executionStartTime);
+                                stopwatch.Stop();
+
+                                string completionTrace = string.Format("Complete; Execution Time: {0}", stopwatch.Elapsed);
 
                                 switch (t.Status)
                                 {
@@ -829,7 +831,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
             ShardLocation shard = commandTuple.Item1;
             DbCommand command = commandTuple.Item2;
-            DateTime executionStartTime = DateTime.UtcNow;
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             // Always the close connection once the reader is done
             //
@@ -889,10 +891,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             return commandExecutionTask.ContinueWith<Task<LabeledDbDataReader>>(
             (t) =>
             {
+                stopwatch.Stop();
+
                 string traceMsg = string.Format(
                     "Completed command execution for Shard: {0}; Execution Time: {1}; Task Status: {2}",
                     shard,
-                    DateTime.UtcNow - executionStartTime,
+                    stopwatch.Elapsed,
                     t.Status);
 
                 switch (t.Status)

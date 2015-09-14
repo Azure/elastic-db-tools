@@ -39,7 +39,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             IStoreShardMap shardMap,
             IStoreMapping storeMapping)
         {
-            DateTime validateStartTime = DateTime.UtcNow;
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             SqlResults lsmResult = new SqlResults();
 
@@ -76,6 +76,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 lsmResult.Result = (StoreResult)resultParam.Value;
             }
 
+            stopwatch.Stop();
+
             Tracer.TraceInfo(
                 TraceSourceConstants.ComponentNames.Shard,
                 "ValidateMapping",
@@ -83,7 +85,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 storeMapping.StoreShard.Location,
                 conn.ConnectionString,
                 lsmResult.Result,
-                DateTime.UtcNow - validateStartTime);
+                stopwatch.Elapsed);
 
             if (lsmResult.Result != StoreResult.Success)
             {
@@ -133,7 +135,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             IStoreShardMap shardMap,
             IStoreMapping storeMapping)
         {
-            DateTime validateStartTime = DateTime.UtcNow;
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             SqlResults lsmResult = new SqlResults();
 
@@ -170,6 +172,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 lsmResult.Result = (StoreResult)resultParam.Value;
             }
 
+            stopwatch.Stop();
+
             Tracer.TraceInfo(
                 TraceSourceConstants.ComponentNames.Shard,
                 "ValidateMappingAsync",
@@ -177,7 +181,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 storeMapping.StoreShard.Location,
                 conn.ConnectionString,
                 lsmResult.Result,
-                DateTime.UtcNow - validateStartTime);
+                stopwatch.Elapsed);
 
             if (lsmResult.Result != StoreResult.Success)
             {
@@ -224,7 +228,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             IStoreShard shard
             )
         {
-            DateTime validateStartTime = DateTime.UtcNow;
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             SqlResults lsmResult = new SqlResults();
 
@@ -264,6 +268,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 lsmResult.Result = (StoreResult)resultParam.Value;
             }
 
+            stopwatch.Stop();
+
             Tracer.TraceInfo(
                 TraceSourceConstants.ComponentNames.Shard,
                 "ValidateShard",
@@ -271,7 +277,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 shard.Location,
                 conn.ConnectionString,
                 lsmResult.Result,
-                DateTime.UtcNow - validateStartTime);
+                stopwatch.Elapsed);
 
             if (lsmResult.Result != StoreResult.Success)
             {
@@ -311,7 +317,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             IStoreShard shard
             )
         {
-            DateTime validateStartTime = DateTime.UtcNow;
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             SqlResults lsmResult = new SqlResults();
 
@@ -348,6 +354,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 lsmResult.Result = (StoreResult)resultParam.Value;
             }
 
+            stopwatch.Stop();
+
             Tracer.TraceInfo(
                 TraceSourceConstants.ComponentNames.Shard,
                 "ValidateShardAsync",
@@ -355,7 +363,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 shard.Location,
                 conn.ConnectionString,
                 lsmResult.Result,
-                DateTime.UtcNow - validateStartTime);
+                stopwatch.Elapsed);
 
             if (lsmResult.Result != StoreResult.Success)
             {
