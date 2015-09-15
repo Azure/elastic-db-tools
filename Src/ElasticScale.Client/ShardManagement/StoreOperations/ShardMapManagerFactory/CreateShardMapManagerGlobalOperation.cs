@@ -63,12 +63,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </returns>
         public override IStoreResults DoGlobalExecute(IStoreTransactionScope ts)
         {
-            DateTime createStartTime = DateTime.UtcNow;
-
             TraceHelper.Tracer.TraceInfo(
                 TraceSourceConstants.ComponentNames.ShardMapManagerFactory,
                 this.OperationName,
                 "Started creating Global Shard Map structures.");
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             IStoreResults checkResult = ts.ExecuteCommandSingle(SqlUtils.CheckIfExistsGlobalScript.Single());
 
@@ -97,11 +97,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             ts.ExecuteCommandBatch(SqlUtils.FilterUpgradeCommands(SqlUtils.UpgradeGlobalScript, _targetVersion));
 
+            stopwatch.Stop();
+
             TraceHelper.Tracer.TraceInfo(
                 TraceSourceConstants.ComponentNames.ShardMapManagerFactory,
                 this.OperationName,
                 "Finished creating Global Shard Map structures. Duration: {0}",
-                DateTime.UtcNow - createStartTime);
+                stopwatch.Elapsed);
 
             return new SqlResults();
         }

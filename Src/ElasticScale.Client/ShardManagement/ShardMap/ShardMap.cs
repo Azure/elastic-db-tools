@@ -279,19 +279,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime getShardStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMap,
                     "GetShards",
                     "Start; ");
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 IEnumerable<Shard> shards = _defaultMapper.GetShards();
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMap,
                     "GetShards",
                     "Complete; Duration: {0}",
-                    DateTime.UtcNow - getShardStartTime);
+                    stopwatch.Elapsed);
 
                 return shards;
             }
@@ -308,21 +311,24 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime getShardStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMap,
                     "GetShard",
                     "Start; Shard Location: {0} ",
                     location);
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 Shard shard = _defaultMapper.GetShardByLocation(location);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMap,
                     "GetShard",
                     "Complete; Shard Location: {0}; Duration: {1}",
                     location,
-                    DateTime.UtcNow - getShardStartTime);
+                    stopwatch.Elapsed);
 
                 if (shard == null)
                 {
@@ -350,21 +356,24 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime getShardStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMap,
                     "TryGetShard",
                     "Start; Shard Location: {0} ",
                     location);
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 shard = _defaultMapper.GetShardByLocation(location);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMap,
                     "TryGetShard",
                     "Complete; Shard Location: {0}; Duration: {1}",
                     location,
-                    DateTime.UtcNow - getShardStartTime);
+                    stopwatch.Elapsed);
 
                 return shard != null;
             }
@@ -382,12 +391,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             using (ActivityIdScope activityId = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime addShardStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMap,
                     "CreateShard",
                     "Start; Shard: {0} ",
                     shardCreationArgs.Location);
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 Shard shard = _defaultMapper.Add(
                     new Shard(
@@ -395,12 +405,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                         this,
                         shardCreationArgs));
 
+                stopwatch.Stop();
+
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMap,
                     "CreateShard",
                     "Complete; Shard: {0}; Duration: {1}",
                     shard.Location,
-                    DateTime.UtcNow - addShardStartTime);
+                    stopwatch.Elapsed);
 
                 return shard;
             }
@@ -417,12 +429,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             using (ActivityIdScope activityId = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime addShardStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMap,
                     "CreateShard",
                     "Start; Shard: {0} ",
                     location);
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 Shard shard = _defaultMapper.Add(
                     new Shard(
@@ -430,12 +443,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                         this,
                         new ShardCreationInfo(location)));
 
+                stopwatch.Stop();
+
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMap,
                     "CreateShard",
                     "Complete; Shard: {0}; Duration: {1}",
                     location,
-                    DateTime.UtcNow - addShardStartTime);
+                    stopwatch.Elapsed);
 
                 return shard;
             }
@@ -452,21 +467,24 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             using (ActivityIdScope activityId = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime deleteShardStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMap,
                     "DeleteShard",
                     "Start; Shard: {0} ",
                     shard.Location);
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 _defaultMapper.Remove(shard);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMap,
                     "DeleteShard",
                     "Complete; Shard: {0}; Duration: {1}",
                     shard.Location,
-                    DateTime.UtcNow - deleteShardStartTime);
+                    stopwatch.Elapsed);
             }
         }
 
@@ -484,21 +502,24 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                DateTime updateShardStartTime = DateTime.UtcNow;
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMap,
                     "UpdateShard",
                     "Start; Shard: {0}",
                     currentShard.Location);
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 Shard shard = _defaultMapper.UpdateShard(currentShard, update);
+
+                stopwatch.Stop();
 
                 Tracer.TraceInfo(
                     TraceSourceConstants.ComponentNames.ShardMap,
                     "UpdateShard",
                     "Complete; Shard: {0}; Duration: {1}",
                     currentShard.Location,
-                    DateTime.UtcNow - updateShardStartTime);
+                    stopwatch.Elapsed);
 
                 return shard;
             }
@@ -532,9 +553,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             IUserStoreConnection conn = this.Manager.StoreConnectionFactory.GetUserConnection(connectionStringFinal);
 
-            DateTime openConnStartTime = DateTime.UtcNow;
-            DateTime openConnEndTime = DateTime.UtcNow;
-
             Tracer.TraceInfo(
                 TraceSourceConstants.ComponentNames.ShardMap,
                 "OpenConnection", "Start; Shard: {0}; Options: {1}; ConnectionString: {2}",
@@ -544,9 +562,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             using (ConditionalDisposable<IUserStoreConnection> cd = new ConditionalDisposable<IUserStoreConnection>(conn))
             {
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 conn.Open();
 
-                openConnEndTime = DateTime.UtcNow;
+                stopwatch.Stop();
 
                 // If validation is requested.
                 if ((options & ConnectionOptions.Validate) == ConnectionOptions.Validate)
@@ -555,15 +575,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 }
 
                 cd.DoNotDispose = true;
-            }
 
-            Tracer.TraceInfo(
+                Tracer.TraceInfo(
                 TraceSourceConstants.ComponentNames.ShardMap,
                 "OpenConnection", "Complete; Shard: {0}; Options: {1}; Open Duration: {2}",
                 shardProvider.ShardInfo.Location,
                 options,
-                openConnEndTime - openConnStartTime);
-
+                stopwatch.Elapsed);
+            }
+            
             return conn.Connection;
         }
 
@@ -597,9 +617,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             IUserStoreConnection conn = this.Manager.StoreConnectionFactory.GetUserConnection(connectionStringFinal);
 
-            DateTime openConnStartTime = DateTime.UtcNow;
-            DateTime openConnEndTime = DateTime.UtcNow;
-
             Tracer.TraceInfo(
                 TraceSourceConstants.ComponentNames.ShardMap,
                 "OpenConnectionAsync", "Start; Shard: {0}; Options: {1}; ConnectionString: {2}",
@@ -609,9 +626,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             using (ConditionalDisposable<IUserStoreConnection> cd = new ConditionalDisposable<IUserStoreConnection>(conn))
             {
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 await conn.OpenAsync().ConfigureAwait(false);
 
-                openConnEndTime = DateTime.UtcNow;
+                stopwatch.Stop();
 
                 // If validation is requested.
                 if ((options & ConnectionOptions.Validate) == ConnectionOptions.Validate)
@@ -620,15 +639,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 }
 
                 cd.DoNotDispose = true;
-            }
 
-            Tracer.TraceInfo(
+                Tracer.TraceInfo(
                 TraceSourceConstants.ComponentNames.ShardMap,
                 "OpenConnectionAsync", "Complete; Shard: {0}; Options: {1}; Open Duration: {2}",
                 shardProvider.ShardInfo.Location,
                 options,
-                openConnEndTime - openConnStartTime);
-
+                stopwatch.Elapsed);
+            }
+            
             return conn.Connection;
         }
 

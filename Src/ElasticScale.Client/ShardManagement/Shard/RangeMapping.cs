@@ -317,7 +317,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="conn">Connection used for validation.</param>
         void IShardProvider.Validate(IStoreShardMap shardMap, SqlConnection conn)
         {
-            DateTime startTime = DateTime.UtcNow;
+            Stopwatch stopwatch = Stopwatch.StartNew();
             Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping,
                 "Validate", "Start; Connection: {0};", conn.ConnectionString);
 
@@ -327,9 +327,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 shardMap,
                 this.StoreMapping);
 
+            stopwatch.Stop();
+
             Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping,
                 "Validate", "Complete; Connection: {0}; Duration: {1}",
-                conn.ConnectionString, DateTime.UtcNow - startTime);
+                conn.ConnectionString, stopwatch.Elapsed);
         }
 
         /// <summary>
@@ -341,7 +343,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>A task to await validation completion</returns>
         async Task IShardProvider.ValidateAsync(IStoreShardMap shardMap, SqlConnection conn)
         {
-            DateTime startTime = DateTime.UtcNow;
+            Stopwatch stopwatch = Stopwatch.StartNew();
             Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping,
                 "ValidateAsync", "Start; Connection: {0};", conn.ConnectionString);
 
@@ -351,9 +353,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 shardMap,
                 this.StoreMapping);
 
+            stopwatch.Stop();
+
             Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping,
                 "ValidateAsync", "Complete; Connection: {0}; Duration: {1}",
-                conn.ConnectionString, DateTime.UtcNow - startTime);
+                conn.ConnectionString, stopwatch.Elapsed);
         }
 
         /// <summary>

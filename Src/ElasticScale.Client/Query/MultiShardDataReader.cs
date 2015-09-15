@@ -19,6 +19,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Runtime.Remoting;
@@ -1014,7 +1015,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             //
             WaitForReaderOrThrow();
 
-            DateTime readStartTime = DateTime.UtcNow;
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             // We can either do this call up front and repeat it in the loop (like it is written), or we can have only
             // one read call in the loop and make the loop stopping condition checking different.  I've chosen to put a
@@ -1023,9 +1024,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             //
             if (this.PerformReadToFillBuffer())
             {
+                stopwatch.Stop();
+
                 // We still had a valid row to fetch on the current reader, so just return true.
                 //
-                s_tracer.Verbose("MultiShardDataReader.Read.Complete; Duration: {0}; Shard: {1}", DateTime.UtcNow - readStartTime,
+                s_tracer.Verbose("MultiShardDataReader.Read.Complete; Duration: {0}; Shard: {1}", stopwatch.Elapsed,
                     GetCurrentShardLocation());
                 return true;
             }
@@ -1062,7 +1065,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 //
                 if (this.PerformReadToFillBuffer())
                 {
-                    s_tracer.Verbose("MultiShardDataReader.Read.Complete; Duration: {0}; Shard: {1}", DateTime.UtcNow - readStartTime,
+                    stopwatch.Stop();
+
+                    s_tracer.Verbose("MultiShardDataReader.Read.Complete; Duration: {0}; Shard: {1}", stopwatch.Elapsed,
                         GetCurrentShardLocation());
                     return true;
                 }

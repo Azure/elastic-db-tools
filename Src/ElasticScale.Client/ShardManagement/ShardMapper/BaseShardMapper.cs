@@ -485,7 +485,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             IStoreResults gsmResult;
 
-            DateTime startTime = DateTime.UtcNow;
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             using (IStoreOperationGlobal op = this.Manager.StoreOperationFactory.CreateFindMappingByKeyGlobalOperation(
                 this.Manager,
@@ -500,13 +500,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 gsmResult = op.Do();
             }
 
+            stopwatch.Stop();
+
             Tracer.TraceVerbose(
                 TraceSourceConstants.ComponentNames.BaseShardMapper,
                 "Lookup",
                 "Lookup key from GSM complete; Key type : {0}; Result: {1}; Duration: {2}",
                 typeof(TKey),
                 gsmResult.Result,
-                DateTime.UtcNow - startTime);
+                stopwatch.Elapsed);
 
             // If we could not locate the mapping, we return null and do nothing here.
             if (gsmResult.Result != StoreResult.MappingNotFoundForKey)
@@ -531,7 +533,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             IStoreResults gsmResult;
 
-            DateTime startTime = DateTime.UtcNow;
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             using (IStoreOperationGlobal op = this.Manager.StoreOperationFactory.CreateFindMappingByKeyGlobalOperation(
                 this.Manager,
@@ -546,13 +548,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 gsmResult = op.Do();
             }
 
+            stopwatch.Stop();
+
             Tracer.TraceVerbose(
                 TraceSourceConstants.ComponentNames.BaseShardMapper,
                 "LookupMappingForOpenConnectionForKey",
                 "Lookup key from GSM complete; Key type : {0}; Result: {1}; Duration: {2}",
                 sk.DataType,
                 gsmResult.Result,
-                DateTime.UtcNow - startTime);
+                stopwatch.Elapsed);
 
             // If we could not locate the mapping, we throw.
             if (gsmResult.Result == StoreResult.MappingNotFoundForKey)
@@ -586,7 +590,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             IStoreResults gsmResult;
 
-            DateTime startTime = DateTime.UtcNow;
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             using (IStoreOperationGlobal op = this.Manager.StoreOperationFactory.CreateFindMappingByKeyGlobalOperation(
                 this.Manager,
@@ -601,13 +605,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 gsmResult = await op.DoAsync();
             }
 
+            stopwatch.Stop();
+
             Tracer.TraceVerbose(
                 TraceSourceConstants.ComponentNames.BaseShardMapper,
                 "LookupMappingForOpenConnectionForKeyAsync",
                 "Lookup key from GSM complete; Key type : {0}; Result: {1}; Duration: {2}",
                 sk.DataType,
                 gsmResult.Result,
-                DateTime.UtcNow - startTime);
+                stopwatch.Elapsed);
 
             // If we could not locate the mapping, we throw.
             if (gsmResult.Result == StoreResult.MappingNotFoundForKey)
