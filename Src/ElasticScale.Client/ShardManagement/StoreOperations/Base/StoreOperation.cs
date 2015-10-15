@@ -952,17 +952,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             if (_localConnectionTarget != null)
             {
-                _localConnectionTarget.Close();
+                _localConnectionTarget.CloseWithUnlock(this.Id);
             }
 
             if (_localConnectionSource != null)
             {
-                _localConnectionSource.Close();
+                _localConnectionSource.CloseWithUnlock(this.Id);
             }
 
             if (_globalConnection != null)
             {
-                _globalConnection.Close();
+                _globalConnection.CloseWithUnlock(this.Id);
             }
         }
     }

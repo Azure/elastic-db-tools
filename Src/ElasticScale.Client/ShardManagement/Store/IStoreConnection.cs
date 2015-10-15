@@ -63,6 +63,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         void Close();
 
         /// <summary>
+        /// Closes the store connection after releasing lock.
+        /// </summary>
+        /// <param name="lockId">Lock Id.</param>
+        void CloseWithUnlock(Guid lockId);
+
+        /// <summary>
         /// Acquires a transactional scope on the connection.
         /// </summary>
         /// <param name="kind">Type of transaction scope.</param>

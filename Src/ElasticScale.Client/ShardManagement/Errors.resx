@@ -336,4 +336,7 @@
   <data name="_ShardLocation_InvalidPort" xml:space="preserve">
     <value>The given port number '{0}' is invalid.</value>
   </data>
+  <data name="_Store_SqlOperation_LockNotReleased" xml:space="preserve">
+    <value>Exclusive access to application resource '{0}' could not be released.</value>
+  </data>
 </root>

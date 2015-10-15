@@ -135,9 +135,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         ShardDoesNotExist,
 
         /// <summary>
-        /// An application lock could note be acquired.
+        /// An application lock could not be acquired.
         /// </summary>
         LockNotAcquired,
+
+        /// <summary>
+        /// An application lock cound not be released. 
+        /// </summary>
+        LockNotReleased,
 
         /// <summary>
         /// An unexpected error has occurred.

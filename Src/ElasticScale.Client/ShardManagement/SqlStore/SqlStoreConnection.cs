@@ -91,6 +91,23 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
+        /// Closes the store connection after releasing lock.
+        /// <param name="lockId">Lock Id.</param>
+        /// </summary>
+        public virtual void CloseWithUnlock(Guid lockId)
+        {
+            SqlUtils.WithSqlExceptionHandling(() =>
+            {
+                if (_conn != null)
+                {
+                    this.ReleaseAppLock(lockId);
+                    _conn.Dispose();
+                    _conn = null;
+                }
+            });
+        }
+
+        /// <summary>
         /// Acquires a transactional scope on the connection.
         /// </summary>
         /// <param name="kind">Type of transaction scope.</param>
@@ -186,6 +203,55 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                         ShardManagementErrorCategory.General,
                         ShardManagementErrorCode.LockNotAcquired,
                         Errors._Store_SqlOperation_LockNotAcquired,
+                        lockId);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Releases an application level lock on the connection which is session scoped.
+        /// </summary>
+        /// <param name="lockId">Identity of the lock.</param>
+        private void ReleaseAppLock(Guid lockId)
+        {
+            using (SqlCommand cmdReleaseAppLock = _conn.CreateCommand())
+            {
+                cmdReleaseAppLock.CommandText = @"sp_releaseapplock";
+                cmdReleaseAppLock.CommandType = CommandType.StoredProcedure;
+
+                SqlUtils.AddCommandParameter(
+                    cmdReleaseAppLock,
+                    "@Resource",
+                    SqlDbType.NVarChar,
+                    ParameterDirection.Input,
+                    255 * 2,
+                    lockId.ToString());
+
+                SqlUtils.AddCommandParameter(
+                    cmdReleaseAppLock,
+                    "@LockOwner",
+                    SqlDbType.NVarChar,
+                    ParameterDirection.Input,
+                    32 * 2,
+                    "Session");
+
+                SqlParameter returnValue = SqlUtils.AddCommandParameter(
+                    cmdReleaseAppLock,
+                    "@RETURN_VALUE",
+                    SqlDbType.Int,
+                    ParameterDirection.ReturnValue,
+                    0,
+                    0);
+
+                cmdReleaseAppLock.ExecuteNonQuery();
+
+                // If parameter validation or other errors happen.
+                if ((int)returnValue.Value < 0)
+                {
+                    throw new ShardManagementException(
+                        ShardManagementErrorCategory.General,
+                        ShardManagementErrorCode.LockNotReleased,
+                        Errors._Store_SqlOperation_LockNotReleased,
                         lockId);
                 }
             }
