@@ -37,6 +37,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
     /// The results from processing the <see cref="MultiShardCommand"/> are made available through the 
     /// execute methods and the <see cref="MultiShardDataReader"/>.
     /// </summary>
+    [System.ComponentModel.DesignerCategory("Code")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Multi")]
     public sealed class MultiShardCommand : DbCommand
     {

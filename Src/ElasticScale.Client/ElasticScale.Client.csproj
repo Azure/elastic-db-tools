@@ -299,9 +299,7 @@
     <Compile Include="Query\ShardExecutionEventArgs.cs" />
     <Compile Include="Query\Exceptions\MultiShardSchemaMismatchException.cs" />
     <Compile Include="Query\MultiShardConnection.cs" />
-    <Compile Include="Query\MultiShardCommand.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Query\MultiShardCommand.cs" />
     <Compile Include="Query\MultiShardDataReader.cs" />
     <Compile Include="Query\MultiShardUtils.cs" />
     <Compile Include="Query\Exceptions\MultiShardPartialReadException.cs" />
