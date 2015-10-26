@@ -100,7 +100,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 if (_conn != null)
                 {
-                    this.ReleaseAppLock(lockId);
+                    if (_conn.State == ConnectionState.Open)
+                    {
+                        this.ReleaseAppLock(lockId);
+                    }
                     _conn.Dispose();
                     _conn = null;
                 }
@@ -243,7 +246,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     0,
                     0);
 
-                cmdReleaseAppLock.ExecuteNonQuery();
+                try
+                {
+                    cmdReleaseAppLock.ExecuteNonQuery();
+                }
+                catch(Exception)
+                {
+                    // ignore all exceptions.
+                    return;
+                }
 
                 // If parameter validation or other errors happen.
                 if ((int)returnValue.Value < 0)
