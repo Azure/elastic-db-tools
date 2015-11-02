@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Recovery;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema;
+using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 
@@ -333,6 +335,113 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RangeMapping<int> m in rsm.GetMappings())
             {
                 rsm.DeleteMapping(rsm.UpdateMapping(m, ru));
+            }
+        }
+
+        [TestMethod]
+        public void TestSerializationFixInVersion1_3()
+        {
+            // Get shard map manager
+            ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+                Globals.ShardMapManagerConnectionString,
+                ShardMapManagerLoadPolicy.Lazy);
+
+            // Store some SchemaInfo in the original version
+            const string shardMapName1 = "MyShardMap1";
+            const string shardMapName2 = "MyShardMap2";
+            SchemaInfo expectedSchemaInfo1;
+            SchemaInfo expectedSchemaInfo2;
+
+            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerConnectionString))
+            {
+                conn.Open();
+                SqlCommand cmd = conn.CreateCommand();
+
+                // Manually store some SchemaInfo that has the correct metadata created by EDCL v1.0.0
+                cmd.CommandText = @"insert into __ShardManagement.ShardedDatabaseSchemaInfosGlobal values ('" + shardMapName1 + @"', ' <Schema xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"">
+  <ReferenceTableSet i:type=""ArrayOfReferenceTableInfo"">
+    <ReferenceTableInfo>
+      <SchemaName>r1</SchemaName>
+      <TableName>r2</TableName>
+    </ReferenceTableInfo>
+  </ReferenceTableSet>
+  <ShardedTableSet i:type=""ArrayOfShardedTableInfo"">
+    <ShardedTableInfo>
+      <SchemaName>s1</SchemaName>
+      <TableName>s2</TableName>
+      <KeyColumnName>s3</KeyColumnName>
+    </ShardedTableInfo>
+  </ShardedTableSet>
+</Schema>')";
+                cmd.ExecuteNonQuery();
+                expectedSchemaInfo1 = new SchemaInfo();
+                expectedSchemaInfo1.Add(new ReferenceTableInfo("r1", "r2"));
+                expectedSchemaInfo1.Add(new ShardedTableInfo("s1", "s2", "s3"));
+
+                // Manually store some SchemaInfo that has the incorrect metadata created by EDCL v1.1.0 (GSM v1.2)
+                // We have some goofy values to sanity check that later we only rename the tags, not the data inside
+                cmd.CommandText = @"insert into __ShardManagement.ShardedDatabaseSchemaInfosGlobal values ('" + shardMapName2 + @"', '<Schema xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"">
+  <_referenceTableSet i:type=""ArrayOfReferenceTableInfo"">
+    <ReferenceTableInfo>
+      <SchemaName>&lt;_referenceTableSet&gt;r1</SchemaName>
+      <TableName>r2</TableName>
+    </ReferenceTableInfo>
+  </_referenceTableSet>
+  <_shardedTableSet i:type=""ArrayOfShardedTableInfo"">
+    <ShardedTableInfo>
+      <SchemaName>&lt;/_shardedTableSet&gt;s1</SchemaName>
+      <TableName>s2</TableName>
+      <KeyColumnName>s3</KeyColumnName>
+    </ShardedTableInfo>
+  </_shardedTableSet>
+</Schema>')";
+                cmd.ExecuteNonQuery();
+                expectedSchemaInfo2 = new SchemaInfo();
+                expectedSchemaInfo2.Add(new ReferenceTableInfo("<_referenceTableSet>r1", "r2"));
+                expectedSchemaInfo2.Add(new ShardedTableInfo("</_shardedTableSet>s1", "s2", "s3"));
+            }
+
+            // Upgrade to GSM v1.3 (EDCL v1.1.1)
+            smm.UpgradeGlobalStore(new Version(1, 3));
+
+            // Verify SchemaInfos are now read correctly
+            SchemaInfoCollection schemaInfoCollectionFinal = smm.GetSchemaInfoCollection();
+            AssertEqual(expectedSchemaInfo1, schemaInfoCollectionFinal.Get(shardMapName1));
+            AssertEqual(expectedSchemaInfo2, schemaInfoCollectionFinal.Get(shardMapName2));
+        }
+
+        private void AssertEqual(SchemaInfo x, SchemaInfo y)
+        {
+            AssertExtensions.AssertSequenceEquivalent(x.ReferenceTables, y.ReferenceTables);
+            AssertExtensions.AssertSequenceEquivalent(x.ShardedTables, y.ShardedTables);
+        }
+
+        public class ShardedTableInfoEqualityComparer : IEqualityComparer<ShardedTableInfo>
+        {
+            public bool Equals(ShardedTableInfo x, ShardedTableInfo y)
+            {
+                return x.SchemaName == y.SchemaName
+                    && x.TableName == y.TableName
+                    && x.KeyColumnName == y.KeyColumnName;
+            }
+
+            public int GetHashCode(ShardedTableInfo obj)
+            {
+                return obj.TableName.GetHashCode();
+            }
+        }
+
+        public class ReferenceTableInfoEqualityComparer : IEqualityComparer<ReferenceTableInfo>
+        {
+            public bool Equals(ReferenceTableInfo x, ReferenceTableInfo y)
+            {
+                return x.SchemaName == y.SchemaName
+                    && x.TableName == y.TableName;
+            }
+
+            public int GetHashCode(ReferenceTableInfo obj)
+            {
+                return obj.TableName.GetHashCode();
             }
         }
     }

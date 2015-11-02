@@ -148,6 +148,9 @@
   <data name="UpgradeShardMapManagerGlobalFrom1_1To1_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Scripts\UpgradeShardMapManagerGlobalFrom1.1To1.2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="UpgradeShardMapManagerGlobalFrom1_2To1_3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>scripts\upgradeshardmapmanagerglobalfrom1.2to1.3.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
   <data name="UpgradeShardMapManagerLocalFrom0_0To1_0" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Scripts\UpgradeShardMapManagerLocalFrom0.0To1.0.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
