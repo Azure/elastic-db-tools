@@ -381,7 +381,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // Because this XML comes from SQL Server, which uses different formatting than DataContractSerializer.
             // The Deserialize test uses the XML formatted by SQL Server because SQL Server is where it will
             // come from in the end-to-end scenario.
-            string serializedSchemaInfo = @"<Schema xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"">
+            string originalSchemaInfo = @"<Schema xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"">
   <ReferenceTableSet i:type=""ArrayOfReferenceTableInfo"">
     <ReferenceTableInfo>
       <SchemaName>r1</SchemaName>
@@ -397,7 +397,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
   </ShardedTableSet>
 </Schema>";
 
-            SchemaInfo schemaInfo = FromXml(serializedSchemaInfo);
+            SchemaInfo schemaInfo = FromXml(originalSchemaInfo);
             Assert.AreEqual(1, schemaInfo.ReferenceTables.Count);
             Assert.AreEqual("r1", schemaInfo.ReferenceTables.First().SchemaName);
             Assert.AreEqual("r2", schemaInfo.ReferenceTables.First().TableName);
@@ -405,6 +405,26 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             Assert.AreEqual("s1", schemaInfo.ShardedTables.First().SchemaName);
             Assert.AreEqual("s2", schemaInfo.ShardedTables.First().TableName);
             Assert.AreEqual("s3", schemaInfo.ShardedTables.First().KeyColumnName);
+
+            // Serialize the data back. It should not contain _referenceTableSet or _shardedTableSet.
+            string expectedFinalSchemaInfo = @"<?xml version=""1.0"" encoding=""utf-16""?>
+<Schema xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"">
+  <ReferenceTableSet xmlns="""" i:type=""ArrayOfReferenceTableInfo"">
+    <ReferenceTableInfo>
+      <SchemaName>r1</SchemaName>
+      <TableName>r2</TableName>
+    </ReferenceTableInfo>
+  </ReferenceTableSet>
+  <ShardedTableSet xmlns="""" i:type=""ArrayOfShardedTableInfo"">
+    <ShardedTableInfo>
+      <SchemaName>s1</SchemaName>
+      <TableName>s2</TableName>
+      <KeyColumnName>s3</KeyColumnName>
+    </ShardedTableInfo>
+  </ShardedTableSet>
+</Schema>";
+            string actualFinalSchemaInfo = ToXml(schemaInfo);
+            Assert.AreEqual(expectedFinalSchemaInfo, actualFinalSchemaInfo);
         }
 
         /// <summary>
@@ -417,7 +437,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // Because this XML comes from SQL Server, which uses different formatting than DataContractSerializer.
             // The Deserialize test uses the XML formatted by SQL Server because SQL Server is where it will
             // come from in the end-to-end scenario.
-            string serializedSchemaInfo = @"<Schema xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"">
+            string originalSchemaInfo = @"<Schema xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"">
   <_referenceTableSet i:type=""ArrayOfReferenceTableInfo"">
     <ReferenceTableInfo>
       <SchemaName>r1</SchemaName>
@@ -433,7 +453,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
   </_shardedTableSet>
 </Schema>";
 
-            SchemaInfo schemaInfo = FromXml(serializedSchemaInfo);
+            SchemaInfo schemaInfo = FromXml(originalSchemaInfo);
             Assert.AreEqual(1, schemaInfo.ReferenceTables.Count);
             Assert.AreEqual("r1", schemaInfo.ReferenceTables.First().SchemaName);
             Assert.AreEqual("r2", schemaInfo.ReferenceTables.First().TableName);
@@ -441,6 +461,26 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             Assert.AreEqual("s1", schemaInfo.ShardedTables.First().SchemaName);
             Assert.AreEqual("s2", schemaInfo.ShardedTables.First().TableName);
             Assert.AreEqual("s3", schemaInfo.ShardedTables.First().KeyColumnName);
+
+            // Serialize the data back. It should be not contain _referenceTableSet or _shardedTableSet.
+            string expectedFinalSchemaInfo = @"<?xml version=""1.0"" encoding=""utf-16""?>
+<Schema xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"">
+  <ReferenceTableSet xmlns="""" i:type=""ArrayOfReferenceTableInfo"">
+    <ReferenceTableInfo>
+      <SchemaName>r1</SchemaName>
+      <TableName>r2</TableName>
+    </ReferenceTableInfo>
+  </ReferenceTableSet>
+  <ShardedTableSet xmlns="""" i:type=""ArrayOfShardedTableInfo"">
+    <ShardedTableInfo>
+      <SchemaName>s1</SchemaName>
+      <TableName>s2</TableName>
+      <KeyColumnName>s3</KeyColumnName>
+    </ShardedTableInfo>
+  </ShardedTableSet>
+</Schema>";
+            string actualFinalSchemaInfo = ToXml(schemaInfo);
+            Assert.AreEqual(expectedFinalSchemaInfo, actualFinalSchemaInfo);
         }
 
         private string ToXml(SchemaInfo schemaInfo)

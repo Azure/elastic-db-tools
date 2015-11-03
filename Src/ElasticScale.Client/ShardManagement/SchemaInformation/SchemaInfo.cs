@@ -85,14 +85,21 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema
 
         /// <summary>
         /// Initializes this instance after construction or deserialization. 
-        /// If <see cref="_shardedTables"/> is null after deserialization, then set it to <see cref="_shardedTablesWrongName"/> 
-        /// instead (in case we deserialized the v1.1.0 format). If that is also null, then just set it to an empty HashSet. 
-        /// Same for <see cref="_referenceTables"/>.
+        
         /// </summary>
         private void Initialize()
         {
+            // If _shardedTables is null after deserialization, then set it to _shardedTablesWrongName
+            // instead (in case we deserialized the v1.1.0 format). If that is also null, then just set 
+            // it to an empty HashSet. 
             _shardedTables = _shardedTables ?? _shardedTablesWrongName ?? new HashSet<ShardedTableInfo>();
+            // Null out _shardedTablesWrongName so that we don't serialize it back
+            _shardedTablesWrongName = null;
+
+            // Same as above for _referenceTables
             _referenceTables = _referenceTables ?? _referenceTablesWrongName ?? new HashSet<ReferenceTableInfo>();
+            _referenceTablesWrongName = null;
+
             _syncObject = new object();
         }
 
