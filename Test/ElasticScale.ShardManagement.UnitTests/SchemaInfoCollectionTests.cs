@@ -152,8 +152,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             SchemaInfo sdmdRead = siCollection.Get(mdName);
 
-            Assert.IsTrue(AreEqual<ShardedTableInfo>(si.ShardedTables, sdmdRead.ShardedTables));
-            Assert.IsTrue(AreEqual<ReferenceTableInfo>(si.ReferenceTables, sdmdRead.ReferenceTables));
+            AssertEqual(si, sdmdRead);
 
             // Trying to add schema info with the same name again will result in a 'name conflict' exception.
             siex = AssertExtensions.AssertThrows<SchemaInfoException>(
@@ -210,7 +209,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             SchemaInfo sdmdRead = siCollection.Get(mdName);
 
-            Assert.IsTrue(AreEqual<ShardedTableInfo>(si.ShardedTables, sdmdRead.ShardedTables));
+            AssertEqual(si, sdmdRead);
         }
 
         [TestMethod]
@@ -254,8 +253,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             SchemaInfo sdmdRead = siCollection.Get(mdName);
 
-            Assert.IsTrue(AreEqual<ShardedTableInfo>(sdmdNew.ShardedTables, sdmdRead.ShardedTables));
-            Assert.IsTrue(AreEqual<ReferenceTableInfo>(sdmdNew.ReferenceTables, sdmdRead.ReferenceTables));
+            AssertEqual(sdmdNew, sdmdRead);
         }
 
         [TestMethod]
@@ -322,8 +320,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     break;
                 }
 
-                Assert.IsTrue(AreEqual<ShardedTableInfo>(sdmdOriginal.ShardedTables, kvp.Value.ShardedTables));
-                Assert.IsTrue(AreEqual<ReferenceTableInfo>(sdmdOriginal.ReferenceTables, kvp.Value.ReferenceTables));
+                AssertEqual(sdmdOriginal, kvp.Value);
                 i++;
             }
 
@@ -533,24 +530,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             return db;
         }
 
-        private bool AreEqual<T>(IEnumerable<T> x, IEnumerable<T> y) where T : IEquatable<T>
+        private void AssertEqual(SchemaInfo x, SchemaInfo y)
         {
-            if (x == y)
-            {
-                return true;
-            }
-
-            if (x == null || y == null)
-            {
-                return false;
-            }
-
-            if (x.Count() != y.Count())
-            {
-                return false;
-            }
-
-            return x.SequenceEqual(y);
+            AssertExtensions.AssertSequenceEquivalent(x.ReferenceTables, y.ReferenceTables);
+            AssertExtensions.AssertSequenceEquivalent(x.ShardedTables, y.ShardedTables);
         }
     }
 }
