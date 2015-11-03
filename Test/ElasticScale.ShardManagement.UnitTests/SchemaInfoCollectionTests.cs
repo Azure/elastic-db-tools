@@ -366,9 +366,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
   </ShardedTableSet>
 </Schema>";
             string actualSerializedSchemaInfo = ToXml(schemaInfo);
+
             Assert.AreEqual(
-                expectedSerializedSchemaInfo,
-                actualSerializedSchemaInfo);
+                expectedSerializedSchemaInfo.Replace("\r", ""),
+                actualSerializedSchemaInfo.Replace("\r", ""));
         }
 
         /// <summary>
