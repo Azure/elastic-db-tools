@@ -2,17 +2,22 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 # Params you must supply
-$server = ""
-$shardmapmgr = ""
-$username = ""
-$password = ""
-$sqlfile = "EnableRLS.sql"
+$server = '[YourSQLServerName]'
+$shardmapmgr = '[YourShardMapManagerDatabaseName]'
+$username = '[YourUserName]'
+$password = '[YourPassword]'
+$sqlfile = 'EnableRLS.sql'
 
 # Get shards and execute sqlfile
 $sqldir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sqlpath = Join-Path -Path $sqldir -ChildPath $sqlfile
 $query = "SELECT ServerName, DatabaseName FROM __ShardManagement.ShardsGlobal;"
+$sqlpath
+$query
+
 $shards = Invoke-Sqlcmd -Query $query -ServerInstance $server -Database $shardmapmgr -Username $username -Password $password
+
+$shards
 
 foreach ($shard in $shards) {
     # Assume all shards have same username/password as shard map manager
