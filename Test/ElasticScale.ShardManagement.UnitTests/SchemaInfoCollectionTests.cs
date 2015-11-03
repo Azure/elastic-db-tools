@@ -4,7 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Xml;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
@@ -328,10 +331,117 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             Assert.AreEqual(3, i);
         }
 
+        /// <summary>
+        /// Verifies that the serialization format of <see cref="SchemaInfo"/> matches the serialization format
+        /// from v1.0.0. If this fails, then an older version of EDCL v1.0.0 will not be able to successfully 
+        /// deserialize the <see cref="SchemaInfo"/>.
+        /// </summary>
+        /// <remarks>
+        /// This test will need to be more sophisticated if new fields are added. Since no fields have been added yet,
+        /// we can just do a direct string comparison, which is very simple and precise.
+        /// </remarks>
+        [TestMethod]
+        public void SerializeCompatibility()
+        {
+            SchemaInfo schemaInfo = new SchemaInfo();
+            schemaInfo.Add(new ReferenceTableInfo("r1", "r2"));
+            schemaInfo.Add(new ShardedTableInfo("s1", "s2", "s3"));
+
+            // Why is this slightly different from the XML in the DeserializeCompatibility test?
+            // Because this is the exact formatting that we expect DataContractSerializer will create.
+            string expectedSerializedSchemaInfo = @"<?xml version=""1.0"" encoding=""utf-16""?>
+<Schema xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"">
+  <ReferenceTableSet xmlns="""" i:type=""ArrayOfReferenceTableInfo"">
+    <ReferenceTableInfo>
+      <SchemaName>r1</SchemaName>
+      <TableName>r2</TableName>
+    </ReferenceTableInfo>
+  </ReferenceTableSet>
+  <ShardedTableSet xmlns="""" i:type=""ArrayOfShardedTableInfo"">
+    <ShardedTableInfo>
+      <SchemaName>s1</SchemaName>
+      <TableName>s2</TableName>
+      <KeyColumnName>s3</KeyColumnName>
+    </ShardedTableInfo>
+  </ShardedTableSet>
+</Schema>";
+            string actualSerializedSchemaInfo = ToXml(schemaInfo);
+
+            Assert.AreEqual(
+                expectedSerializedSchemaInfo.Replace("\r", ""),
+                actualSerializedSchemaInfo.Replace("\r", ""));
+        }
+
+        /// <summary>
+        /// Verifies that the serialization format of <see cref="SchemaInfo"/> matches the serialization format
+        /// from v1.0.0. If this fails, then this version of EDCL will not be able to deserialize a <see cref="SchemaInfo"/>
+        /// from an older version of EDCL.
+        /// </summary>
+        /// <remarks>
+        /// This test will need to be more sophisticated if new fields are added.
+        /// </remarks>
+        [TestMethod]
+        public void DeserializeCompatibility()
+        {
+            // Why is this slightly different from the XML in the SerializeCompatibility test?
+            // Because this XML comes from SQL Server, which uses different formatting than DataContractSerializer.
+            // The Deserialize test uses the XML formatted by SQL Server because SQL Server is where it will
+            // come from in the end-to-end scenario.
+            string serializedSchemaInfo = @"<Schema xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"">
+  <ReferenceTableSet i:type=""ArrayOfReferenceTableInfo"">
+    <ReferenceTableInfo>
+      <SchemaName>r1</SchemaName>
+      <TableName>r2</TableName>
+    </ReferenceTableInfo>
+  </ReferenceTableSet>
+  <ShardedTableSet i:type=""ArrayOfShardedTableInfo"">
+    <ShardedTableInfo>
+      <SchemaName>s1</SchemaName>
+      <TableName>s2</TableName>
+      <KeyColumnName>s3</KeyColumnName>
+    </ShardedTableInfo>
+  </ShardedTableSet>
+</Schema>";
+
+            SchemaInfo schemaInfo = FromXml(serializedSchemaInfo);
+            Assert.AreEqual(1, schemaInfo.ReferenceTables.Count);
+            Assert.AreEqual("r1", schemaInfo.ReferenceTables.First().SchemaName);
+            Assert.AreEqual("r2", schemaInfo.ReferenceTables.First().TableName);
+            Assert.AreEqual(1, schemaInfo.ShardedTables.Count);
+            Assert.AreEqual("s1", schemaInfo.ShardedTables.First().SchemaName);
+            Assert.AreEqual("s2", schemaInfo.ShardedTables.First().TableName);
+            Assert.AreEqual("s3", schemaInfo.ShardedTables.First().KeyColumnName);
+        }
+
+        private string ToXml(SchemaInfo schemaInfo)
+        {
+            using (StringWriter sw = new StringWriter())
+            {
+                using (XmlWriter xw = XmlWriter.Create(sw, new XmlWriterSettings() { Indent = true }))
+                {
+                    DataContractSerializer serializer = new DataContractSerializer(typeof(SchemaInfo));
+                    serializer.WriteObject(xw, schemaInfo);
+                }
+                return sw.ToString();
+            }
+        }
+
+        private SchemaInfo FromXml(string schemaInfo)
+        {
+            using (StringReader sr = new StringReader(schemaInfo))
+            {
+                using (XmlReader xr = XmlReader.Create(sr))
+                {
+                    DataContractSerializer serializer = new DataContractSerializer(typeof(SchemaInfo));
+                    return (SchemaInfo)serializer.ReadObject(xr);
+                }
+            }
+        }
+
         private string NewNameWithSpecialChars()
         {
             // We include invalid XML characters in the list of special characters since error messages
-            // are sent from Smart Backup to T-SQL in the form of XML strings.
+            // are sent from SchemaInfo to T-SQL in the form of XML strings.
             //
             char[] specialChars = new char[] { '[', ']', '-', ' ', '\'', '"', '\'', '<', '>', '\\', '&', '%', ':' };
             System.Random rand = new System.Random();

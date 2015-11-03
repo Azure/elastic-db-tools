@@ -13,7 +13,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <summary>
         /// GSM version of store supported by this library.
         /// </summary>
-        internal static Version GsmVersionClient = new Version(1, 2);
+        internal static Version GsmVersionClient = new Version(1, 3);
 
         /// <summary>
         /// LSM version of store supported by this library.

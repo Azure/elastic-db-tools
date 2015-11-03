@@ -27,13 +27,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema
         /// This is the list of sharded tables in the sharding schema along with their 
         /// sharding key column names.
         /// </summary>
-        [DataMember()]
+        [DataMember(Name = "ShardedTableSet")]
         private ISet<ShardedTableInfo> _shardedTableSet;
 
         /// <summary>
         /// This is the list of reference tables in the sharding scheme.
         /// </summary>
-        [DataMember()]
+        [DataMember(Name = "ReferenceTableSet")]
         private ISet<ReferenceTableInfo> _referenceTableSet;
 
         /// <summary>
