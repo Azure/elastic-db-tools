@@ -372,15 +372,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         }
 
         /// <summary>
-        /// Verifies that the serialization format of <see cref="SchemaInfo"/> matches the serialization format
-        /// from v1.0.0. If this fails, then this version of EDCL will not be able to deserialize a <see cref="SchemaInfo"/>
-        /// from an older version of EDCL.
+        /// Verifies that <see cref="SchemaInfo"/>data from EDCL v1.0.0 can be deserialized.
         /// </summary>
-        /// <remarks>
-        /// This test will need to be more sophisticated if new fields are added.
-        /// </remarks>
         [TestMethod]
-        public void DeserializeCompatibility()
+        public void DeserializeCompatibilityV100()
         {
             // Why is this slightly different from the XML in the SerializeCompatibility test?
             // Because this XML comes from SQL Server, which uses different formatting than DataContractSerializer.
@@ -400,6 +395,42 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
       <KeyColumnName>s3</KeyColumnName>
     </ShardedTableInfo>
   </ShardedTableSet>
+</Schema>";
+
+            SchemaInfo schemaInfo = FromXml(serializedSchemaInfo);
+            Assert.AreEqual(1, schemaInfo.ReferenceTables.Count);
+            Assert.AreEqual("r1", schemaInfo.ReferenceTables.First().SchemaName);
+            Assert.AreEqual("r2", schemaInfo.ReferenceTables.First().TableName);
+            Assert.AreEqual(1, schemaInfo.ShardedTables.Count);
+            Assert.AreEqual("s1", schemaInfo.ShardedTables.First().SchemaName);
+            Assert.AreEqual("s2", schemaInfo.ShardedTables.First().TableName);
+            Assert.AreEqual("s3", schemaInfo.ShardedTables.First().KeyColumnName);
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="SchemaInfo"/>data from EDCL v1.1.0 can be deserialized.
+        /// </summary>
+        [TestMethod]
+        public void DeserializeCompatibilityV110()
+        {
+            // Why is this slightly different from the XML in the SerializeCompatibility test?
+            // Because this XML comes from SQL Server, which uses different formatting than DataContractSerializer.
+            // The Deserialize test uses the XML formatted by SQL Server because SQL Server is where it will
+            // come from in the end-to-end scenario.
+            string serializedSchemaInfo = @"<Schema xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"">
+  <_referenceTableSet i:type=""ArrayOfReferenceTableInfo"">
+    <ReferenceTableInfo>
+      <SchemaName>r1</SchemaName>
+      <TableName>r2</TableName>
+    </ReferenceTableInfo>
+  </_referenceTableSet>
+  <_shardedTableSet i:type=""ArrayOfShardedTableInfo"">
+    <ShardedTableInfo>
+      <SchemaName>s1</SchemaName>
+      <TableName>s2</TableName>
+      <KeyColumnName>s3</KeyColumnName>
+    </ShardedTableInfo>
+  </_shardedTableSet>
 </Schema>";
 
             SchemaInfo schemaInfo = FromXml(serializedSchemaInfo);
