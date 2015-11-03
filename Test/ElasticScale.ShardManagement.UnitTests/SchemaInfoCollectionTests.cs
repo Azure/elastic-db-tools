@@ -366,6 +366,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             Assert.AreEqual(
                 expectedSerializedSchemaInfo,
                 actualSerializedSchemaInfo);
+
+            // Deserialize it back as a sanity check
+            SchemaInfo finalSchemaInfo = FromXml(actualSerializedSchemaInfo);
+            AssertEqual(schemaInfo, finalSchemaInfo);
         }
 
         /// <summary>
