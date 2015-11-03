@@ -65,9 +65,9 @@ namespace EFMultiTenantElasticScale
             {
                 conn = shardMap.OpenConnectionForKey(shardingKey, connectionStr, ConnectionOptions.Validate);
 
-                // Set CONTEXT_INFO to shardingKey to enable Row-Level Security filtering
+                // Set TenantId in SESSION_CONTEXT to shardingKey to enable Row-Level Security filtering
                 SqlCommand cmd = conn.CreateCommand();
-                cmd.CommandText = @"SET CONTEXT_INFO @shardingKey";
+                cmd.CommandText = @"exec sp_set_session_context @key=N'TenantId', @value=@shardingKey";
                 cmd.Parameters.AddWithValue("@shardingKey", shardingKey);
                 cmd.ExecuteNonQuery();
 

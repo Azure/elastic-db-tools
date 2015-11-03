@@ -30,8 +30,8 @@ namespace EFMultiTenantElasticScale
         private static string s_shardmapmgrdb = "[YourShardMapManagerDatabaseName]";
         private static string s_shard1 = "[YourShard01DatabaseName]";
         private static string s_shard2 = "[YourShard02DatabaseName]";
-        private static string s_userName = "YourUserName";
-        private static string s_password = "YourPassword";
+        private static string s_userName = "[YourUserName]";
+        private static string s_password = "[YourPassword]";
         private static string s_applicationName = "ESC_EFMTv1.0";
 
         // Four tenants
@@ -97,8 +97,8 @@ namespace EFMultiTenantElasticScale
             // If Row-Level Security is enabled, only Tenant 4's blogs will be listed
             SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
             {
-                // Note: We are using a wrapper function OpenDDRConnection that automatically sets CONTEXT_INFO to the specified TenantId. 
-                // This is a best practice to ensure that CONTEXT_INFO is always set before executing a query.
+                // Note: We are using a wrapper function OpenDDRConnection that automatically set SESSION_CONTEXT with the specified TenantId. 
+                // This is a best practice to ensure that SESSION_CONTEXT is always set before executing a query.
                 using (SqlConnection conn = ElasticScaleContext<int>.OpenDDRConnection(sharding.ShardMap, s_tenantId4, connStrBldr.ConnectionString))
                 {
                     SqlCommand cmd = conn.CreateCommand();
@@ -113,20 +113,19 @@ namespace EFMultiTenantElasticScale
                 }
             });
 
-            // If you created a check constraint in addition to RLS, attempting to insert a row for the 
-            // wrong tenant will throw an error.
+            // Because of the RLS block predicate, attempting to insert a row for the wrong tenant will throw an error.
             Console.WriteLine("\n--\n\nTrying to create a new Blog for TenantId {0} while connected as TenantId {1}: ", s_tenantId2, s_tenantId3);
             SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
             {
                 using (var db = new ElasticScaleContext<int>(sharding.ShardMap, s_tenantId3, connStrBldr.ConnectionString))
                 {
-                    // Verify check constraint blocks Tenant 3 from inserting rows for Tenant 2
+                    // Verify that block predicate prevents Tenant 3 from inserting rows for Tenant 2
                     try
                     {
                         var bad_blog = new Blog { Name = "BAD BLOG", TenantId = s_tenantId2 };
                         db.Blogs.Add(bad_blog);
                         db.SaveChanges();
-                        Console.WriteLine("No error thrown - make sure you have created check constraints in the shard databases.");
+                        Console.WriteLine("No error thrown - make sure your security policy has a block predicate on this table in each shard database.");
                     }
                     catch (DbUpdateException)
                     {
