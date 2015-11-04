@@ -36,7 +36,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema
         /// to write custom deserialization logic.
         /// </summary>
         [DataMember(Name = "_shardedTableSet", EmitDefaultValue = false)]
-        private ISet<ShardedTableInfo> _shardedTablesWrongName;
+        private ISet<ShardedTableInfo> _shardedTablesAlternateName;
 
         /// <summary>
         /// This is the list of reference tables in the sharding scheme.
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema
         /// to write custom deserialization logic.
         /// </summary>
         [DataMember(Name = "_referenceTableSet", EmitDefaultValue = false)]
-        private ISet<ReferenceTableInfo> _referenceTablesWrongName;
+        private ISet<ReferenceTableInfo> _referenceTablesAlternateName;
 
         /// <summary>
         /// Synchronization object used when adding table entries to the current 
@@ -92,13 +92,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema
             // If _shardedTables is null after deserialization, then set it to _shardedTablesWrongName
             // instead (in case we deserialized the v1.1.0 format). If that is also null, then just set 
             // it to an empty HashSet. 
-            _shardedTables = _shardedTables ?? _shardedTablesWrongName ?? new HashSet<ShardedTableInfo>();
+            _shardedTables = _shardedTables ?? _shardedTablesAlternateName ?? new HashSet<ShardedTableInfo>();
             // Null out _shardedTablesWrongName so that we don't serialize it back
-            _shardedTablesWrongName = null;
+            _shardedTablesAlternateName = null;
 
             // Same as above for _referenceTables
-            _referenceTables = _referenceTables ?? _referenceTablesWrongName ?? new HashSet<ReferenceTableInfo>();
-            _referenceTablesWrongName = null;
+            _referenceTables = _referenceTables ?? _referenceTablesAlternateName ?? new HashSet<ReferenceTableInfo>();
+            _referenceTablesAlternateName = null;
 
             _syncObject = new object();
         }
