@@ -224,15 +224,11 @@ function Get-RangeShardMap
     
     # Get and cast necessary shard map management methods for a range shard map
     [Type]$ShardMapManagerType = [Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager]
-    $TryGetRangeShardMapMethodGeneric = $ShardMapManagerType.GetMethod("TryGetRangeShardMap")
-    $TryGetRangeShardMapMethodTyped = $TryGetRangeShardMapMethodGeneric.MakeGenericMethod($KeyType)
+    $GetRangeShardMapMethodGeneric = $ShardMapManagerType.GetMethod("GetRangeShardMap")
+    $GetRangeShardMapMethodTyped = $GetRangeShardMapMethodGeneric.MakeGenericMethod($KeyType)
 
-    # Check to see if $ShardMapName range shard map exists
-    $params = @($RangeShardMapName, $null)
-    $Exists = $TryGetRangeShardMapMethodTyped.Invoke($ShardMapManager, $params)
-    $RangeShardMap = $params[1]
-
-    return $RangeShardMap
+    # Get range shard map
+    $GetRangeShardMapMethodTyped.Invoke($ShardMapManager, $RangeShardMapName)
 }
 
 <#
