@@ -224,15 +224,11 @@ function Get-RangeShardMap
     
     # Get and cast necessary shard map management methods for a range shard map
     [Type]$ShardMapManagerType = [Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager]
-    $TryGetRangeShardMapMethodGeneric = $ShardMapManagerType.GetMethod("TryGetRangeShardMap")
-    $TryGetRangeShardMapMethodTyped = $TryGetRangeShardMapMethodGeneric.MakeGenericMethod($KeyType)
+    $GetRangeShardMapMethodGeneric = $ShardMapManagerType.GetMethod("GetRangeShardMap")
+    $GetRangeShardMapMethodTyped = $GetRangeShardMapMethodGeneric.MakeGenericMethod($KeyType)
 
-    # Check to see if $ShardMapName range shard map exists
-    $params = @($RangeShardMapName, $null)
-    $Exists = $TryGetRangeShardMapMethodTyped.Invoke($ShardMapManager, $params)
-    $RangeShardMap = $params[1]
-
-    return $RangeShardMap
+    # Get range shard map
+    $GetRangeShardMapMethodTyped.Invoke($ShardMapManager, $RangeShardMapName)
 }
 
 <#
@@ -329,6 +325,76 @@ function Add-RangeMapping
         Write-Verbose "`tRange [$RangeLow, $RangeHigh) for $SqlDatabaseName does not exist, adding..."
         $ShardReference = $rangeShardMap.CreateRangeMapping($InputRange, $InputShard)
         Write-Verbose "`tNew range [$RangeLow, $RangeHigh) for $SqlDatabaseName added to range shard map"
+    }
+}
+
+<#
+.SYNOPSIS
+    Updates the shard for an existing mapping in a range shard map
+#>
+function Set-RangeMapping
+{
+    param
+    (
+         # Type of range shard map
+        [parameter(Mandatory=$true)]
+        [Type]$KeyType,
+
+        [parameter(Mandatory=$true)]
+        [System.Object]$RangeShardMap,
+
+        [parameter(Mandatory=$true)]
+        [object]$RangeLow,
+
+        [parameter(Mandatory=$true)]
+        [object]$RangeHigh,
+
+        [parameter(Mandatory=$true)]
+        [String]$SqlServerName,
+
+        [parameter(Mandatory=$true)]
+        [String]$SqlDatabaseName
+    )
+
+    # Get the Shard from the shard map
+    $ShardLocation = New-Object Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardLocation($SqlServerName, $SqlDatabaseName)
+    $InputShard = $rangeShardMap.GetShard($ShardLocation)
+
+    # Get the RangeMapping from the shard map
+    $InputRange = New-Object Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Range[$KeyType]($RangeLow, $RangeHigh)
+    Write-Verbose "`tChecking if range [$RangeLow, $RangeHigh) exists for $SqlDatabaseName..."
+    $Mappings = $RangeShardMap.GetMappings($InputRange)
+
+    Write-Verbose "Mappings found: $($Mappings | Out-Mapping | Format-Table | Out-String)"
+
+    if ($Mappings.count -eq 1 -and $Mappings[0].Value -eq $InputRange)
+    {
+        $Mapping = $Mappings[0]
+
+        Write-Verbose "`tSetting mapping offline"
+        $RangeMappingUpdate = New-Object Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMappingUpdate
+        $RangeMappingUpdate.Status = "Offline"
+        $Mapping = $RangeShardMap.UpdateMapping($Mapping, $RangeMappingUpdate)
+
+        Write-Verbose "`tMoving mapping to $ShardLocation"
+        $RangeMappingUpdate = New-Object Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMappingUpdate
+        $RangeMappingUpdate.Shard = $InputShard
+        $Mapping = $RangeShardMap.UpdateMapping($Mapping, $RangeMappingUpdate)
+
+        Write-Verbose "`tSetting mapping online"
+        $RangeMappingUpdate = New-Object Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMappingUpdate
+        $RangeMappingUpdate.Status = "Online"
+        $Mapping = $RangeShardMap.UpdateMapping($Mapping, $RangeMappingUpdate)
+
+        $mapping | Out-Mapping
+    }
+    elseif ($Mappings.count -eq 0)
+    {
+        throw "`tRange [$RangeLow, $RangeHigh) has no mappings."
+    }
+    else
+    {
+        throw "`tRange [$RangeLow, $RangeHigh) is covered by more than one mapping. Mappings found: $($Mappings | Out-Mapping | Format-Table | Out-String)"
     }
 }
 
@@ -461,19 +527,30 @@ function Get-Mappings
     )
     
     # Get mappings
-    $mappings = $ShardMap.GetMappings()
+    $ShardMap.GetMappings() | Out-Mapping
+}
 
-    # Format them for PowerShell
-    $formattedMappings = $mappings | foreach { 
-        New-Object -TypeName PSObject -Property @{ 
-            "Status" = $_.Status.ToString(); 
-            "Value" = $_.Value; 
-            "ShardLocation" = $_.Shard.Location; 
-        } 
+<#
+.SYNOPSIS
+    Formats the mappings for PowerShell output
+#>
+function Out-Mapping
+{
+    param
+    (
+        [Parameter(Mandatory,ValueFromPipeline)]
+        $Mappings
+    )
+
+    process {
+        $mappings | foreach {
+            New-Object -TypeName PSObject -Property @{
+                "Status" = $_.Status.ToString();
+                "Value" = $_.Value;
+                "ShardLocation" = $_.Shard.Location;
+            }
+        }
     }
-
-    return $formattedMappings
-
 }
 
 <#
