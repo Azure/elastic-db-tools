@@ -40,8 +40,8 @@ case OperationType
 	when 3 then 'Merge'
 end as OperationType,
 State,
-MovedShardletsLowKey as MovedLowKey,
-MovedShardletsHighKey as MovedHighKey,
+MoveShardletsLowKey as MovedLowKey,
+MoveShardletsHighKey as MovedHighKey,
 KeyType,
 SourceDataSourceName as SrcServer,
 SourceDatabaseName as SrcDb,
