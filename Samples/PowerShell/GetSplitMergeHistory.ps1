@@ -61,7 +61,19 @@ order by CreateTime
             $splitMergeHistoryItem = New-Object -TypeName PSObject
             foreach ($column in $columns)
             {
-                $splitMergeHistoryItem | Add-Member -MemberType NoteProperty -Name $column['ColumnName'] -Value $reader.GetValue($column['ColumnOrdinal'])
+                $name = $column['ColumnName']
+                $value = $reader.GetValue($column['ColumnOrdinal'])
+                if ($name -eq 'TablesMoved')
+                {
+                    # Get the tables that were moved as two-part table names
+                    $tablesMovedXml = [xml]$value
+                    $splitMergeHistoryItem | Add-Member -MemberType NoteProperty -Name 'ShardedTablesMoved' -Value $(Select-Xml -Xml $tablesMovedXml -Xpath '//ShardedTableInfo' | % { "$($_.Node.SchemaName).$($_.Node.TableName)" })
+                    $splitMergeHistoryItem | Add-Member -MemberType NoteProperty -Name 'ReferenceTablesMoved' -Value $(Select-Xml -Xml $tablesMovedXml -Xpath '//ReferenceTableInfo' | % { "$($_.Node.SchemaName).$($_.Node.TableName)" })
+                }
+                else
+                {                
+                    $splitMergeHistoryItem | Add-Member -MemberType NoteProperty -Name $name -Value $value
+                } 
             }
             
             # Convert KeyType from an integer value to a human-readable enum value
@@ -87,9 +99,7 @@ order by CreateTime
             $splitMergeHistoryItem.MovedLowKey = ConvertToShardKey -KeyType $splitMergeHistoryItem.KeyType -Value $splitMergeHistoryItem.MovedLowKey
             $splitMergeHistoryItem.MovedHighKey = ConvertToShardKey -KeyType $splitMergeHistoryItem.KeyType -Value $splitMergeHistoryItem.MovedHighKey
 
-            # Get the sharded tables that were moved as two-part table names
-            $tablesMovedXml = [xml]$splitMergeHistoryItem.TablesMoved
-            $splitMergeHistoryItem.TablesMoved = Select-Xml -Xml $tablesMovedXml -Xpath '//ShardedTableInfo' | % { "$($_.Node.SchemaName).$($_.Node.TableName)" }
+
 
             # Write the result
             $splitMergeHistoryItem
