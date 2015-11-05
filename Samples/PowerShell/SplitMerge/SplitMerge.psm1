@@ -83,14 +83,7 @@ function Submit-SplitRequest
 
     # Get web form	
     $certificate = Get-CertificateParameter $CertificateThumbprint
-    try
-    {
-        $body = Invoke-WebRequest @certificate $SplitMergeServiceEndpoint -SessionVariable webSession
-    }
-    catch
-    {
-        throw "The certificate specified by the thumbprint $CertificateThumbprint couldn't be found on the server."
-    }
+    $body = Invoke-WebRequest @certificate $SplitMergeServiceEndpoint -SessionVariable webSession
     $form = $body.Forms[0]
 
     # Populate form
