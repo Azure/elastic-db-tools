@@ -211,7 +211,6 @@ foreach ($DbName in $ShardDatabaseName1, $ShardDatabaseName2)
 }
 
 # Only populate for Int32 and Int64 key types. Populating other types is possible but not yet supported in this sample script.
-
 if ($ShardKeyType -eq 'Int32' -or $ShardKeyType -eq 'Int64')
 {
     # Populate sharded table in the first shard
@@ -229,3 +228,12 @@ if ($ShardKeyType -eq 'Int32' -or $ShardKeyType -eq 'Int64')
         Invoke-SqlScalar -UserName $UserName -Password $Password -SqlServerName $ShardMapManagerServerName -SqlDatabaseName $ShardDatabaseName1 -DbQuery $InsertIntoReferenceTableQuery
     }
 }
+
+Write-Host
+Write-Host -ForegroundColor Cyan "Sample Split-Merge Environment has been created."
+Write-Host -ForegroundColor Cyan "  ShardMapManager Server: $ShardMapManagerServerName Database: $ShardMapManagerDatabaseName "
+Write-Host -ForegroundColor Cyan "  ShardMapName: $ShardMapName ShardKeyType: $ShardKeyType"
+Write-Host
+Write-Host -ForegroundColor Cyan "To view the current shard mappings, execute:"
+Write-Host -ForegroundColor Cyan "  .\GetMappings.ps1 -UserName $UserName -Password $Password -ShardMapManagerServerName $ShardMapManagerServerName -ShardMapManagerDatabaseName $ShardMapManagerDatabaseName -ShardMapName $ShardMapName"
+Write-Host
