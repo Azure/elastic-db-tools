@@ -67,9 +67,25 @@ order by CreateTime
             # Convert KeyType from an integer value to a human-readable enum value
             $splitMergeHistoryItem.KeyType = [Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardKeyType]$splitMergeHistoryItem.KeyType
             
-            # Convert moved key values from binary format to human-readable value 
-            $splitMergeHistoryItem.MovedLowKey = [Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardKey]::FromRawValue($splitMergeHistoryItem.KeyType, $splitMergeHistoryItem.MovedLowKey)
-            $splitMergeHistoryItem.MovedHighKey = [Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardKey]::FromRawValue($splitMergeHistoryItem.KeyType, $splitMergeHistoryItem.MovedHighKey)
+            # Convert moved key values from binary format to human-readable value
+            function ConvertToShardKey([Parameter(Mandatory)]$KeyType, [Parameter(Mandatory)]$Value)
+            {
+                if ($Value -eq $null)
+                {
+                    $null
+                }
+                elseif ($Value -eq [System.DBNull]::Value)
+                {
+                    $null
+                }
+                else
+                {
+                    [Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardKey]::FromRawValue($KeyType, $Value)
+                }
+            }
+             
+            $splitMergeHistoryItem.MovedLowKey = ConvertToShardKey -KeyType $splitMergeHistoryItem.KeyType -Value $splitMergeHistoryItem.MovedLowKey
+            $splitMergeHistoryItem.MovedHighKey = ConvertToShardKey -KeyType $splitMergeHistoryItem.KeyType -Value $splitMergeHistoryItem.MovedHighKey
 
             # Get the sharded tables that were moved as two-part table names
             $tablesMovedXml = [xml]$splitMergeHistoryItem.TablesMoved
