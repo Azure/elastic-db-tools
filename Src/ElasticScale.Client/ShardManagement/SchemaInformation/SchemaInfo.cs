@@ -89,11 +89,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema
         /// </summary>
         private void Initialize()
         {
-            // If _shardedTables is null after deserialization, then set it to _shardedTablesWrongName
+            // If _shardedTables is null after deserialization, then set it to _shardedTablesAlternateName
             // instead (in case we deserialized the v1.1.0 format). If that is also null, then just set 
             // it to an empty HashSet. 
             _shardedTables = _shardedTables ?? _shardedTablesAlternateName ?? new HashSet<ShardedTableInfo>();
-            // Null out _shardedTablesWrongName so that we don't serialize it back
+            // Null out _shardedTablesAlternateName so that we don't serialize it back
             _shardedTablesAlternateName = null;
 
             // Same as above for _referenceTables
