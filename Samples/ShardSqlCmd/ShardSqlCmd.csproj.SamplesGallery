@@ -31,7 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="..\packages\Microsoft.Azure.SqlDatabase.ElasticScale.Client.1.1.0\lib\net45\Microsoft.Azure.SqlDatabase.ElasticScale.Client.dll">
+    <Reference Include="..\packages\Microsoft.Azure.SqlDatabase.ElasticScale.Client.1.2.0\lib\net45\Microsoft.Azure.SqlDatabase.ElasticScale.Client.dll">
       <Name>Microsoft.Azure.SqlDatabase.ElasticScale.Client</Name>
     </Reference>
     <Reference Include="System" />
