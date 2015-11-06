@@ -8,20 +8,22 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
     /// <summary>
-    /// Test related to ShardMapper class and it's methods.
+    /// Test related to ShardKey class and date/time input values.
     /// </summary>
     [TestClass]
     public class ShardKeyTests
     {
         /// <summary>
-        /// Shard map type conversion between list and range.
+        /// Test using ShardKey with DateTime value.
         /// </summary>
         [TestMethod()]
         [TestCategory("ExcludeFromGatedCheckin")]
@@ -32,7 +34,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         }
 
         /// <summary>
-        /// Shard map type conversion between list and range.
+        /// Test using ShardKey with TimeSpan value.
         /// </summary>
         [TestMethod()]
         [TestCategory("ExcludeFromGatedCheckin")]
@@ -43,18 +45,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         }
 
         /// <summary>
-        /// Shard map type conversion between list and range.
+        /// Test using ShardKey with DateTimeOffset value.
         /// </summary>
         [TestMethod()]
         [TestCategory("ExcludeFromGatedCheckin")]
         public void TestShardKeyWithDateTimeOffset()
         {
-            DateTime dt = new DateTime(DateTime.Now.Ticks, DateTimeKind.Local);
-            DateTimeOffset testValue = new DateTimeOffset(dt, TimeSpan.FromHours(-7));
+            DateTimeOffset testValue = DateTimeOffset.Now;
             TestShardKeyGeneric<DateTimeOffset>(ShardKeyType.DateTimeOffset, testValue, typeof(DateTimeOffset));
 
             DateTime d1 = DateTime.Now;
-            ShardKey k1 = new ShardKey(new DateTimeOffset(d1, TimeSpan.FromHours(-7)));
+            ShardKey k1 = new ShardKey(new DateTimeOffset(d1, DateTimeOffset.Now.Offset));
             ShardKey k2 = new ShardKey(new DateTimeOffset(d1.ToUniversalTime(), TimeSpan.FromHours(0)));
             Assert.AreEqual(k1, k2);
 
