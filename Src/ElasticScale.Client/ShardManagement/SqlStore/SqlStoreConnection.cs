@@ -135,7 +135,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Performs actual Dispose of resources.
         /// </summary>
         /// <param name="disposing">Whether the invocation was from IDisposable.Dipose method.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", MessageId = "conn", Justification = "Connection is being disposed.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", MessageId = "_conn", Justification = "Connection is being disposed.")]
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -215,6 +215,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Releases an application level lock on the connection which is session scoped.
         /// </summary>
         /// <param name="lockId">Identity of the lock.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification="We can ignore request failure.")]
         private void ReleaseAppLock(Guid lockId)
         {
             using (SqlCommand cmdReleaseAppLock = _conn.CreateCommand())

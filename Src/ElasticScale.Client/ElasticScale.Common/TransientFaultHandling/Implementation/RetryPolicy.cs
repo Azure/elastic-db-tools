@@ -14,24 +14,24 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
         /// </summary>
         internal class RetryPolicy
         {
-            private static RetryPolicy s_noRetry = new RetryPolicy(new TransientErrorIgnoreStrategy(),
-                RetryStrategy.NoRetry);
+            private static Lazy<RetryPolicy> s_noRetry = new Lazy<RetryPolicy>(() => new RetryPolicy(new TransientErrorIgnoreStrategy(),
+                RetryStrategy.NoRetry), LazyThreadSafetyMode.PublicationOnly);
 
-            private static RetryPolicy s_defaultFixed = new RetryPolicy(new TransientErrorCatchAllStrategy(),
-                RetryStrategy.DefaultFixed);
+            private static Lazy<RetryPolicy> s_defaultFixed = new Lazy<RetryPolicy>(() => new RetryPolicy(new TransientErrorCatchAllStrategy(),
+                RetryStrategy.DefaultFixed), LazyThreadSafetyMode.PublicationOnly);
 
-            private static RetryPolicy s_defaultProgressive = new RetryPolicy(new TransientErrorCatchAllStrategy(),
-                RetryStrategy.DefaultProgressive);
+            private static Lazy<RetryPolicy> s_defaultProgressive = new Lazy<RetryPolicy>(() => new RetryPolicy(new TransientErrorCatchAllStrategy(),
+                RetryStrategy.DefaultProgressive), LazyThreadSafetyMode.PublicationOnly);
 
-            private static RetryPolicy s_defaultExponential = new RetryPolicy(new TransientErrorCatchAllStrategy(),
-                RetryStrategy.DefaultExponential);
+            private static Lazy<RetryPolicy> s_defaultExponential = new Lazy<RetryPolicy>(() => new RetryPolicy(new TransientErrorCatchAllStrategy(),
+                RetryStrategy.DefaultExponential), LazyThreadSafetyMode.PublicationOnly);
 
             /// <summary>
             /// Returns a default policy that performs no retries, but invokes the action only once.
             /// </summary>
             public static RetryPolicy NoRetry
             {
-                get { return s_noRetry; }
+                get { return s_noRetry.Value; }
             }
 
             /// <summary>
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
             /// </summary>
             public static RetryPolicy DefaultFixed
             {
-                get { return s_defaultFixed; }
+                get { return s_defaultFixed.Value; }
             }
 
             /// <summary>
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
             /// </summary>
             public static RetryPolicy DefaultProgressive
             {
-                get { return s_defaultProgressive; }
+                get { return s_defaultProgressive.Value; }
             }
 
             /// <summary>
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
             /// </summary>
             public static RetryPolicy DefaultExponential
             {
-                get { return s_defaultExponential; }
+                get { return s_defaultExponential.Value; }
             }
 
             /// <summary>

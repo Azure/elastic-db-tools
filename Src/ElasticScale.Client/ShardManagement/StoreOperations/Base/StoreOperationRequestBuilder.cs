@@ -54,122 +54,122 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <summary>
         /// FindAndUpdateOperationLogEntryByIdGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpFindAndUpdateOperationLogEntryByIdGlobal = @"__ShardManagement.spFindAndUpdateOperationLogEntryByIdGlobal";
+        internal const string SpFindAndUpdateOperationLogEntryByIdGlobal = @"__ShardManagement.spFindAndUpdateOperationLogEntryByIdGlobal";
 
         /// <summary>
         /// GetAllShardMapsGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpGetAllShardMapsGlobal = @"__ShardManagement.spGetAllShardMapsGlobal";
+        internal const string SpGetAllShardMapsGlobal = @"__ShardManagement.spGetAllShardMapsGlobal";
 
         /// <summary>
         /// FindShardMapByNameGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpFindShardMapByNameGlobal = @"__ShardManagement.spFindShardMapByNameGlobal";
+        internal const string SpFindShardMapByNameGlobal = @"__ShardManagement.spFindShardMapByNameGlobal";
 
         /// <summary>
         /// GetAllDistinctShardLocationsGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpGetAllDistinctShardLocationsGlobal = @"__ShardManagement.spGetAllDistinctShardLocationsGlobal";
+        internal const string SpGetAllDistinctShardLocationsGlobal = @"__ShardManagement.spGetAllDistinctShardLocationsGlobal";
 
         /// <summary>
         /// AddShardMapGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpAddShardMapGlobal = @"__ShardManagement.spAddShardMapGlobal";
+        internal const string SpAddShardMapGlobal = @"__ShardManagement.spAddShardMapGlobal";
 
         /// <summary>
         /// RemoveShardMapGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpRemoveShardMapGlobal = @"__ShardManagement.spRemoveShardMapGlobal";
+        internal const string SpRemoveShardMapGlobal = @"__ShardManagement.spRemoveShardMapGlobal";
 
         /// <summary>
         /// GetAllShardsGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpGetAllShardsGlobal = @"__ShardManagement.spGetAllShardsGlobal";
+        internal const string SpGetAllShardsGlobal = @"__ShardManagement.spGetAllShardsGlobal";
 
         /// <summary>
         /// FindShardByLocationGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpFindShardByLocationGlobal = @"__ShardManagement.spFindShardByLocationGlobal";
+        internal const string SpFindShardByLocationGlobal = @"__ShardManagement.spFindShardByLocationGlobal";
 
         /// <summary>
         /// BulkOperationShardsGlobalBegin stored procedure.
         /// </summary>
-        internal static readonly string SpBulkOperationShardsGlobalBegin = @"__ShardManagement.spBulkOperationShardsGlobalBegin";
+        internal const string SpBulkOperationShardsGlobalBegin = @"__ShardManagement.spBulkOperationShardsGlobalBegin";
 
         /// <summary>
         /// BulkOperationShardsGlobalEnd stored procedure.
         /// </summary>
-        internal static readonly string SpBulkOperationShardsGlobalEnd = @"__ShardManagement.spBulkOperationShardsGlobalEnd";
+        internal const string SpBulkOperationShardsGlobalEnd = @"__ShardManagement.spBulkOperationShardsGlobalEnd";
 
         /// <summary>
         /// GetAllShardMappingsGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpGetAllShardMappingsGlobal = @"__ShardManagement.spGetAllShardMappingsGlobal";
+        internal const string SpGetAllShardMappingsGlobal = @"__ShardManagement.spGetAllShardMappingsGlobal";
 
         /// <summary>
         /// FindShardMappingByKeyGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpFindShardMappingByKeyGlobal = @"__ShardManagement.spFindShardMappingByKeyGlobal";
+        internal const string SpFindShardMappingByKeyGlobal = @"__ShardManagement.spFindShardMappingByKeyGlobal";
 
         /// <summary>
         /// FindShardMappingByIdGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpFindShardMappingByIdGlobal = @"__ShardManagement.spFindShardMappingByIdGlobal";
+        internal const string SpFindShardMappingByIdGlobal = @"__ShardManagement.spFindShardMappingByIdGlobal";
 
         /// <summary>
         /// BulkShardMappingOperationsGlobalBegin stored procedure.
         /// </summary>
-        internal static readonly string SpBulkOperationShardMappingsGlobalBegin = @"__ShardManagement.spBulkOperationShardMappingsGlobalBegin";
+        internal const string SpBulkOperationShardMappingsGlobalBegin = @"__ShardManagement.spBulkOperationShardMappingsGlobalBegin";
 
         /// <summary>
         /// BulkShardMappingOperationsGlobalEnd stored procedure.
         /// </summary>
-        internal static readonly string SpBulkOperationShardMappingsGlobalEnd = @"__ShardManagement.spBulkOperationShardMappingsGlobalEnd";
+        internal const string SpBulkOperationShardMappingsGlobalEnd = @"__ShardManagement.spBulkOperationShardMappingsGlobalEnd";
 
         /// <summary>
         /// LockOrUnLockShardMappingsGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpLockOrUnLockShardMappingsGlobal = @"__ShardManagement.spLockOrUnlockShardMappingsGlobal";
+        internal const string SpLockOrUnLockShardMappingsGlobal = @"__ShardManagement.spLockOrUnlockShardMappingsGlobal";
 
         /// <summary>
         /// GetAllShardingSchemaInfosGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpGetAllShardingSchemaInfosGlobal = @"__ShardManagement.spGetAllShardingSchemaInfosGlobal";
+        internal const string SpGetAllShardingSchemaInfosGlobal = @"__ShardManagement.spGetAllShardingSchemaInfosGlobal";
 
         /// <summary>
         /// FindShardingSchemaInfoByNameGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpFindShardingSchemaInfoByNameGlobal = @"__ShardManagement.spFindShardingSchemaInfoByNameGlobal";
+        internal const string SpFindShardingSchemaInfoByNameGlobal = @"__ShardManagement.spFindShardingSchemaInfoByNameGlobal";
 
         /// <summary>
         /// AddShardingSchemaInfoGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpAddShardingSchemaInfoGlobal = @"__ShardManagement.spAddShardingSchemaInfoGlobal";
+        internal const string SpAddShardingSchemaInfoGlobal = @"__ShardManagement.spAddShardingSchemaInfoGlobal";
 
         /// <summary>
         /// RemoveShardingSchemaInfoGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpRemoveShardingSchemaInfoGlobal = @"__ShardManagement.spRemoveShardingSchemaInfoGlobal";
+        internal const string SpRemoveShardingSchemaInfoGlobal = @"__ShardManagement.spRemoveShardingSchemaInfoGlobal";
 
         /// <summary>
         /// UpdateShardingSchemaInfoGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpUpdateShardingSchemaInfoGlobal = @"__ShardManagement.spUpdateShardingSchemaInfoGlobal";
+        internal const string SpUpdateShardingSchemaInfoGlobal = @"__ShardManagement.spUpdateShardingSchemaInfoGlobal";
 
         /// <summary>
         /// AttachShardGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpAttachShardGlobal = @"__ShardManagement.spAttachShardGlobal";
+        internal const string SpAttachShardGlobal = @"__ShardManagement.spAttachShardGlobal";
 
         /// <summary>
         /// DetachShardGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpDetachShardGlobal = @"__ShardManagement.spDetachShardGlobal";
+        internal const string SpDetachShardGlobal = @"__ShardManagement.spDetachShardGlobal";
 
         /// <summary>
         /// ReplaceShardMappingsGlobal stored procedure.
         /// </summary>
-        internal static readonly string SpReplaceShardMappingsGlobal = @"__ShardManagement.spReplaceShardMappingsGlobal";
+        internal const string SpReplaceShardMappingsGlobal = @"__ShardManagement.spReplaceShardMappingsGlobal";
 
         #endregion GSM Stored Procedures
 
@@ -178,52 +178,52 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <summary>
         /// GetAllShardsLocal stored procedure.
         /// </summary>
-        internal static readonly string SpGetAllShardsLocal = @"__ShardManagement.spGetAllShardsLocal";
+        internal const string SpGetAllShardsLocal = @"__ShardManagement.spGetAllShardsLocal";
 
         /// <summary>
         /// ValidateShardLocal stored procedure.
         /// </summary>
-        internal static readonly string SpValidateShardLocal = @"__ShardManagement.spValidateShardLocal";
+        internal const string SpValidateShardLocal = @"__ShardManagement.spValidateShardLocal";
 
         /// <summary>
         /// AddShardLocal stored procedure.
         /// </summary>
-        internal static readonly string SpAddShardLocal = @"__ShardManagement.spAddShardLocal";
+        internal const string SpAddShardLocal = @"__ShardManagement.spAddShardLocal";
 
         /// <summary>
         /// RemoveShardLocal stored procedure.
         /// </summary>
-        internal static readonly string SpRemoveShardLocal = @"__ShardManagement.spRemoveShardLocal";
+        internal const string SpRemoveShardLocal = @"__ShardManagement.spRemoveShardLocal";
 
         /// <summary>
         /// UpdateShardLocal stored procedure.
         /// </summary>
-        internal static readonly string SpUpdateShardLocal = @"__ShardManagement.spUpdateShardLocal";
+        internal const string SpUpdateShardLocal = @"__ShardManagement.spUpdateShardLocal";
 
         /// <summary>
         /// GetAllShardMappingsLocal stored procedure.
         /// </summary>
-        internal static readonly string SpGetAllShardMappingsLocal = @"__ShardManagement.spGetAllShardMappingsLocal";
+        internal const string SpGetAllShardMappingsLocal = @"__ShardManagement.spGetAllShardMappingsLocal";
 
         /// <summary>
         /// FindShardMappingByKeyLocal stored procedure.
         /// </summary>
-        internal static readonly string SpFindShardMappingByKeyLocal = @"__ShardManagement.spFindShardMappingByKeyLocal";
+        internal const string SpFindShardMappingByKeyLocal = @"__ShardManagement.spFindShardMappingByKeyLocal";
 
         /// <summary>
         /// ValidateShardMappingLocal stored procedure.
         /// </summary>
-        internal static readonly string SpValidateShardMappingLocal = @"__ShardManagement.spValidateShardMappingLocal";
+        internal const string SpValidateShardMappingLocal = @"__ShardManagement.spValidateShardMappingLocal";
 
         /// <summary>
         /// BulkOperationShardMappingsLocal stored procedure.
         /// </summary>
-        internal static readonly string SpBulkOperationShardMappingsLocal = @"__ShardManagement.spBulkOperationShardMappingsLocal";
+        internal const string SpBulkOperationShardMappingsLocal = @"__ShardManagement.spBulkOperationShardMappingsLocal";
 
         /// <summary>
         /// KillSessionsForShardMappingLocal stored procedure.
         /// </summary>
-        internal static readonly string SpKillSessionsForShardMappingLocal = @"__ShardManagement.spKillSessionsForShardMappingLocal";
+        internal const string SpKillSessionsForShardMappingLocal = @"__ShardManagement.spKillSessionsForShardMappingLocal";
 
         #endregion LSM Stored Procedures
 

@@ -29,6 +29,21 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
+        /// Mapping from column name to result type.
+        /// </summary>
+        private static Dictionary<string, SqlResultType> s_resultFromColumnName = new Dictionary<string, SqlResultType>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "ShardMapId", SqlResultType.ShardMap },
+                { "ShardId", SqlResultType.Shard },
+                { "MappingId", SqlResultType.ShardMapping },
+                { "Protocol", SqlResultType.ShardLocation },
+                { "StoreVersion", SqlResultType.StoreVersion },
+                { "StoreVersionMajor", SqlResultType.StoreVersion },
+                { "Name", SqlResultType.SchemaInfo },
+                { "OperationId", SqlResultType.Operation }
+            };
+
+        /// <summary>
         /// Collection of shard maps in result.
         /// </summary>
         private List<IStoreShardMap> _ssm;
@@ -292,25 +307,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>Sql result type.</returns>
         private static SqlResultType SqlResultTypeFromColumnName(string columnName)
         {
-            switch (columnName)
-            {
-                case "ShardMapId":
-                    return SqlResultType.ShardMap;
-                case "ShardId":
-                    return SqlResultType.Shard;
-                case "MappingId":
-                    return SqlResultType.ShardMapping;
-                case "Protocol":
-                    return SqlResultType.ShardLocation;
-                case "StoreVersion":
-                case "StoreVersionMajor":
-                    return SqlResultType.StoreVersion;
-                case "Name":
-                    return SqlResultType.SchemaInfo;
-                default:
-                    Debug.Assert(columnName == "OperationId");
-                    return SqlResultType.Operation;
-            }
+            return s_resultFromColumnName[columnName];
         }
     }
 }
