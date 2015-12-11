@@ -740,35 +740,50 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
         [TestCategory("ExcludeFromGatedCheckin")]
         public void TestAddDataReaderWhileReadingRows()
         {
-            string selectSql = "SELECT 1";
+            List<Tuple<int, DateTime>> readersAddedTimes = new List<Tuple<int, DateTime>>();
+            List<Tuple<int, DateTime>> readersReadTimes = new List<Tuple<int, DateTime>>();
+            List<SqlConnection> connections = new List<SqlConnection>() {_conn1, _conn2, _conn3};
+
             LabeledDbDataReader[] readers = new LabeledDbDataReader[0];
 
-            using (MultiShardDataReader sdr = new MultiShardDataReader(_dummyCommand, readers, MultiShardExecutionPolicy.CompleteResults, true, 3))
+            using (MultiShardDataReader sdr = new MultiShardDataReader(
+                    _dummyCommand, 
+                    readers,
+                    MultiShardExecutionPolicy.CompleteResults, 
+                    addShardNamePseudoColumn: true,
+                    expectedReaderCount: connections.Count))
             {
-                List<DateTime> timesAdded = new List<DateTime>();
                 Task.Factory.StartNew(() =>
+                {
+                    for (int readerIndex = 0; readerIndex < connections.Count; readerIndex++)
                     {
                         Thread.Sleep(TimeSpan.FromMilliseconds(500));
-                        timesAdded.Add(DateTime.UtcNow);
-                        sdr.AddReader(GetReader(_conn1, selectSql));
-                        Thread.Sleep(TimeSpan.FromMilliseconds(500));
-                        timesAdded.Add(DateTime.UtcNow);
-                        sdr.AddReader(GetReader(_conn2, selectSql));
-                        Thread.Sleep(TimeSpan.FromMilliseconds(500));
-                        timesAdded.Add(DateTime.UtcNow);
-                        sdr.AddReader(GetReader(_conn3, selectSql));
-                    });
+                        readersAddedTimes.Add(new Tuple<int, DateTime>(readerIndex, DateTime.UtcNow));
+                        sdr.AddReader(GetReader(connections[readerIndex], "select " + readerIndex.ToString()));
+                    }
+                });
+
                 int i = 0;
-                List<DateTime> timesRead = new List<DateTime>();
                 while (sdr.Read())
                 {
-                    timesRead.Add(DateTime.UtcNow);
+                    readersReadTimes.Add(new Tuple<int, DateTime>(int.Parse(sdr[0].ToString()), DateTime.UtcNow));
                     i++;
                 }
-                Assert.AreEqual(3, i, "Not all rows successfully returned.");
-                foreach (bool happenedInOrder in timesAdded.Zip(timesRead, (x, y) => y > x))
+
+                foreach (Tuple<int, DateTime> tuple in readersAddedTimes)
                 {
-                    Assert.IsTrue(happenedInOrder, "The next row was somehow able to be retrieved before its corresponding reader was added.");
+                    Trace.TraceInformation("Reader {0} was added at {1:O}", tuple.Item1, tuple.Item2);
+                }
+                foreach (Tuple<int, DateTime> tuple in readersReadTimes)
+                {
+                    Trace.TraceInformation("Reader {0} was read at {1:O}", tuple.Item1, tuple.Item2);
+                }
+
+                Assert.AreEqual(3, i, "Not all rows successfully returned.");
+                foreach (bool happenedInOrder in readersAddedTimes.Zip(readersReadTimes, (x, y) => y.Item2 >= x.Item2))
+                {
+                    Assert.IsTrue(happenedInOrder,
+                        "The next row was somehow able to be retrieved before its corresponding reader was added.");
                 }
             }
         }
@@ -781,31 +796,53 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
         [TestCategory("ExcludeFromGatedCheckin")]
         public void TestAddDataReaderWhileReadingRowsWhenReadersAlreadyPresent()
         {
-            string selectSql = "SELECT 1";
-            LabeledDbDataReader[] readers = new LabeledDbDataReader[1];
-            readers[0] = GetReader(_conn1, selectSql);
+            List<Tuple<int, DateTime>> readersAddedTimes = new List<Tuple<int, DateTime>>();
+            List<Tuple<int, DateTime>> readersReadTimes = new List<Tuple<int, DateTime>>();
+            List<SqlConnection> connections = new List<SqlConnection>() { _conn1, _conn2, _conn3 };
 
-            using (MultiShardDataReader sdr = new MultiShardDataReader(_dummyCommand, readers, MultiShardExecutionPolicy.CompleteResults, true, 3))
+            LabeledDbDataReader[] readers = new LabeledDbDataReader[1]
             {
-                List<DateTime> timesAdded = new List<DateTime>();
+                GetReader(connections[0], "SELECT 0")
+            };
+
+            using (MultiShardDataReader sdr = new MultiShardDataReader(
+                _dummyCommand, 
+                readers, 
+                MultiShardExecutionPolicy.CompleteResults, 
+                addShardNamePseudoColumn: true,
+                expectedReaderCount: connections.Count))
+            {
+                readersAddedTimes.Add(new Tuple<int, DateTime>(0, DateTime.UtcNow));
+
                 Task.Factory.StartNew(() =>
                 {
-                    Thread.Sleep(TimeSpan.FromMilliseconds(500));
-                    timesAdded.Add(DateTime.UtcNow);
-                    sdr.AddReader(GetReader(_conn2, selectSql));
-                    Thread.Sleep(TimeSpan.FromMilliseconds(500));
-                    timesAdded.Add(DateTime.UtcNow);
-                    sdr.AddReader(GetReader(_conn3, selectSql));
+                    // First reader is already added, add two remaining asynchronously
+                    for (int readerIndex = 1; readerIndex < connections.Count; readerIndex++)
+                    {
+                        Thread.Sleep(TimeSpan.FromMilliseconds(500));
+                        readersAddedTimes.Add(new Tuple<int, DateTime>(readerIndex, DateTime.UtcNow));
+                        sdr.AddReader(GetReader(connections[readerIndex], "select " + readerIndex.ToString()));
+                    }
                 });
+
                 int i = 0;
-                List<DateTime> timesRead = new List<DateTime>();
                 while (sdr.Read())
                 {
-                    timesRead.Add(DateTime.UtcNow);
+                    readersReadTimes.Add(new Tuple<int, DateTime>(int.Parse(sdr[0].ToString()), DateTime.UtcNow));
                     i++;
                 }
+
+                foreach (Tuple<int, DateTime> tuple in readersAddedTimes)
+                {
+                    Trace.TraceInformation("Reader {0} was added at {1:O}", tuple.Item1, tuple.Item2);
+                }
+                foreach (Tuple<int, DateTime> tuple in readersReadTimes)
+                {
+                    Trace.TraceInformation("Reader {0} was read at {1:O}", tuple.Item1, tuple.Item2);
+                }
+
                 Assert.AreEqual(3, i, "Not all rows successfully returned.");
-                foreach (bool happenedInOrder in timesAdded.Zip(timesRead.Skip(1), (x, y) => y > x))
+                foreach (bool happenedInOrder in readersAddedTimes.Zip(readersReadTimes, (x, y) => y.Item2 >= x.Item2))
                 {
                     Assert.IsTrue(happenedInOrder, "The next row was somehow able to be retrieved before its corresponding reader was added.");
                 }
