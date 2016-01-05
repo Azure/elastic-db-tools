@@ -72,3 +72,6 @@ In addition to the above, we have a handful of other labels we use to help class
 
 ###Assignee
 We assign each issue to a EDT team member. In most cases, the assignee will not be the one who ultimately fixes the issue (that only happens in the case where the issue is tagged "grabbed by assignee"). The purpose of the assignee is to act as a point of contact between the EDT team and the community for the issue and make sure it's driven to resolution. If you're working on an issue and get stuck, please reach out to the assignee (just at mention them) and they will work to help you out.
+
+###Kanban Board
+[https://waffle.io/Azure/elastic-db-tools](https://waffle.io/Azure/elastic-db-tools)
