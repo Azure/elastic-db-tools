@@ -53,14 +53,6 @@ We use GitHub labels on our issues in order to classify them. We have the follow
 
 * **Project Management**: These labels are used to facilitate the team's Kanban Board. Labels indicate the current status and swim lane.
 	
-	* [0 - Backlog](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/0%20-%20Backlog): Tasks that are not yet ready for development or are not yet prioritized for the current development cycle.
-	
-	* [1 - Up Next](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/1%20-%20Up%20Next): Tasks that are ready for development and prioritized above the rest of the backlog.
-	
-	* [2 - In Progress](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/2%20-%20In%20Progress): Tasks that are under active development.
-	
-	* [3 - Done](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/3%20-%20Done): Tasks that are finished. There should be no open issues in the Done stage.
-	
 	* [Community](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Community): Community Engagement & Open Development Swim Lane. :swimmer: 
 		
 	* [Port to GitHub](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/Port%20to%20GitHub): Swim lane :swimmer: tracking the work remaining to open source elastic database tools client library
