@@ -172,8 +172,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     cmd.CommandText = command.ToString();
                     cmd.CommandType = CommandType.Text;
 
-                    cmd.ExecuteNonQuery();
-
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         results.Fetch(reader);

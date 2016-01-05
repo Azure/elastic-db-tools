@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {
@@ -16,32 +17,88 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
     public sealed class ShardRange : IComparable<ShardRange>, IEquatable<ShardRange>
     {
         /// <summary>Full range that starts from the min value for a key to the max value.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "ShardRange type is immutable.")]
-        public static readonly ShardRange FullRangeInt32 = new ShardRange(ShardKey.MinInt32, ShardKey.MaxInt32);
+        private static Lazy<ShardRange> s_fullRangeInt32 = new Lazy<ShardRange>(() => new ShardRange(ShardKey.MinInt32, ShardKey.MaxInt32), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>Full range that starts from the min value for a key to the max value.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "ShardRange type is immutable.")]
-        public static readonly ShardRange FullRangeInt64 = new ShardRange(ShardKey.MinInt64, ShardKey.MaxInt64);
+        public static ShardRange FullRangeInt32
+        {
+            get
+            {
+                return s_fullRangeInt32.Value;
+            }
+        }
 
         /// <summary>Full range that starts from the min value for a key to the max value.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "ShardRange type is immutable.")]
-        public static readonly ShardRange FullRangeGuid = new ShardRange(ShardKey.MinGuid, ShardKey.MaxGuid);
+        private static Lazy<ShardRange> s_fullRangeInt64 = new Lazy<ShardRange>(() => new ShardRange(ShardKey.MinInt64, ShardKey.MaxInt64), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>Full range that starts from the min value for a key to the max value.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "ShardRange type is immutable.")]
-        public static readonly ShardRange FullRangeBinary = new ShardRange(ShardKey.MinBinary, ShardKey.MaxBinary);
+        public static ShardRange FullRangeInt64
+        {
+            get
+            {
+                return s_fullRangeInt64.Value;
+            }
+        }
 
         /// <summary>Full range that starts from the min value for a key to the max value.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "ShardRange type is immutable.")]
-        public static readonly ShardRange FullRangeDateTime = new ShardRange(ShardKey.MinDateTime, ShardKey.MaxDateTime);
+        private static Lazy<ShardRange> s_fullRangeGuid = new Lazy<ShardRange>(() => new ShardRange(ShardKey.MinGuid, ShardKey.MaxGuid), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>Full range that starts from the min value for a key to the max value.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "ShardRange type is immutable.")]
-        public static readonly ShardRange FullRangeTimeSpan = new ShardRange(ShardKey.MinTimeSpan, ShardKey.MaxTimeSpan);
+        public static ShardRange FullRangeGuid
+        {
+            get
+            {
+                return s_fullRangeGuid.Value;
+            }
+        }
 
         /// <summary>Full range that starts from the min value for a key to the max value.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "ShardRange type is immutable.")]
-        public static readonly ShardRange FullRangeDateTimeOffset = new ShardRange(ShardKey.MinDateTimeOffset, ShardKey.MaxDateTimeOffset);
+        private static Lazy<ShardRange> s_fullRangeBinary = new Lazy<ShardRange>(() => new ShardRange(ShardKey.MinBinary, ShardKey.MaxBinary), LazyThreadSafetyMode.PublicationOnly);
+
+        /// <summary>Full range that starts from the min value for a key to the max value.</summary>
+        public static ShardRange FullRangeBinary
+        {
+            get
+            {
+                return s_fullRangeBinary.Value;
+            }
+        }
+
+        /// <summary>Full range that starts from the min value for a key to the max value.</summary>
+        private static Lazy<ShardRange> s_fullRangeDateTime = new Lazy<ShardRange>(() => new ShardRange(ShardKey.MinDateTime, ShardKey.MaxDateTime), LazyThreadSafetyMode.PublicationOnly);
+
+        /// <summary>Full range that starts from the min value for a key to the max value.</summary>
+        public static ShardRange FullRangeDateTime
+        {
+            get
+            {
+                return s_fullRangeDateTime.Value;
+            }
+        }
+
+        /// <summary>Full range that starts from the min value for a key to the max value.</summary>
+        private static Lazy<ShardRange> s_fullRangeTimeSpan = new Lazy<ShardRange>(() => new ShardRange(ShardKey.MinTimeSpan, ShardKey.MaxTimeSpan), LazyThreadSafetyMode.PublicationOnly);
+
+        /// <summary>Full range that starts from the min value for a key to the max value.</summary>
+        public static ShardRange FullRangeTimeSpan
+        {
+            get
+            {
+                return s_fullRangeTimeSpan.Value;
+            }
+        }
+
+        /// <summary>Full range that starts from the min value for a key to the max value.</summary>
+        private static Lazy<ShardRange> s_fullRangeDateTimeOffset = new Lazy<ShardRange>(() => new ShardRange(ShardKey.MinDateTimeOffset, ShardKey.MaxDateTimeOffset), LazyThreadSafetyMode.PublicationOnly);
+
+        /// <summary>Full range that starts from the min value for a key to the max value.</summary>
+        public static ShardRange FullRangeDateTimeOffset
+        {
+            get
+            {
+                return s_fullRangeDateTimeOffset.Value;
+            }
+        }
 
         /// <summary>Hashcode for the shard range.</summary>
         private readonly int _hashCode;

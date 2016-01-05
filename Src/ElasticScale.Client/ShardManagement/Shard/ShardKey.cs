@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
+using System.Threading;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {
@@ -31,7 +32,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         private static readonly byte[] s_emptyArray = new byte[0];
 
         /// <summary>Mapping b/w CLR type and corresponding ShardKeyType.</summary>
-        private static readonly Dictionary<Type, ShardKeyType> s_typeToShardKeyType = new Dictionary<Type, ShardKeyType>()
+        private static readonly Lazy<Dictionary<Type, ShardKeyType>> s_typeToShardKeyType = new Lazy<Dictionary<Type,ShardKeyType>>(() => 
+            new Dictionary<Type, ShardKeyType>()
             {
                 { typeof(int), ShardKeyType.Int32 },
                 { typeof(long), ShardKeyType.Int64 },
@@ -40,10 +42,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 { typeof(DateTime), ShardKeyType.DateTime },
                 { typeof(TimeSpan), ShardKeyType.TimeSpan },
                 { typeof(DateTimeOffset), ShardKeyType.DateTimeOffset },
-            };
+            }, LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>Mapping b/w ShardKeyType and corresponding CLR type.</summary>
-        private static readonly Dictionary<ShardKeyType, Type> s_shardKeyTypeToType = new Dictionary<ShardKeyType, Type>()
+        private static readonly Lazy<Dictionary<ShardKeyType, Type>> s_shardKeyTypeToType = new Lazy<Dictionary<ShardKeyType,Type>>(() => 
+            new Dictionary<ShardKeyType, Type>()
             {
                 { ShardKeyType.Int32, typeof(int) },
                 { ShardKeyType.Int64, typeof(long) },
@@ -52,77 +55,175 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 { ShardKeyType.DateTime, typeof(DateTime) },
                 { ShardKeyType.TimeSpan, typeof(TimeSpan) },
                 { ShardKeyType.DateTimeOffset, typeof(DateTimeOffset) },
-            };
+            }, LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>Represents negative infinity.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "ShardKey type is immutable.")]
-        public static readonly ShardKey MinInt32 = new ShardKey(ShardKeyType.Int32, Int32.MinValue);
-
-        /// <summary>Represents positive infinity.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "ShardKey type is immutable.")]
-        public static readonly ShardKey MaxInt32 = new ShardKey(ShardKeyType.Int32, null);
+        private static Lazy<ShardKey> s_minInt32 = new Lazy<ShardKey>(() => new ShardKey(ShardKeyType.Int32, Int32.MinValue), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>Represents negative infinity.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "ShardKey type is immutable.")]
-        public static readonly ShardKey MinInt64 = new ShardKey(ShardKeyType.Int64, Int64.MinValue);
-
-        /// <summary>Represents positive infinity.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "ShardKey type is immutable.")]
-        public static readonly ShardKey MaxInt64 = new ShardKey(ShardKeyType.Int64, null);
+        private static Lazy<ShardKey> s_maxInt32 = new Lazy<ShardKey>(() => new ShardKey(ShardKeyType.Int32, null), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>Represents negative infinity.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "ShardKey type is immutable.")]
-        public static readonly ShardKey MinGuid = new ShardKey(ShardKeyType.Guid, default(Guid));
-
-        /// <summary>Represents positive infinity.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "ShardKey type is immutable.")]
-        public static readonly ShardKey MaxGuid = new ShardKey(ShardKeyType.Guid, null);
+        private static Lazy<ShardKey> s_minInt64 = new Lazy<ShardKey>(() => new ShardKey(ShardKeyType.Int64, Int64.MinValue), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>Represents negative infinity.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "ShardKey type is immutable.")]
-        public static readonly ShardKey MinBinary = new ShardKey(ShardKeyType.Binary, ShardKey.s_emptyArray);
-
-        /// <summary>Represents positive infinity.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "ShardKey type is immutable.")]
-        public static readonly ShardKey MaxBinary = new ShardKey(ShardKeyType.Binary, null);
+        private static Lazy<ShardKey> s_maxInt64 = new Lazy<ShardKey>(() => new ShardKey(ShardKeyType.Int64, null), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>Represents negative infinity.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "ShardKey type is immutable.")]
-        public static readonly ShardKey MinDateTime = new ShardKey(ShardKeyType.DateTime, DateTime.MinValue);
-
-        /// <summary>Represents positive infinity.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "ShardKey type is immutable.")]
-        public static readonly ShardKey MaxDateTime = new ShardKey(ShardKeyType.DateTime, null);
+        private static Lazy<ShardKey> s_minGuid = new Lazy<ShardKey>(() => new ShardKey(ShardKeyType.Guid, default(Guid)), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>Represents negative infinity.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "ShardKey type is immutable.")]
-        public static readonly ShardKey MinTimeSpan = new ShardKey(ShardKeyType.TimeSpan, TimeSpan.MinValue);
-
-        /// <summary>Represents positive infinity.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "ShardKey type is immutable.")]
-        public static readonly ShardKey MaxTimeSpan = new ShardKey(ShardKeyType.TimeSpan, null);
+        private static Lazy<ShardKey> s_maxGuid = new Lazy<ShardKey>(() => new ShardKey(ShardKeyType.Guid, null), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>Represents negative infinity.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "ShardKey type is immutable.")]
-        public static readonly ShardKey MinDateTimeOffset = new ShardKey(ShardKeyType.DateTimeOffset, DateTimeOffset.MinValue);
+        private static Lazy<ShardKey> s_minBinary = new Lazy<ShardKey>(() => new ShardKey(ShardKeyType.Binary, ShardKey.s_emptyArray), LazyThreadSafetyMode.PublicationOnly);
 
-        /// <summary>Represents positive infinity.</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "ShardKey type is immutable.")]
-        public static readonly ShardKey MaxDateTimeOffset = new ShardKey(ShardKeyType.DateTimeOffset, null);
+        /// <summary>Represents negative infinity.</summary>
+        private static Lazy<ShardKey> s_maxBinary = new Lazy<ShardKey>(() => new ShardKey(ShardKeyType.Binary, null), LazyThreadSafetyMode.PublicationOnly);
+
+        /// <summary>Represents negative infinity.</summary>
+        private static Lazy<ShardKey> s_minDateTime = new Lazy<ShardKey>(() => new ShardKey(ShardKeyType.DateTime, DateTime.MinValue), LazyThreadSafetyMode.PublicationOnly);
+
+        /// <summary>Represents negative infinity.</summary>
+        private static Lazy<ShardKey> s_maxDateTime = new Lazy<ShardKey>(() => new ShardKey(ShardKeyType.DateTime, null), LazyThreadSafetyMode.PublicationOnly);
+
+        /// <summary>Represents negative infinity.</summary>
+        private static Lazy<ShardKey> s_minTimeSpan = new Lazy<ShardKey>(() => new ShardKey(ShardKeyType.TimeSpan, TimeSpan.MinValue), LazyThreadSafetyMode.PublicationOnly);
+
+        /// <summary>Represents negative infinity.</summary>
+        private static Lazy<ShardKey> s_maxTimeSpan = new Lazy<ShardKey>(() => new ShardKey(ShardKeyType.TimeSpan, null), LazyThreadSafetyMode.PublicationOnly);
+
+        /// <summary>Represents negative infinity.</summary>
+        private static Lazy<ShardKey> s_minDateTimeOffset = new Lazy<ShardKey>(() => new ShardKey(ShardKeyType.DateTimeOffset, DateTimeOffset.MinValue), LazyThreadSafetyMode.PublicationOnly);
+
+        /// <summary>Represents negative infinity.</summary>
+        private static Lazy<ShardKey> s_maxDateTimeOffset = new Lazy<ShardKey>(() => new ShardKey(ShardKeyType.DateTimeOffset, null), LazyThreadSafetyMode.PublicationOnly);
+
+        /// <summary>Represents negative infinity.</summary>
+        public static ShardKey MinInt32
+        {
+            get
+            {
+                return s_minInt32.Value;
+            }
+        }
+
+        /// <summary>Represents negative infinity.</summary>
+        public static ShardKey MaxInt32
+        {
+            get
+            {
+                return s_maxInt32.Value;
+            }
+        }
+
+        /// <summary>Represents negative infinity.</summary>
+        public static ShardKey MinInt64
+        {
+            get
+            {
+                return s_minInt64.Value;
+            }
+        }
+
+        /// <summary>Represents negative infinity.</summary>
+        public static ShardKey MaxInt64
+        {
+            get
+            {
+                return s_maxInt64.Value;
+            }
+        }
+
+        /// <summary>Represents negative infinity.</summary>
+        public static ShardKey MinGuid
+        {
+            get
+            {
+                return s_minGuid.Value;
+            }
+        }
+
+        /// <summary>Represents negative infinity.</summary>
+        public static ShardKey MaxGuid
+        {
+            get
+            {
+                return s_maxGuid.Value;
+            }
+        }
+
+        /// <summary>Represents negative infinity.</summary>
+        public static ShardKey MinBinary
+        {
+            get
+            {
+                return s_minBinary.Value;
+            }
+        }
+
+        /// <summary>Represents negative infinity.</summary>
+        public static ShardKey MaxBinary
+        {
+            get
+            {
+                return s_maxBinary.Value;
+            }
+        }
+
+        /// <summary>Represents negative infinity.</summary>
+        public static ShardKey MinDateTime
+        {
+            get
+            {
+                return s_minDateTime.Value;
+            }
+        }
+
+        /// <summary>Represents negative infinity.</summary>
+        public static ShardKey MaxDateTime
+        {
+            get
+            {
+                return s_maxDateTime.Value;
+            }
+        }
+
+        /// <summary>Represents negative infinity.</summary>
+        public static ShardKey MinTimeSpan
+        {
+            get
+            {
+                return s_minTimeSpan.Value;
+            }
+        }
+
+        /// <summary>Represents negative infinity.</summary>
+        public static ShardKey MaxTimeSpan
+        {
+            get
+            {
+                return s_maxTimeSpan.Value;
+            }
+        }
+
+        /// <summary>Represents negative infinity.</summary>
+        public static ShardKey MinDateTimeOffset
+        {
+            get
+            {
+                return s_minDateTimeOffset.Value;
+            }
+        }
+
+        /// <summary>Represents negative infinity.</summary>
+        public static ShardKey MaxDateTimeOffset
+        {
+            get
+            {
+                return s_maxDateTimeOffset.Value;
+            }
+        }
 
         /// <summary>Type of shard key.</summary>
         private readonly ShardKeyType _keyType;
@@ -409,7 +510,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             get
             {
-                return ShardKey.s_shardKeyTypeToType[_keyType];
+                return ShardKey.s_shardKeyTypeToType.Value[_keyType];
             }
         }
 
@@ -728,7 +829,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             ShardKeyType keyType;
 
-            if (!ShardKey.s_typeToShardKeyType.TryGetValue(value.GetType(), out keyType))
+            if (!ShardKey.s_typeToShardKeyType.Value.TryGetValue(value.GetType(), out keyType))
             {
                 throw new ArgumentException(
                     StringUtils.FormatInvariant(
@@ -747,7 +848,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>True if supported, false otherwise.</returns>
         public static bool IsSupportedType(Type type)
         {
-            return s_typeToShardKeyType.ContainsKey(type);
+            return s_typeToShardKeyType.Value.ContainsKey(type);
         }
 
         /// <summary>
@@ -765,7 +866,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     Errors._ShardKey_UnsupportedShardKeyType);
             }
 
-            return s_shardKeyTypeToType[keyType];
+            return s_shardKeyTypeToType.Value[keyType];
         }
 
         /// <summary>
@@ -775,9 +876,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>ShardKey type.</returns>
         public static ShardKeyType ShardKeyTypeFromType(Type type)
         {
-            if (s_typeToShardKeyType.ContainsKey(type))
+            if (s_typeToShardKeyType.Value.ContainsKey(type))
             {
-                return s_typeToShardKeyType[type];
+                return s_typeToShardKeyType.Value[type];
             }
             else
             {

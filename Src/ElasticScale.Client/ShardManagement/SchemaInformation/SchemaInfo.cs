@@ -85,7 +85,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema
 
         /// <summary>
         /// Initializes this instance after construction or deserialization. 
-        
         /// </summary>
         private void Initialize()
         {

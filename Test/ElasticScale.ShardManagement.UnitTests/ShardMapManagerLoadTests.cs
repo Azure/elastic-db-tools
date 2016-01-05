@@ -836,7 +836,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 if (r1 != null)
                 {
-                    int splitPoint = _r.Next((int)(r1.Range.Low.Value) + 1, (int)(r1.Range.High.Value) - 1);
+                    int splitPoint = _r.Next((int)(r1.Range.Low.Value)+1, (int)(r1.Range.High.Value)-1);
 
                     Debug.WriteLine("Trying to split range mapping for key range ({0} - {1}) at {2}", r1.Range.Low.Value, r1.Range.High.Value, splitPoint);
 
@@ -887,7 +887,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 if (r1 != null)
                 {
-                    int splitPoint = _r.Next((int)(r1.Range.Low.Value) + 1, (int)(r1.Range.High.Value) - 1);
+                    int splitPoint = _r.Next((int)(r1.Range.Low.Value)+1, (int)(r1.Range.High.Value)-1);
 
                     Debug.WriteLine("Trying to split range mapping for key range ({0} - {1}) at {2}", r1.Range.Low.Value, r1.Range.High.Value, splitPoint);
 

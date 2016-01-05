@@ -118,40 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="CreateShardMapManagerGlobal" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Scripts\CreateShardMapManagerGlobal.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  <data name="CheckShardMapManagerGlobal" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>scripts\checkshardmapmanagerglobal.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="CreateShardMapManagerLocal" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Scripts\CreateShardMapManagerLocal.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="DropShardMapManagerGlobal" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Scripts\DropShardMapManagerGlobal.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="DropShardMapManagerLocal" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Scripts\DropShardMapManagerLocal.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="UpgradeShardMapManagerGlobalFrom0_0To1_0" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Scripts\UpgradeShardMapManagerGlobalFrom0.0To1.0.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="UpgradeShardMapManagerGlobalFrom1000_0To1000_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Scripts\UpgradeShardMapManagerGlobalFrom1000.0To1000.1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="UpgradeShardMapManagerGlobalFrom1_0To1_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Scripts\UpgradeShardMapManagerGlobalFrom1.0To1.1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="UpgradeShardMapManagerGlobalFrom1_1To1_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Scripts\UpgradeShardMapManagerGlobalFrom1.1To1.2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="UpgradeShardMapManagerLocalFrom0_0To1_0" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Scripts\UpgradeShardMapManagerLocalFrom0.0To1.0.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="UpgradeShardMapManagerLocalFrom1000_0To1000_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Scripts\UpgradeShardMapManagerLocalFrom1000.0To1000.1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="UpgradeShardMapManagerLocalFrom1_0To1_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Scripts\UpgradeShardMapManagerLocalFrom1.0To1.1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="UpgradeShardMapManagerLocalFrom1_1To1_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Scripts\UpgradeShardMapManagerLocalFrom1.1To1.2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  <data name="CheckShardMapManagerLocal" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>scripts\checkshardmapmanagerlocal.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
 </root>

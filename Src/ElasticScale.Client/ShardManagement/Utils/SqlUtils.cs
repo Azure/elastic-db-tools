@@ -13,6 +13,7 @@ using System.Linq;
 using System.Resources;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
@@ -97,42 +98,50 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <summary>
         /// Parsed representation of GSM existence check script.
         /// </summary>
-        private static readonly IEnumerable<StringBuilder> s_checkIfExistsGlobalScript = SqlUtils.SplitScriptCommands(Scripts.CheckShardMapManagerGlobal);
+        private static readonly Lazy<IEnumerable<StringBuilder>> s_checkIfExistsGlobalScript = new Lazy<IEnumerable<StringBuilder>>(
+            () => SqlUtils.SplitScriptCommands(ReadOnlyScripts.CheckShardMapManagerGlobal), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>
         /// Parsed representation of GSM creation script.
         /// </summary>
-        private static readonly IEnumerable<StringBuilder> s_createGlobalScript = SqlUtils.SplitScriptCommands(Scripts.CreateShardMapManagerGlobal);
+        private static readonly Lazy<IEnumerable<StringBuilder>> s_createGlobalScript = new Lazy<IEnumerable<StringBuilder>>(
+            () => SqlUtils.SplitScriptCommands(Scripts.CreateShardMapManagerGlobal), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>
         /// Parsed representation of GSM drop script.
         /// </summary>
-        private static readonly IEnumerable<StringBuilder> s_dropGlobalScript = SqlUtils.SplitScriptCommands(Scripts.DropShardMapManagerGlobal);
+        private static readonly Lazy<IEnumerable<StringBuilder>> s_dropGlobalScript = new Lazy<IEnumerable<StringBuilder>>(
+            () => SqlUtils.SplitScriptCommands(Scripts.DropShardMapManagerGlobal), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>
         /// Parsed representation of GSM upgrade script.
         /// </summary>
-        private static readonly IEnumerable<UpgradeSteps> s_upgradeGlobalScript = SqlUtils.ParseUpgradeScripts(parseLocal: false);
+        private static readonly Lazy<IEnumerable<UpgradeSteps>> s_upgradeGlobalScript = new Lazy<IEnumerable<UpgradeSteps>>(
+            () => SqlUtils.ParseUpgradeScripts(parseLocal: false), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>
         /// Parsed representation of LSM existence check script.
         /// </summary>
-        private static readonly IEnumerable<StringBuilder> s_checkIfExistsLocalScript = SqlUtils.SplitScriptCommands(Scripts.CheckShardMapManagerLocal);
+        private static readonly Lazy<IEnumerable<StringBuilder>> s_checkIfExistsLocalScript = new Lazy<IEnumerable<StringBuilder>>(
+            () => SqlUtils.SplitScriptCommands(ReadOnlyScripts.CheckShardMapManagerLocal), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>
         /// Parsed representation of LSM creation script.
         /// </summary>
-        private static readonly IEnumerable<StringBuilder> s_createLocalScript = SqlUtils.SplitScriptCommands(Scripts.CreateShardMapManagerLocal);
+        private static readonly Lazy<IEnumerable<StringBuilder>> s_createLocalScript = new Lazy<IEnumerable<StringBuilder>>(
+            () => SqlUtils.SplitScriptCommands(Scripts.CreateShardMapManagerLocal), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>
         /// Parsed representation of LSM drop script.
         /// </summary>
-        private static readonly IEnumerable<StringBuilder> s_dropLocalScript = SqlUtils.SplitScriptCommands(Scripts.DropShardMapManagerLocal);
+        private static readonly Lazy<IEnumerable<StringBuilder>> s_dropLocalScript = new Lazy<IEnumerable<StringBuilder>>(
+            () => SqlUtils.SplitScriptCommands(Scripts.DropShardMapManagerLocal), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>
         /// Parsed representation of LSM upgrade script.
         /// </summary>
-        private static readonly IEnumerable<UpgradeSteps> s_upgradeLocalScript = SqlUtils.ParseUpgradeScripts(parseLocal: true);
+        private static readonly Lazy<IEnumerable<UpgradeSteps>> s_upgradeLocalScript = new Lazy<IEnumerable<UpgradeSteps>>(
+            () => SqlUtils.ParseUpgradeScripts(parseLocal: true), LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>
         /// SQL transient fault detection strategy.
@@ -189,7 +198,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             get
             {
-                return SqlUtils.s_checkIfExistsGlobalScript;
+                return SqlUtils.s_checkIfExistsGlobalScript.Value;
             }
         }
 
@@ -200,7 +209,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             get
             {
-                return SqlUtils.s_createGlobalScript;
+                return SqlUtils.s_createGlobalScript.Value;
             }
         }
 
@@ -211,7 +220,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             get
             {
-                return SqlUtils.s_dropGlobalScript;
+                return SqlUtils.s_dropGlobalScript.Value;
             }
         }
 
@@ -222,7 +231,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             get
             {
-                return SqlUtils.s_upgradeGlobalScript;
+                return SqlUtils.s_upgradeGlobalScript.Value;
             }
         }
 
@@ -233,7 +242,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             get
             {
-                return SqlUtils.s_checkIfExistsLocalScript;
+                return SqlUtils.s_checkIfExistsLocalScript.Value;
             }
         }
 
@@ -244,7 +253,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             get
             {
-                return SqlUtils.s_createLocalScript;
+                return SqlUtils.s_createLocalScript.Value;
             }
         }
 
@@ -255,7 +264,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             get
             {
-                return SqlUtils.s_dropLocalScript;
+                return SqlUtils.s_dropLocalScript.Value;
             }
         }
 
@@ -266,7 +275,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             get
             {
-                return SqlUtils.s_upgradeLocalScript;
+                return SqlUtils.s_upgradeLocalScript.Value;
             }
         }
 
