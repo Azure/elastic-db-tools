@@ -69,6 +69,13 @@ We use GitHub labels on our issues in order to classify them. We have the follow
 	
 	* [X-Plat](https://github.com/Microsoft/Elastic-database-client-library-for-Azure-SQL-Database/labels/X-Plat): Swim lane :swimmer: for Cross Platform Support
 
+* **Priority**: Priority for the completion of work based on the business goals.
+	* [Pri 0](https://github.com/Azure/elastic-db-tools/labels/Pri%200): Needs Immediate Attention 
+	* [Pri 1](https://github.com/Azure/elastic-db-tools/labels/Pri%201): Cannot release without fixing the issue
+	* [Pri 2](https://github.com/Azure/elastic-db-tools/labels/Pri%202): Should be fixed in this release
+	* [Pri 3](https://github.com/Azure/elastic-db-tools/labels/Pri%203): Nice to Have 
+	* [Pri 4](https://github.com/Azure/elastic-db-tools/labels/Pri%204): Next Release
+
 In addition to the above, we have a handful of other labels we use to help classify our issues. Some of these tag cross cutting concerns (e.g. cross platform, performance, serialization impact) where as others are used to help us track additional work needed before closing an issue (e.g. needs API review). Finally, we have the "needs more info" label. We use this label to mark issues where we need more information in order to proceed. Usually this will be because we can't reproduce a reported bug. We'll close these issues after a little bit if we haven't gotten actionable information, but we welcome folks who have acquired more information to reopen the issue.
 
 ###Assignee
