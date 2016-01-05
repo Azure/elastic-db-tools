@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Data.SqlClient;
 using System.Linq;
+using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
@@ -196,38 +197,31 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// </summary>
         [TestMethod()]
         [TestCategory("ExcludeFromGatedCheckin")]
-        public void UpgradeGSM()
+        public void UpgradeGsm()
         {
             // Get shard map manager
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
-                        Globals.ShardMapManagerConnectionString,
-                        ShardMapManagerLoadPolicy.Lazy);
+                Globals.ShardMapManagerConnectionString,
+                ShardMapManagerLoadPolicy.Lazy);
 
-            try
-            {
-                ShardMap testsm = smm.CreateListShardMap<int>(ShardMapManagerUpgradeTests.s_shardMapNames[0]);
-                Assert.IsNotNull(testsm);
-            }
-            catch (ShardManagementException sme)
-            {
-                Assert.AreEqual(ShardManagementErrorCode.GlobalStoreVersionMismatch, sme.ErrorCode);
-            }
+            // Sanity check setup: version should be 1.0
+            VerifyGlobalStore(smm, new Version(1, 0));
 
             // Upgrade to version 1.0: no-op
             smm.UpgradeGlobalStore(new Version(1, 0));
+            VerifyGlobalStore(smm, new Version(1, 0));
 
             // Upgrade to version 1.1
             smm.UpgradeGlobalStore(new Version(1, 1));
-
-            // Below call should succeed as latest supported major version of library matches major version of deployed store.
-            ShardMap sm = smm.CreateListShardMap<int>(ShardMapManagerUpgradeTests.s_shardMapNames[0]);
-            Assert.IsNotNull(sm);
+            VerifyGlobalStore(smm, new Version(1, 1));
 
             // Upgrade to version 1.2
             smm.UpgradeGlobalStore(new Version(1, 2));
+            VerifyGlobalStore(smm, new Version(1, 2));
 
-            // Upgrade to latest version (1.2): no-op
+            // Upgrade to latest version
             smm.UpgradeGlobalStore();
+            VerifyGlobalStore(smm, GlobalConstants.GsmVersionClient);
         }
 
         /// <summary>
@@ -235,7 +229,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// </summary>
         [TestMethod()]
         [TestCategory("ExcludeFromGatedCheckin")]
-        public void UpgradeLSM()
+        public void UpgradeLsm()
         {
             // Get shard map manager
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -244,10 +238,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             // upgrade GSM to latest version.
             smm.UpgradeGlobalStore();
+            VerifyGlobalStore(smm, GlobalConstants.GsmVersionClient);
 
             // deploy LSM initial version.
-            ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapManagerUpgradeTests.s_shardedDBs[0]);
-
+            ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, s_shardedDBs[0]);
             smm.UpgradeLocalStore(sl, s_initialLsmVersion);
 
             // upgrade to version 1.1
@@ -333,6 +327,58 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RangeMapping<int> m in rsm.GetMappings())
             {
                 rsm.DeleteMapping(rsm.UpdateMapping(m, ru));
+            }
+        }
+
+        private void VerifyGlobalStore(ShardMapManager smm, Version targetVersion)
+        {
+            // Verify upgrade
+            Assert.AreEqual(
+                targetVersion,
+                GetGlobalStoreVersion());
+
+            string shardMapName = string.Format("MyShardMap_{0}", Guid.NewGuid());
+            if (targetVersion != null && targetVersion < new Version(1, 1))
+            {
+                ShardManagementException sme = AssertExtensions.AssertThrows<ShardManagementException>(
+                    () => smm.CreateListShardMap<int>(shardMapName));
+                Assert.AreEqual(ShardManagementErrorCode.GlobalStoreVersionMismatch, sme.ErrorCode);
+            }
+            else
+            {
+                // Below call should succeed as latest supported major version of library matches major version of deployed store.
+                ShardMap sm = smm.CreateListShardMap<int>(shardMapName);
+                Assert.IsNotNull(sm);
+            }
+        }
+
+        private Version GetGlobalStoreVersion()
+        {
+            return GetVersion(SqlUtils.CheckIfExistsGlobalScript.Single().ToString());
+        }
+
+        private Version GetVersion(string getVersionScript)
+        {
+            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerConnectionString))
+            {
+                conn.Open();
+                SqlCommand cmd = new SqlCommand(getVersionScript, conn);
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    Assert.IsTrue(reader.Read());
+                    if (reader.FieldCount == 2)
+                    {
+                        return new Version(reader.GetInt32(1), 0);
+                    }
+                    else if (reader.FieldCount == 3)
+                    {
+                        return new Version(reader.GetInt32(1), reader.GetInt32(2));
+                    }
+                    else
+                    {
+                        throw new AssertFailedException(String.Format("Unexpected FieldCount: {0}", reader.FieldCount));
+                    }
+                }
             }
         }
     }
