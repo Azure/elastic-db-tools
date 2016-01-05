@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/Azure/elastic-db-tools.png?label=ready&title=Ready)](https://waffle.io/Azure/elastic-db-tools)
 # Elastic database tools for Azure SQL Database
 Elastic database tools client library allows ADO.NET developers to create applications that implement and use the pattern known as database sharding in Azure SQL Database. Learn more at http://azure.microsoft.com/en-us/documentation/learning-paths/sql-database-elastic-scale/ .
 
