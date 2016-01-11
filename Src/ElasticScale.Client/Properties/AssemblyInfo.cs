@@ -25,6 +25,7 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests" + AssemblyRef.ProductPublicKey)]
 [assembly: InternalsVisibleTo("Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests" + AssemblyRef.ProductPublicKey)]
 [assembly: InternalsVisibleTo("Microsoft.Azure.SqlDatabase.ElasticScale.SplitMerge.Client" + AssemblyRef.ProductPublicKey)]
+[assembly: InternalsVisibleTo("Microsoft.SqlServer.DataWarehouse.Engine" + AssemblyRef.ElasticQueryPublicKey)]
 [assembly: InternalsVisibleTo("SplitMergeWorker" + AssemblyRef.ProductPublicKey)]
 [assembly: InternalsVisibleTo("ShardSplitMergeTests" + AssemblyRef.ProductPublicKey)]
 
@@ -62,6 +63,7 @@ internal static class AssemblyRef
     public const string ProductPublicKey = "";
     public const string TestPublicKey = "";
     public const string FakesPublicKey = "";
+    public const string ElasticQueryPublicKey = "";
 }
 
 internal static class ElasticScaleVersionInfo

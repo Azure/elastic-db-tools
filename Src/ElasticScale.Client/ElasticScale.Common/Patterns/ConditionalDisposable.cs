@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
+namespace Microsoft.Azure.SqlDatabase.ElasticScale
 {
     /// <summary>
     /// A disposable object which opts-out of disposing the inner disposable
@@ -43,6 +43,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             if (!this.DoNotDispose)
             {
                 _innerDispoable.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Gets the inner disposable object.
+        /// </summary>
+        public T Value
+        {
+            get
+            {
+                return this._innerDispoable;
             }
         }
     }

@@ -82,6 +82,7 @@
     <Compile Include="ElasticScale.Common\Logging\ILogConfigWatcher.cs" />
     <Compile Include="ElasticScale.Common\Logging\TraceSource\TraceSourceWrapper.cs" />
     <Compile Include="ElasticScale.Common\Logging\TraceSource\TraceSourceFactory.cs" />
+    <Compile Include="ElasticScale.Common\Patterns\ConditionalDisposable.cs" />
   </ItemGroup>
   <!--
     ShardManagement
@@ -247,7 +248,6 @@
     <Compile Include="ShardManagement\Store\SqlVersion.cs" />
     <Compile Include="ShardManagement\Store\IUserStoreConnection.cs" />
     <Compile Include="ShardManagement\Store\StoreException.cs" />
-    <Compile Include="ShardManagement\Utils\ConditionalDisposable.cs" />
     <Compile Include="ShardManagement\Utils\ExceptionUtils.cs" />
     <Compile Include="ShardManagement\Utils\GlobalConstants.cs" />
     <Compile Include="ShardManagement\Utils\ICloneable.cs" />
