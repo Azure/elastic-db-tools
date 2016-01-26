@@ -78,8 +78,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             }
         }
 
-        private const string PerformanceMonitorUsersGroupName = "Performance Monitor Users";
-
         internal static readonly List<PerfCounterCreationData> counterList = new List<PerfCounterCreationData>()
         {
             new PerfCounterCreationData(PerformanceCounterName.MappingsCount, PerformanceCounterType.NumberOfItems64, PerformanceCounters.MappingsCountDisplayName, PerformanceCounters.MappingsCountHelpText),
@@ -247,7 +245,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             // PerformanceCounter creation requires user to be part of Administrators or 'Performance Monitor Users' local group.
             WindowsPrincipal wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
-            return wp.IsInRole(WindowsBuiltInRole.Administrator) || wp.IsInRole(PerformanceMonitorUsersGroupName);
+            return wp.IsInRole(WindowsBuiltInRole.Administrator) || wp.IsInRole(PerformanceCounters.PerformanceMonitorUsersGroupName);
         }
 
         /// <summary>

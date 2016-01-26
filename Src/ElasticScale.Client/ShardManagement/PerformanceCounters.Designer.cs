@@ -169,6 +169,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Performance Monitor Users.
+        /// </summary>
+        internal static string PerformanceMonitorUsersGroupName {
+            get {
+                return ResourceManager.GetString("PerformanceMonitorUsersGroupName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Elastic Database: Shard Management.
         /// </summary>
         internal static string ShardManagementPerformanceCounterCategory {

@@ -153,6 +153,9 @@
   <data name="MappingsRemovePerSecHelpText" xml:space="preserve">
     <value>Rate at which mappings are being removed from cache for this shard map</value>
   </data>
+  <data name="PerformanceMonitorUsersGroupName" xml:space="preserve">
+    <value>Performance Monitor Users</value>
+  </data>
   <data name="ShardManagementPerformanceCounterCategory" xml:space="preserve">
     <value>Elastic Database: Shard Management</value>
   </data>
