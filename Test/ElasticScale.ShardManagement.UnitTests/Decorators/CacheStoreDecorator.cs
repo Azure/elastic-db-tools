@@ -42,6 +42,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             return this.inner.LookupMappingByKey(shardMap, key);
         }
 
+        public virtual void IncrementPerformanceCounter(IStoreShardMap shardMap, PerformanceCounterName name)
+        {
+            this.inner.IncrementPerformanceCounter(shardMap, name);
+        }
+
         public virtual void Clear()
         {
             this.inner.Clear();

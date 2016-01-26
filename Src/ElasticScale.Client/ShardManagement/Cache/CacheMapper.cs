@@ -52,6 +52,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         internal abstract ICacheStoreMapping LookupByKey(ShardKey key, out IStoreMapping sm);
 
         /// <summary>
+        /// Gets mappings dictionary size.
+        /// </summary>
+        /// <returns>Number of mappings cached in the dictionary.</returns>
+        internal abstract long GetMappingsCount();
+
+        /// <summary>
         /// Clears all the mappings in the lookup by Id table.
         /// </summary>
         protected abstract void Clear();

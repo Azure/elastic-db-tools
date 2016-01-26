@@ -104,6 +104,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
+        /// Get number of point mappings cached in this mapper.
+        /// </summary>
+        /// <returns>Number of cached point mappings.</returns>
+        internal override long GetMappingsCount()
+        {
+            return _mappingsByKey.Count;
+        }
+
+        /// <summary>
         /// Clears all the mappings in the lookup by Id table as well
         /// as lookup by key table.
         /// </summary>

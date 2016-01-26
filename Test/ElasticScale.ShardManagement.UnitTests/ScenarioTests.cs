@@ -1237,6 +1237,119 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             Assert.IsTrue(success);
         }
 
+        [TestMethod()]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void ListShardMapPerformanceCounterValidation()
+        {
+            if (PerfCounterInstance.HasCreatePerformanceCategoryPermissions())
+            {
+                string shardMapName = "PerTenantShardMap";
+
+                #region Setup
+
+                // Deploy shard map manager.
+                ShardMapManager shardMapManager = ShardMapManagerFactory.CreateSqlShardMapManager(
+                    Globals.ShardMapManagerConnectionString,
+                    ShardMapManagerCreateMode.ReplaceExisting);
+
+                // Create a single user per-tenant shard map.
+                ListShardMap<int> perTenantShardMap = shardMapManager.CreateListShardMap<int>(shardMapName);
+
+                ShardLocation sl1 = new ShardLocation(
+                        Globals.ShardMapManagerTestsDatasourceName,
+                        ScenarioTests.s_perTenantDBs[0]);
+
+                // Create first shard and add 1 point mapping.
+                Shard s = perTenantShardMap.CreateShard(sl1);
+
+                // Create the mapping.
+                PointMapping<int> p1 = perTenantShardMap.CreatePointMapping(1, s);
+
+                #endregion Setup
+
+                // Delete and recreate perf counter catagory.
+                ShardMapManagerFactory.CreatePerformanceCategoryAndCounters();
+
+                // Eager loading of shard map manager
+                ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(Globals.ShardMapManagerConnectionString, ShardMapManagerLoadPolicy.Eager);
+
+                // check if perf counter instance exists, instance name logic is from PerfCounterInstance.cs
+                string instanceName = string.Concat(Process.GetCurrentProcess().Id.ToString(), "-", shardMapName);
+
+                Assert.IsTrue(ValidateInstance(instanceName));
+
+                // verify # of mappings.
+                Assert.IsTrue(ValidateCounterValue(instanceName, PerformanceCounterName.MappingsCount, 1));
+
+                ListShardMap<int> lsm = smm.GetListShardMap<int>(shardMapName);
+
+                // Add a new shard and mapping and verify updated counters
+                ShardLocation sl2 = new ShardLocation(
+                        Globals.ShardMapManagerTestsDatasourceName,
+                        ScenarioTests.s_perTenantDBs[1]);
+
+                Shard s2 = lsm.CreateShard(sl2);
+
+                PointMapping<int> p2 = lsm.CreatePointMapping(2, s2);
+                Assert.IsTrue(ValidateCounterValue(instanceName, PerformanceCounterName.MappingsCount, 2));
+
+                // perform DDR operation few times and validate non-zero counter values
+                for (int i = 0; i < 10; i++)
+                {
+                    using (SqlConnection conn = lsm.OpenConnectionForKey(1, Globals.ShardUserConnectionString))
+                    {
+                    }
+                }
+
+                Assert.IsTrue(ValidateNonZeroCounterValue(instanceName, PerformanceCounterName.DdrOperationsPerSec));
+                Assert.IsTrue(ValidateNonZeroCounterValue(instanceName, PerformanceCounterName.MappingsLookupSucceededPerSec));
+
+                // Remove shard map after removing mappings and shard
+                lsm.DeleteMapping(lsm.MarkMappingOffline(lsm.GetMappingForKey(1)));
+                lsm.DeleteMapping(lsm.MarkMappingOffline(lsm.GetMappingForKey(2)));
+                lsm.DeleteShard(lsm.GetShard(sl1));
+                lsm.DeleteShard(lsm.GetShard(sl2));
+
+                Assert.IsTrue(ValidateCounterValue(instanceName, PerformanceCounterName.MappingsCount, 0));
+
+                smm.DeleteShardMap(lsm);
+
+                // make sure that perf counter instance is removed
+                Assert.IsFalse(ValidateInstance(instanceName));
+            }
+        }
+
+        private bool ValidateNonZeroCounterValue(string instanceName, PerformanceCounterName counterName)
+        {
+            string counterdisplayName = (from c in PerfCounterInstance.counterList
+                                         where c.CounterName == counterName
+                                         select c.CounterDisplayName).First();
+
+            using (PerformanceCounter pc =
+                new PerformanceCounter(PerformanceCounters.ShardManagementPerformanceCounterCategory, counterdisplayName, instanceName))
+            {
+                return pc.RawValue != 0;
+            }
+        }
+
+        private bool ValidateCounterValue(string instanceName, PerformanceCounterName counterName, long value)
+        {
+            string counterdisplayName = (from c in PerfCounterInstance.counterList
+                                         where c.CounterName == counterName
+                                         select c.CounterDisplayName).First();
+
+            using (PerformanceCounter pc =
+                new PerformanceCounter(PerformanceCounters.ShardManagementPerformanceCounterCategory, counterdisplayName, instanceName))
+            {
+                return pc.RawValue.Equals(value);
+            }
+        }
+
+        private bool ValidateInstance(string instanceName)
+        {
+            return PerformanceCounterCategory.InstanceExists(instanceName, PerformanceCounters.ShardManagementPerformanceCounterCategory);
+        }
+
         private RangeMapping<T> MarkMappingOfflineAndUpdateShard<T>(RangeShardMap<T> map, RangeMapping<T> mapping, Shard newShard)
         {
             RangeMapping<T> mappingOffline = map.UpdateMapping(

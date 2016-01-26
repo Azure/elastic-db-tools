@@ -468,6 +468,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
+        /// Create shard management performance counter category and counters
+        /// </summary>
+        public static void CreatePerformanceCategoryAndCounters()
+        {
+            PerfCounterInstance.CreatePerformanceCategoryAndCounters();
+        }
+
+        /// <summary>
         /// Gets <see cref="ShardMapManager"/> from persisted state in a SQL Server database.
         /// </summary>
         /// <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>

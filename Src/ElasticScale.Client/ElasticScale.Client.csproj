@@ -99,6 +99,8 @@
     <Compile Include="ShardManagement\Cache\CacheStore.cs" />
     <Compile Include="ShardManagement\Cache\ICacheStore.cs" />
     <Compile Include="ShardManagement\Cache\ICacheStoreMapping.cs" />
+    <Compile Include="ShardManagement\Cache\PerfCounterInstance.cs" />
+    <Compile Include="ShardManagement\Cache\PerformanceCounterWrapper.cs" />
     <Compile Include="ShardManagement\Cache\ReadLockScope.cs" />
     <Compile Include="ShardManagement\Cache\WriteLockScope.cs" />
     <Compile Include="ShardManagement\Errors.Designer.cs">
@@ -112,6 +114,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ReadOnlyScripts.resx</DependentUpon>
+    </Compile>
+    <Compile Include="ShardManagement\PerformanceCounters.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PerformanceCounters.resx</DependentUpon>
     </Compile>
     <Compile Include="ShardManagement\SchemaInformation\TableInfo.cs" />
     <Compile Include="ShardManagement\SchemaInformation\SchemaInfoCollection.cs" />
@@ -266,6 +273,10 @@
     <EmbeddedResource Include="ShardManagement\ReadOnlyScripts.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ReadOnlyScripts.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ShardManagement\PerformanceCounters.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>PerformanceCounters.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="ShardManagement\Scripts.resx">
       <Generator>ResXFileCodeGenerator</Generator>
