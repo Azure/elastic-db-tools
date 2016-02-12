@@ -220,7 +220,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// The length in bytes of each ShardKeyType.
         /// </summary>
-        private Dictionary<ShardKeyType, int> _shardKeyTypeLength = new Dictionary<ShardKeyType, int>
+        private readonly Dictionary<ShardKeyType, int> _shardKeyTypeLength = new Dictionary<ShardKeyType, int>
         {
             {ShardKeyType.Int32, 4},
             {ShardKeyType.Int64, 8},
