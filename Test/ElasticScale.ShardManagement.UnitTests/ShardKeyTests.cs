@@ -321,6 +321,52 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             },
 
             #endregion
+
+            #region TimeSpan
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = ShardKey.MinTimeSpan,
+                RawValue = new byte[] {}
+            },
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(TimeSpan.FromTicks(long.MinValue)),
+                RawValue = new byte[] {}
+            },
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(TimeSpan.FromTicks(-1)),
+                RawValue = new byte[] {0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
+            },
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(TimeSpan.Zero),
+                RawValue = new byte[] {0x80, 0, 0, 0, 0, 0, 0, 0}
+            },
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(TimeSpan.FromTicks(1)),
+                RawValue = new byte[] {0x80, 0, 0, 0, 0, 0, 0, 1}
+            },
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(TimeSpan.FromTicks(long.MaxValue)),
+                RawValue = new byte[] {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
+            },
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = ShardKey.MaxTimeSpan,
+                RawValue = null
+            },
+
+            #endregion
         };
 
         /// <summary>
@@ -333,7 +379,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             {ShardKeyType.Guid, 16},
             {ShardKeyType.Binary, 128},
             {ShardKeyType.DateTime, 8},
-            {ShardKeyType.DateTimeOffset, 16}
+            {ShardKeyType.DateTimeOffset, 16},
+            {ShardKeyType.TimeSpan, 8}
         };
 
         [TestMethod]
