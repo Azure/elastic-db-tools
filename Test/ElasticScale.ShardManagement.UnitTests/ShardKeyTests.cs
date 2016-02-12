@@ -252,6 +252,42 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 actualDeserializedValue.Value);
         }
 
+        // This is the same ordering as SQL Server
+        private readonly ShardKey[] _orderedGuidsDescending = 
+        {
+            ShardKey.MaxGuid,
+            new ShardKey(Guid.Parse("00000000-0000-0000-0000-010000000000")),
+            new ShardKey(Guid.Parse("00000000-0000-0000-0000-000100000000")),
+            new ShardKey(Guid.Parse("00000000-0000-0000-0000-000001000000")),
+            new ShardKey(Guid.Parse("00000000-0000-0000-0000-000000010000")),
+            new ShardKey(Guid.Parse("00000000-0000-0000-0000-000000000100")),
+            new ShardKey(Guid.Parse("00000000-0000-0000-0000-000000000001")),
+            new ShardKey(Guid.Parse("00000000-0000-0000-0100-000000000000")),
+            new ShardKey(Guid.Parse("00000000-0000-0000-0010-000000000000")),
+            new ShardKey(Guid.Parse("00000000-0000-0001-0000-000000000000")),
+            new ShardKey(Guid.Parse("00000000-0000-0100-0000-000000000000")),
+            new ShardKey(Guid.Parse("00000000-0001-0000-0000-000000000000")),
+            new ShardKey(Guid.Parse("00000000-0100-0000-0000-000000000000")),
+            new ShardKey(Guid.Parse("00000001-0000-0000-0000-000000000000")),
+            new ShardKey(Guid.Parse("00000100-0000-0000-0000-000000000000")),
+            new ShardKey(Guid.Parse("00010000-0000-0000-0000-000000000000")),
+            new ShardKey(Guid.Parse("01000000-0000-0000-0000-000000000000")),
+            new ShardKey(Guid.Parse("00000000-0000-0000-0000-000000000000"))
+        };
+
+        [TestMethod]
+        public void TestGuidOrdering()
+        {
+            for (int i = 0; i < _orderedGuidsDescending.Length - 1; i++)
+            {
+                Assert.IsTrue(
+                    _orderedGuidsDescending[0] > _orderedGuidsDescending[1],
+                    "Expected {0} to be great than {1}",
+                    _orderedGuidsDescending[0],
+                    _orderedGuidsDescending[1]);
+            }
+        }
+
         /// <summary>
         /// Test using ShardKey with DateTime value.
         /// </summary>
