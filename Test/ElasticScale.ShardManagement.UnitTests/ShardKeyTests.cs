@@ -52,6 +52,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         private readonly ShardKeyAndRawValue[] _shardKeyAndRawValues =
         {
             #region Int32
+
             new ShardKeyAndRawValue
             {
                 ShardKey = ShardKey.MinInt32,
@@ -98,8 +99,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 ShardKey = ShardKey.MaxInt32,
                 RawValue = null
             },
+
             #endregion
+
             #region Int64
+
             new ShardKeyAndRawValue
             {
                 ShardKey = ShardKey.MinInt64,
@@ -146,6 +150,36 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 ShardKey = ShardKey.MaxInt64,
                 RawValue = null
             },
+
+            #endregion
+
+            #region Guid
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = ShardKey.MinGuid,
+                RawValue = new byte[] {}
+            },
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(Guid.Empty),
+                RawValue = new byte[] {}
+            },
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(Guid.Parse("a0a1a2a3-a4a5-a6a7-a8a9-aaabacadaeaf")),
+                RawValue = new byte[] {0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf, /* - */ 0xa8, 0xa9, 
+                                        /* - */ 0xa7, 0xa6, /* - */ 0xa5, 0xa4, /* - */ 0xa3, 0xa2, 0xa1, 0xa0}
+            },
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = ShardKey.MaxGuid,
+                RawValue = null
+            },
+
             #endregion
         };
 
@@ -155,7 +189,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         private Dictionary<ShardKeyType, int> _shardKeyTypeLength = new Dictionary<ShardKeyType, int>
         {
             {ShardKeyType.Int32, 4},
-            {ShardKeyType.Int64, 8}
+            {ShardKeyType.Int64, 8},
+            {ShardKeyType.Guid, 16},
         };
 
         [TestMethod]
