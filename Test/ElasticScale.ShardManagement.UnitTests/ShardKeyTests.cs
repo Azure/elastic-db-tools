@@ -1,18 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Fakes;
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
@@ -22,6 +15,196 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
     [TestClass]
     public class ShardKeyTests
     {
+        private struct ShardKeyAndRawValue
+        {
+            public ShardKey ShardKey { get; set; }
+            public byte[] RawValue { get; set; }
+
+            public override string ToString()
+            {
+                return string.Format("{0} <-> {1}", ToString(ShardKey), ToString(RawValue));
+            }
+
+            private static string ToString(ShardKey shardKey)
+            {
+                return string.Format("{0} {1}", shardKey.KeyType, shardKey);
+            }
+
+            private static string ToString(byte[] bytes)
+            {
+                if (bytes == null)
+                {
+                    return "(null)";
+                }
+                return "0x" + string.Join(string.Empty, bytes.Select(b => b.ToString("x2")));
+            }
+        }
+
+        private readonly ShardKeyAndRawValue[] _shardKeyAndRawValues =
+        {
+            #region Int32
+            new ShardKeyAndRawValue
+            {
+                ShardKey = ShardKey.MinInt32,
+                RawValue = new byte[] {}
+            },
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(int.MinValue),
+                RawValue = new byte[] {}
+            },
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(int.MinValue + 1),
+                RawValue = new byte[] {0, 0, 0, 1},
+            },
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(-1),
+                RawValue = new byte[] {0x7f, 0xff, 0xff, 0xff}
+            },
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(0),
+                RawValue = new byte[] {0x80, 0, 0, 0}
+            },
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(1),
+                RawValue = new byte[] {0x80, 0, 0, 1}
+            },
+            new ShardKeyAndRawValue
+            {
+
+                ShardKey = new ShardKey(int.MaxValue - 1),
+                RawValue = new byte[] {0xff, 0xff, 0xff, 0xfe}
+            },
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(int.MaxValue),
+                RawValue = new byte[] {0xff, 0xff, 0xff, 0xff}
+            },
+            new ShardKeyAndRawValue
+            {
+                ShardKey = ShardKey.MaxInt32,
+                RawValue = null
+            },
+            #endregion
+            #region Int64
+            new ShardKeyAndRawValue
+            {
+                ShardKey = ShardKey.MinInt64,
+                RawValue = new byte[] {}
+            },
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(long.MinValue),
+                RawValue = new byte[] {}
+            },
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(long.MinValue + 1),
+                RawValue = new byte[] {0, 0, 0, 0, 0, 0, 0, 1},
+            },
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey((long) -1),
+                RawValue = new byte[] {0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
+            },
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey((long) 0),
+                RawValue = new byte[] {0x80, 0, 0, 0, 0, 0, 0, 0}
+            },
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey((long) 1),
+                RawValue = new byte[] {0x80, 0, 0, 0, 0, 0, 0, 1}
+            },
+            new ShardKeyAndRawValue
+            {
+
+                ShardKey = new ShardKey(long.MaxValue - 1),
+                RawValue = new byte[] {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe}
+            },
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(long.MaxValue),
+                RawValue = new byte[] {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
+            },
+            new ShardKeyAndRawValue
+            {
+                ShardKey = ShardKey.MaxInt64,
+                RawValue = null
+            },
+            #endregion
+        };
+
+        private Dictionary<ShardKeyType, int> _dataTypeLength = new Dictionary<ShardKeyType, int>
+        {
+            {ShardKeyType.Int32, 4},
+            {ShardKeyType.Int64, 8}
+        };
+
+        [TestMethod]
+        public void TestShardKeySerialization()
+        {
+            foreach (ShardKeyAndRawValue shardKeyAndRawValue in _shardKeyAndRawValues)
+            {
+                Console.WriteLine(shardKeyAndRawValue);
+
+                byte[] expectedSerializedValue = shardKeyAndRawValue.RawValue;
+                byte[] actualSerializedValue = shardKeyAndRawValue.ShardKey.RawValue;
+
+                if (expectedSerializedValue == null)
+                {
+                    Assert.AreEqual(expectedSerializedValue, actualSerializedValue);
+                }
+                else
+                {
+                    AssertExtensions.AssertSequenceEqual(expectedSerializedValue, actualSerializedValue);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestShardKeyDeserialization()
+        {
+            foreach (ShardKeyAndRawValue shardKeyAndRawValue in _shardKeyAndRawValues)
+            {
+                Console.WriteLine(shardKeyAndRawValue);
+
+                TestShardKeyDeserialization(shardKeyAndRawValue.ShardKey, shardKeyAndRawValue.RawValue);
+            }
+        }
+
+        [TestMethod]
+        public void TestShardKeyDeserializationAddTrailingZeroes()
+        {
+            foreach (ShardKeyAndRawValue shardKeyAndRawValue in _shardKeyAndRawValues)
+            {
+                Console.WriteLine(shardKeyAndRawValue);
+                if (shardKeyAndRawValue.RawValue != null && shardKeyAndRawValue.RawValue.Length == 0)
+                {
+                    // If the length is zero, we are allowed to add exactly the right number of trailing zeroes for this data type
+                    int dataTypeLength = _dataTypeLength[shardKeyAndRawValue.ShardKey.KeyType];
+                    byte[] rawValueWithTrailingZeroes = new byte[dataTypeLength];
+                    shardKeyAndRawValue.RawValue.CopyTo(rawValueWithTrailingZeroes, 0);
+
+                    TestShardKeyDeserialization(shardKeyAndRawValue.ShardKey, rawValueWithTrailingZeroes);
+                }
+            }
+        }
+
+        private static void TestShardKeyDeserialization(ShardKey expectedDeserializedValue, byte[] rawValueToDeserialize)
+        {
+            ShardKey actualDeserializedValue = ShardKey.FromRawValue(expectedDeserializedValue.KeyType, rawValueToDeserialize);
+
+            Assert.AreEqual(
+                expectedDeserializedValue.Value,
+                actualDeserializedValue.Value);
+        }
+
         /// <summary>
         /// Test using ShardKey with DateTime value.
         /// </summary>
@@ -89,6 +272,33 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (InvalidOperationException)
             {
+            }
+        }
+    }
+
+    internal static class EnumerableExtensions
+    {
+        public static IEnumerable<T> PadToLength<T>(this IEnumerable<T> source, int length)
+        {
+            using (IEnumerator<T> enumerator = source.GetEnumerator())
+            {
+                for (int i = 0; i < length; i++)
+                {
+                    if (enumerator.MoveNext())
+                    {
+                        yield return enumerator.Current;
+                    }
+                    else
+                    {
+                        yield return default(T);
+                    }
+                }
+
+                if (enumerator.MoveNext())
+                {
+                    throw new InvalidOperationException(
+                        string.Format("Cannot pad source to length {0} because source was longer than that length", length));
+                }
             }
         }
     }
