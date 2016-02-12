@@ -181,6 +181,40 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             },
 
             #endregion
+
+            #region Binary
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = ShardKey.MinBinary,
+                RawValue = new byte[] {}
+            },
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(new byte[] {}),
+                RawValue = new byte[] {}
+            },
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(new byte[] {0}),
+                RawValue = new byte[] {}
+            },
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = new ShardKey(ByteEnumerable.Range(0, 128).ToArray()),
+                RawValue = ByteEnumerable.Range(0, 128).ToArray()
+            },
+
+            new ShardKeyAndRawValue
+            {
+                ShardKey = ShardKey.MaxBinary,
+                RawValue = null
+            },
+
+            #endregion
         };
 
         /// <summary>
@@ -191,6 +225,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             {ShardKeyType.Int32, 4},
             {ShardKeyType.Int64, 8},
             {ShardKeyType.Guid, 16},
+            {ShardKeyType.Binary, 128},
         };
 
         [TestMethod]
@@ -221,7 +256,27 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             {
                 Console.WriteLine(shardKeyAndRawValue);
 
-                TestShardKeyDeserialization(shardKeyAndRawValue.ShardKey, shardKeyAndRawValue.RawValue);
+                ShardKey expectedDeserializedShardKey = shardKeyAndRawValue.ShardKey;
+                ShardKey actualDeserializedShardKey = ShardKey.FromRawValue(expectedDeserializedShardKey.KeyType, shardKeyAndRawValue.RawValue);
+
+                // Verify with ShardKey.Equals
+                Assert.AreEqual(
+                    expectedDeserializedShardKey,
+                    actualDeserializedShardKey);
+
+                // Verify with value type-specific Equals
+                if (expectedDeserializedShardKey.KeyType == ShardKeyType.Binary && expectedDeserializedShardKey.Value != null)
+                {
+                    AssertExtensions.AssertSequenceEqual(
+                        (byte[])expectedDeserializedShardKey.Value,
+                        (byte[])actualDeserializedShardKey.Value);
+                }
+                else
+                {
+                    Assert.AreEqual(
+                        expectedDeserializedShardKey.Value,
+                        actualDeserializedShardKey.Value);
+                }
             }
         }
 
@@ -231,25 +286,52 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (ShardKeyAndRawValue shardKeyAndRawValue in _shardKeyAndRawValues)
             {
                 Console.WriteLine(shardKeyAndRawValue);
-                if (shardKeyAndRawValue.RawValue != null && shardKeyAndRawValue.RawValue.Length == 0)
-                {
-                    // If the length is zero, we are allowed to add exactly the right number of trailing zeroes for this data type
-                    int dataTypeLength = _shardKeyTypeLength[shardKeyAndRawValue.ShardKey.KeyType];
-                    byte[] rawValueWithTrailingZeroes = new byte[dataTypeLength];
-                    shardKeyAndRawValue.RawValue.CopyTo(rawValueWithTrailingZeroes, 0);
 
-                    TestShardKeyDeserialization(shardKeyAndRawValue.ShardKey, rawValueWithTrailingZeroes);
+                int dataTypeLength = _shardKeyTypeLength[shardKeyAndRawValue.ShardKey.KeyType];
+                if (shardKeyAndRawValue.RawValue != null && shardKeyAndRawValue.RawValue.Length != dataTypeLength)
+                {
+                    ShardKey originalShardKey = shardKeyAndRawValue.ShardKey;
+                    byte[] originalRawValue = shardKeyAndRawValue.RawValue;
+
+                    // Add trailing zeroes
+                    byte[] rawValueWithTrailingZeroes = new byte[dataTypeLength];
+                    originalRawValue.CopyTo(rawValueWithTrailingZeroes, 0);
+
+                    ShardKey actualDeserializedShardKey = ShardKey.FromRawValue(shardKeyAndRawValue.ShardKey.KeyType,
+                        rawValueWithTrailingZeroes);
+
+                    if (actualDeserializedShardKey.KeyType == ShardKeyType.Binary && actualDeserializedShardKey.Value != null)
+                    {
+                        // Unlike the other types that have fixed length, Binary values are sensitive to trailing zeroes.
+                        // Since we added trailing zeroes, that means that actualDeserializedShardKey and its value
+                        // inside should NOT equal originalShardKey ad its value
+
+                        // Verify with ShardKey.Equals
+                        Assert.AreNotEqual(
+                            originalShardKey,
+                            actualDeserializedShardKey);
+
+                        // Verify with value type-specific Equals
+                        // The deserialized ShardKey should have the same value as the byte[] that has extra zeroes
+                        AssertExtensions.AssertSequenceEqual(
+                            rawValueWithTrailingZeroes,
+                            (byte[]) actualDeserializedShardKey.Value);
+                    }
+                    else
+                    {
+                        // Bug? Below fails when there are trailing zeroes even though the value is Equal
+                        //// Verify with ShardKey.Equals
+                        //Assert.AreEqual(
+                        //    originalShardKey,
+                        //    actualDeserializedValue);
+
+                        // Verify with value type-specific Equals
+                        Assert.AreEqual(
+                            originalShardKey.Value,
+                            actualDeserializedShardKey.Value);
+                    }
                 }
             }
-        }
-
-        private static void TestShardKeyDeserialization(ShardKey expectedDeserializedValue, byte[] rawValueToDeserialize)
-        {
-            ShardKey actualDeserializedValue = ShardKey.FromRawValue(expectedDeserializedValue.KeyType, rawValueToDeserialize);
-
-            Assert.AreEqual(
-                expectedDeserializedValue.Value,
-                actualDeserializedValue.Value);
         }
 
         // This is the same ordering as SQL Server
@@ -359,29 +441,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         }
     }
 
-    internal static class EnumerableExtensions
+    internal static class ByteEnumerable
     {
-        public static IEnumerable<T> PadToLength<T>(this IEnumerable<T> source, int length)
+        public static IEnumerable<byte> Range(byte start, byte count)
         {
-            using (IEnumerator<T> enumerator = source.GetEnumerator())
+            for (byte i = 0; i < count; i++)
             {
-                for (int i = 0; i < length; i++)
-                {
-                    if (enumerator.MoveNext())
-                    {
-                        yield return enumerator.Current;
-                    }
-                    else
-                    {
-                        yield return default(T);
-                    }
-                }
-
-                if (enumerator.MoveNext())
-                {
-                    throw new InvalidOperationException(
-                        string.Format("Cannot pad source to length {0} because source was longer than that length", length));
-                }
+                yield return (byte)(start + count);
             }
         }
     }
