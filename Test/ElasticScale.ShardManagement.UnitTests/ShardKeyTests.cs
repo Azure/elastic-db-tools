@@ -15,6 +15,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
     [TestClass]
     public class ShardKeyTests
     {
+        /// <summary>
+        /// A ShardKey and its corresponding RawValue in bytes.
+        /// </summary>
         private struct ShardKeyAndRawValue
         {
             public ShardKey ShardKey { get; set; }
@@ -40,6 +43,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
         }
 
+        /// <summary>
+        /// ShardKey and RawValue pairs to test for serialization/deserialization.
+        /// DO NOT EDIT EXISTING ENTRIES IN THIS LIST TO MAKE THE TEST PASS!!!
+        /// The binary serialization format must be consistent across different versions of EDCL.
+        /// Any incompatible changes to this format is a major breaking change!!!
+        /// </summary>
         private readonly ShardKeyAndRawValue[] _shardKeyAndRawValues =
         {
             #region Int32
@@ -140,7 +149,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             #endregion
         };
 
-        private Dictionary<ShardKeyType, int> _dataTypeLength = new Dictionary<ShardKeyType, int>
+        /// <summary>
+        /// The length in bytes of each ShardKeyType.
+        /// </summary>
+        private Dictionary<ShardKeyType, int> _shardKeyTypeLength = new Dictionary<ShardKeyType, int>
         {
             {ShardKeyType.Int32, 4},
             {ShardKeyType.Int64, 8}
@@ -187,7 +199,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 if (shardKeyAndRawValue.RawValue != null && shardKeyAndRawValue.RawValue.Length == 0)
                 {
                     // If the length is zero, we are allowed to add exactly the right number of trailing zeroes for this data type
-                    int dataTypeLength = _dataTypeLength[shardKeyAndRawValue.ShardKey.KeyType];
+                    int dataTypeLength = _shardKeyTypeLength[shardKeyAndRawValue.ShardKey.KeyType];
                     byte[] rawValueWithTrailingZeroes = new byte[dataTypeLength];
                     shardKeyAndRawValue.RawValue.CopyTo(rawValueWithTrailingZeroes, 0);
 
