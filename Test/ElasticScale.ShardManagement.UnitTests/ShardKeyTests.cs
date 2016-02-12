@@ -221,14 +221,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             #region DateTime
 
-            // Error
+            // https://github.com/Azure/elastic-db-tools/issues/116
             //new ShardKeyAndRawValue
             //{
             //    ShardKey = ShardKey.MinDateTime,
             //    RawValue = new byte[] {}
             //},
 
-            // Error
+            // https://github.com/Azure/elastic-db-tools/issues/116
             //new ShardKeyAndRawValue
             //{
             //    ShardKey = new ShardKey(DateTime.MinValue),
@@ -263,21 +263,21 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             #region DateTimeOffset
 
-            // Error
+            // https://github.com/Azure/elastic-db-tools/issues/116
             //new ShardKeyAndRawValue
             //{
             //    ShardKey = ShardKey.MinDateTimeOffset,
             //    RawValue = new byte[] {}
             //},
 
-            // Error
+            // https://github.com/Azure/elastic-db-tools/issues/116
             //new ShardKeyAndRawValue
             //{
             //    ShardKey = new ShardKey(DateTimeOffset.MinValue),
             //    RawValue = new byte[] {}
             //},
 
-            // Error
+            // https://github.com/Azure/elastic-db-tools/issues/116
             //new ShardKeyAndRawValue
             //{
             //    ShardKey = new ShardKey(new DateTimeOffset(DateTime.MinValue, TimeSpan.Zero)),
