@@ -48,6 +48,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// DO NOT EDIT EXISTING ENTRIES IN THIS LIST TO MAKE THE TEST PASS!!!
         /// The binary serialization format must be consistent across different versions of EDCL.
         /// Any incompatible changes to this format is a major breaking change!!!
+        /// 
+        /// The general strategy is to pick the following boundary values:
+        /// * Min value
+        /// * Min value + 1
+        /// * -1 (if it's a numerical type)
+        /// * 0 (if it's a numerical type), or some other value in the middle of the range
+        /// * +1 (if it's a numerical type)
+        /// * Max value - 1
+        /// * Max value
+        /// * +inf
         /// </summary>
         private readonly ShardKeyAndRawValue[] _shardKeyAndRawValues =
         {
@@ -244,12 +254,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             new ShardKeyAndRawValue
             {
                 ShardKey = new ShardKey(new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc)),
-                RawValue = new byte[] {0x88, 0x51, 5, 0x53, 0x20, 0x57, 0x40, 0}
+                // new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks == 0x0851055320574000
+                // 0x0851055320574000 + 0x8000000000000000 = 0x8851055320574000
+                RawValue = new byte[] {0x88, 0x51, 0x05, 0x53, 0x20, 0x57, 0x40, 0}
             },
 
             new ShardKeyAndRawValue
             {
                 ShardKey = new ShardKey(DateTime.MaxValue),
+                // DateTime.MaxValue.Ticks == 0x2bca2875f4373fff
+                // 0x2bca2875f4373fff + 0x8000000000000000 = 0xabca2875f4373fff
                 RawValue = new byte[] {0xab, 0xca, 0x28, 0x75, 0xf4, 0x37, 0x3f, 0xff}
             },
 
@@ -281,37 +295,89 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             //new ShardKeyAndRawValue
             //{
             //    ShardKey = new ShardKey(new DateTimeOffset(DateTime.MinValue, TimeSpan.Zero)),
-            //    RawValue = new byte[] {0x80, 0, 0, 0, 0, 0, 0, 0, 0x80, 0, 0, 0, 0, 0, 0, 0}
+            //    RawValue = new byte[] 
+            //    {
+            //        // DateTime part
+            //        0x80, 0, 0, 0, 0, 0, 0, 0, 
+            //         // Offset part
+            //        0x80, 0, 0, 0, 0, 0, 0, 0
+            //    }
             //},
 
             new ShardKeyAndRawValue
             {
                 ShardKey = new ShardKey(new DateTimeOffset(new DateTime(ticks: 1), TimeSpan.Zero)),
-                RawValue = new byte[] {0x80, 0, 0, 0, 0, 0, 0, 1, 0x80, 0, 0, 0, 0, 0, 0, 0}
+                RawValue = new byte[]
+                {
+                    // DateTime part
+                    0x80, 0, 0, 0, 0, 0, 0, 1,
+                    // Offset part
+                    0x80, 0, 0, 0, 0, 0, 0, 0
+                }
             },
 
             new ShardKeyAndRawValue
             {
                 ShardKey = new ShardKey(new DateTimeOffset(1899, 12, 31, 23, 59, 0, TimeSpan.FromMinutes(-1))),
-                RawValue = new byte[] {0x88, 0x51, 5, 0x53, 0x20, 0x57, 0x40, 0, 0x7f, 0xff, 0xff, 0xff, 0xdc, 0x3c, 0xba, 0}
+                RawValue = new byte[]
+                {
+                    // DateTime part (note that 1899-12-31 23:59:00-00:01 is the same time as 1900-1-1 00:00:00Z)
+                    // new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks == 0x0851055320574000
+                    // 0x0851055320574000 + 0x8000000000000000 = 0x8851055320574000
+                    0x88, 0x51, 5, 0x53, 0x20, 0x57, 0x40, 0,
+                    // Offset part:
+                    // TimeSpan.FromMinutes(1).Ticks == 600000000 == 0x23c34600
+                    // 0x8000000000000000 - 0x23c34600 = 0x7fffffffdc3cba00
+                    0x7f, 0xff, 0xff, 0xff, 0xdc, 0x3c, 0xba, 0
+                }
             },
 
             new ShardKeyAndRawValue
             {
                 ShardKey = new ShardKey(new DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.Zero)),
-                RawValue = new byte[] {0x88, 0x51, 5, 0x53, 0x20, 0x57, 0x40, 0, 0x80, 0, 0, 0, 0, 0, 0, 0}
+                // DateTime part (note that 1899-12-31 23:59:00-00:01 is the same time as 1900-1-1 00:00:00Z)
+                // new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks == 0x0851055320574000
+                // 0x0851055320574000 + 0x8000000000000000 = 0x8851055320574000
+                RawValue = new byte[]
+                {
+                    // DateTime part (note that 1899-12-31 23:59:00-00:01 is the same time as 1900-1-1 00:00:00Z)
+                    // new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks == 0x0851055320574000
+                    // 0x0851055320574000 + 0x8000000000000000 = 0x8851055320574000
+                    0x88, 0x51, 5, 0x53, 0x20, 0x57, 0x40, 0,
+                    // Offset part
+                    0x80, 0, 0, 0, 0, 0, 0, 0
+                }
             },
 
             new ShardKeyAndRawValue
             {
                 ShardKey = new ShardKey(new DateTimeOffset(1900, 1, 1, 0, 1, 0, TimeSpan.FromMinutes(1))),
-                RawValue = new byte[] {0x88, 0x51, 5, 0x53, 0x20, 0x57, 0x40, 0, 0x80, 0, 0, 0, 0x23, 0xC3, 0x46, 0}
+                RawValue = new byte[]
+                {
+                    // DateTime part (note that 1899-12-31 23:59:00+00:01 is the same time as 1900-1-1 00:00:00Z)
+                    // new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks == 0x0851055320574000
+                    // 0x0851055320574000 + 0x8000000000000000 = 0x8851055320574000
+                    0x88, 0x51, 5, 0x53, 0x20, 0x57, 0x40, 0,
+                    // Offset part:
+                    // TimeSpan.FromMinutes(1).Ticks == 600000000 == 0x23c34600
+                    // 0x8000000000000000 + 0x23c34600 = 0x8000000023c34600
+                    0x80, 0, 0, 0, 0x23, 0xC3, 0x46, 0
+                }
             },
 
             new ShardKeyAndRawValue
             {
                 ShardKey = new ShardKey(DateTimeOffset.MaxValue),
-                RawValue = new byte[] {0xab, 0xca, 0x28, 0x75, 0xf4, 0x37, 0x3f, 0xff, 0x80, 0, 0, 0, 0, 0, 0, 0}
+
+                RawValue = new byte[]
+                {
+                    // DateTime part:
+                    // DateTime.MaxValue.Ticks == 0x2bca2875f4373fff
+                    // 0x2bca2875f4373fff + 0x8000000000000000 = 0xabca2875f4373fff
+                    0xab, 0xca, 0x28, 0x75, 0xf4, 0x37, 0x3f, 0xff,
+                    // Offset part:
+                    0x80, 0, 0, 0, 0, 0, 0, 0
+                }
             },
 
             new ShardKeyAndRawValue
@@ -412,7 +478,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 Console.WriteLine(shardKeyAndRawValue);
 
                 ShardKey expectedDeserializedShardKey = shardKeyAndRawValue.ShardKey;
-                ShardKey actualDeserializedShardKey = ShardKey.FromRawValue(expectedDeserializedShardKey.KeyType, shardKeyAndRawValue.RawValue);
+                ShardKey actualDeserializedShardKey = ShardKey.FromRawValue(expectedDeserializedShardKey.KeyType,
+                    shardKeyAndRawValue.RawValue);
 
                 // Verify with ShardKey.Equals
                 Assert.AreEqual(
@@ -423,8 +490,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 if (expectedDeserializedShardKey.KeyType == ShardKeyType.Binary && expectedDeserializedShardKey.Value != null)
                 {
                     AssertExtensions.AssertSequenceEqual(
-                        (byte[])expectedDeserializedShardKey.Value,
-                        (byte[])actualDeserializedShardKey.Value);
+                        (byte[]) expectedDeserializedShardKey.Value,
+                        (byte[]) actualDeserializedShardKey.Value);
                 }
                 else
                 {
@@ -490,7 +557,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         }
 
         // This is the same ordering as SQL Server
-        private readonly ShardKey[] _orderedGuidsDescending = 
+        private readonly ShardKey[] _orderedGuidsDescending =
         {
             ShardKey.MaxGuid,
             new ShardKey(Guid.Parse("00000000-0000-0000-0000-010000000000")),
@@ -533,7 +600,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         public void TestShardKeyWithDateTime()
         {
             DateTime testValue = DateTime.Now;
-            TestShardKeyGeneric<DateTime>(ShardKeyType.DateTime, testValue, typeof(DateTime));
+            TestShardKeyGeneric<DateTime>(ShardKeyType.DateTime, testValue, typeof (DateTime));
         }
 
         /// <summary>
@@ -544,7 +611,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         public void TestShardKeyWithTimeSpan()
         {
             TimeSpan testValue = TimeSpan.FromMinutes(6.2);
-            TestShardKeyGeneric<TimeSpan>(ShardKeyType.TimeSpan, testValue, typeof(TimeSpan));
+            TestShardKeyGeneric<TimeSpan>(ShardKeyType.TimeSpan, testValue, typeof (TimeSpan));
         }
 
         /// <summary>
@@ -555,7 +622,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         public void TestShardKeyWithDateTimeOffset()
         {
             DateTimeOffset testValue = DateTimeOffset.Now;
-            TestShardKeyGeneric<DateTimeOffset>(ShardKeyType.DateTimeOffset, testValue, typeof(DateTimeOffset));
+            TestShardKeyGeneric<DateTimeOffset>(ShardKeyType.DateTimeOffset, testValue, typeof (DateTimeOffset));
 
             DateTime d1 = DateTime.Now;
             ShardKey k1 = new ShardKey(new DateTimeOffset(d1, DateTimeOffset.Now.Offset));
@@ -602,7 +669,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         {
             for (byte i = 0; i < count; i++)
             {
-                yield return (byte)(start + count);
+                yield return (byte) (start + count);
             }
         }
     }
