@@ -291,6 +291,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         [TestCategory("ExcludeFromGatedCheckin")]
         public void AddPointMappingDefault()
         {
+            AddPointMappingDefault(ShardKeyInfo.AllTestShardKeyValues.OfType<int>());
+            AddPointMappingDefault(ShardKeyInfo.AllTestShardKeyValues.OfType<long>());
+            AddPointMappingDefault(ShardKeyInfo.AllTestShardKeyValues.OfType<Guid>());
+            AddPointMappingDefault(ShardKeyInfo.AllTestShardKeyValues.OfType<byte[]>());
+            AddPointMappingDefault(ShardKeyInfo.AllTestShardKeyValues.OfType<DateTime>());
+            AddPointMappingDefault(ShardKeyInfo.AllTestShardKeyValues.OfType<DateTimeOffset>());
+            AddPointMappingDefault(ShardKeyInfo.AllTestShardKeyValues.OfType<TimeSpan>());
+        }
+
+        private void AddPointMappingDefault<T>(IEnumerable<T> keysToTest)
+        {
             CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
 
             ShardMapManager smm = new ShardMapManager(
@@ -301,32 +312,35 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 ShardMapManagerLoadPolicy.Lazy,
                 new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero), RetryBehavior.DefaultRetryBehavior);
 
-            ListShardMap<int> lsm = smm.GetListShardMap<int>(ShardMapperTests.s_listShardMapName);
-
+            ListShardMap<T> lsm = smm.CreateListShardMap<T>(string.Format("AddPointMappingDefault_{0}", typeof(T).Name));
             Assert.IsNotNull(lsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapperTests.s_shardedDBs[0]);
-
             Shard s = lsm.CreateShard(sl);
-
             Assert.IsNotNull(s);
 
-            PointMapping<int> p1 = lsm.CreatePointMapping(2, s);
-
-            Assert.IsNotNull(p1);
-
-            PointMapping<int> p2 = lsm.GetMappingForKey(2);
-
-            Assert.IsNotNull(p2);
-            Assert.AreEqual(0, countingCache.LookupMappingCount);
-            Assert.AreEqual(0, countingCache.LookupMappingHitCount);
-
-            // Validate mapping by trying to connect
-            using (SqlConnection conn = lsm.OpenConnection(
-                        p1,
-                        Globals.ShardUserConnectionString,
-                        ConnectionOptions.Validate))
+            foreach (T key in keysToTest)
             {
+                Console.WriteLine("Key: {0}", key);
+
+                PointMapping<T> p1 = lsm.CreatePointMapping(key, s);
+                Assert.IsNotNull(p1);
+                AssertExtensions.AssertScalarOrSequenceEqual(key, p1.Value);
+
+                PointMapping<T> p2 = lsm.GetMappingForKey(key);
+                Assert.IsNotNull(p2);
+                AssertExtensions.AssertScalarOrSequenceEqual(key, p2.Value);
+
+                Assert.AreEqual(0, countingCache.LookupMappingCount);
+                Assert.AreEqual(0, countingCache.LookupMappingHitCount);
+
+                // Validate mapping by trying to connect
+                using (SqlConnection conn = lsm.OpenConnection(
+                    p1,
+                    Globals.ShardUserConnectionString,
+                    ConnectionOptions.Validate))
+                {
+                }
             }
         }
 
@@ -944,6 +958,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         [TestCategory("ExcludeFromGatedCheckin")]
         public void AddRangeMappingDefault()
         {
+            AddRangeMappingDefault(ShardKeyInfo.AllTestShardKeyValues.OfType<int>().ToArray());
+            AddRangeMappingDefault(ShardKeyInfo.AllTestShardKeyValues.OfType<long>().ToArray());
+            AddRangeMappingDefault(ShardKeyInfo.AllTestShardKeyValues.OfType<Guid>().ToArray());
+            AddRangeMappingDefault(ShardKeyInfo.AllTestShardKeyValues.OfType<byte[]>().ToArray());
+            AddRangeMappingDefault(ShardKeyInfo.AllTestShardKeyValues.OfType<DateTime>().ToArray());
+            AddRangeMappingDefault(ShardKeyInfo.AllTestShardKeyValues.OfType<DateTimeOffset>().ToArray());
+            AddRangeMappingDefault(ShardKeyInfo.AllTestShardKeyValues.OfType<TimeSpan>().ToArray());
+        }
+
+        private void AddRangeMappingDefault<T>(IList<T> keysToTest)
+        {
             CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
 
             ShardMapManager smm = new ShardMapManager(
@@ -954,26 +979,47 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 ShardMapManagerLoadPolicy.Lazy,
                 new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero), RetryBehavior.DefaultRetryBehavior);
 
-            RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapperTests.s_rangeShardMapName);
-
+            RangeShardMap<T> rsm = smm.CreateRangeShardMap<T>(string.Format("AddRangeMappingDefault_{0}", typeof(T).Name));
             Assert.IsNotNull(rsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapperTests.s_shardedDBs[0]);
-
             Shard s = rsm.CreateShard(sl);
-
             Assert.IsNotNull(s);
 
-            RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(1, 10), s);
+            for (int i = 0; i < keysToTest.Count - 1; i++)
+            {
+                // https://github.com/Azure/elastic-db-tools/issues/117
+                // Bug? DateTimeOffsets with the same universal time but different offset are equal as ShardKeys. 
+                // According to SQL (and our normalization format), they should be unequal, although according to .NET they should be equal.
+                // We need to skip empty ranges because if we use them in this test then we end up with duplicate mappings
+                if (typeof(T) == typeof(DateTimeOffset) && (DateTimeOffset)(object)keysToTest[i] == (DateTimeOffset)(object)keysToTest[i + 1])
+                {
+                    Console.WriteLine("Skipping {0} == {1}", keysToTest[i], keysToTest[i + 1]);
+                    continue;
+                }
 
-            Assert.IsNotNull(r1);
+                Range<T> range = new Range<T>(keysToTest[i], keysToTest[i + 1]);
+                Console.WriteLine("Range: {0}", range);
 
-            RangeMapping<int> rLookup = rsm.GetMappingForKey(1);
+                RangeMapping<T> p1 = rsm.CreateRangeMapping(range, s);
+                Assert.IsNotNull(p1);
+                AssertExtensions.AssertScalarOrSequenceEqual(range, p1.Value);
 
-            Assert.AreEqual(ShardKeyType.Int32, rLookup.Range.KeyType);
+                RangeMapping<T> p2 = rsm.GetMappingForKey(range.Low);
+                Assert.IsNotNull(p2);
+                AssertExtensions.AssertScalarOrSequenceEqual(range, p2.Value);
 
-            Assert.IsNotNull(rLookup);
-            Assert.AreEqual(0, countingCache.LookupMappingHitCount);
+                Assert.AreEqual(0, countingCache.LookupMappingCount);
+                Assert.AreEqual(0, countingCache.LookupMappingHitCount);
+
+                // Validate mapping by trying to connect
+                using (SqlConnection conn = rsm.OpenConnection(
+                    p1,
+                    Globals.ShardUserConnectionString,
+                    ConnectionOptions.Validate))
+                {
+                }
+            }
         }
 
         /// <summary>

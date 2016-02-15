@@ -42,9 +42,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 // Verify ShardKey.Value with value type-specific Equals
                 if (shardKeyInfo.KeyType == ShardKeyType.Binary && shardKeyInfo.Value != null)
                 {
-                    AssertValueOrByteArrayEqual(
-                        ((byte[])shardKeyInfo.Value).DropTrailingZeroes(),
-                        shardKeyInfo.ShardKeyFromValue.Value);
+                    AssertExtensions.AssertScalarOrSequenceEqual(((byte[])shardKeyInfo.Value).DropTrailingZeroes(), shardKeyInfo.ShardKeyFromValue.Value, null);
                 }
                 else
                 {
@@ -98,9 +96,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     actualDeserializedShardKey);
 
                 // Verify ShardKey.Value with value type-specific Equals
-                AssertValueOrByteArrayEqual(
-                    expectedDeserializedShardKey.Value,
-                    actualDeserializedShardKey.Value);
+                AssertExtensions.AssertScalarOrSequenceEqual(expectedDeserializedShardKey.Value, actualDeserializedShardKey.Value, null);
             }
         }
 
@@ -136,9 +132,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     if (shardKeyInfo.KeyType != ShardKeyType.Binary)
                     {
                         // Verify ShardKey.Value with value type-specific Equals
-                        AssertValueOrByteArrayEqual(
-                            expectedDeserializedShardKey.Value,
-                            actualDeserializedShardKey.Value);
+                        AssertExtensions.AssertScalarOrSequenceEqual(expectedDeserializedShardKey.Value, actualDeserializedShardKey.Value, null);
                     }
                 }
             }
@@ -159,34 +153,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 if (shardKeyTypeInfo.KeyType != ShardKeyType.DateTime && shardKeyTypeInfo.KeyType != ShardKeyType.DateTimeOffset) 
                 {
                     Assert.AreEqual(shardKeyTypeInfo.KeyType, shardKeyTypeInfo.MinShardKey.KeyType);
-                    AssertValueOrByteArrayEqual(shardKeyTypeInfo.MinValue, shardKeyTypeInfo.MinShardKey.Value);
+                    AssertExtensions.AssertScalarOrSequenceEqual(shardKeyTypeInfo.MinValue, shardKeyTypeInfo.MinShardKey.Value, null);
                     AssertExtensions.AssertSequenceEqual(new byte[0], shardKeyTypeInfo.MinShardKey.RawValue);
                 }
 
                 // Max value
                 Assert.AreEqual(shardKeyTypeInfo.KeyType, shardKeyTypeInfo.MaxShardKey.KeyType);
-                AssertValueOrByteArrayEqual(null, shardKeyTypeInfo.MaxShardKey.Value);
+                AssertExtensions.AssertScalarOrSequenceEqual(null, shardKeyTypeInfo.MaxShardKey.Value, null);
                 Assert.AreEqual(null, shardKeyTypeInfo.MaxShardKey.RawValue);
-            }
-        }
-
-        /// <summary>
-        /// Tests that ShardKey.Min* have the correct values
-        /// </summary>
-        public void TestShardKeyMax()
-        {
-
-        }
-
-        private void AssertValueOrByteArrayEqual(object o1, object o2, string message = null)
-        {
-            if (o1 is IEnumerable<byte>)
-            {
-                AssertExtensions.AssertSequenceEqual((IEnumerable<byte>)o1, (IEnumerable<byte>)o2, message);
-            }
-            else
-            {
-                Assert.AreEqual(o1, o2, message);
             }
         }
 
@@ -213,6 +187,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             new ShardKey(Guid.Parse("00000000-0000-0000-0000-000000000000"))
         };
 
+        /// <summary>
+        /// Verifies that ShardKey correct orders Guids according to SQL Server ordering.
+        /// </summary>
         [TestMethod]
         public void TestGuidOrdering()
         {
@@ -223,6 +200,37 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     "Expected {0} to be great than {1}",
                     _orderedGuidsDescending[0],
                     _orderedGuidsDescending[1]);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that ShardKey correct orders DateTimeOffset according to SQL Server ordering.
+        /// </summary>
+        [TestMethod]
+        public void TestDateTimeOffsetOrdering()
+        {
+            ShardKeyInfo[] dateTimeOffsetShardKeyInfos = 
+                ShardKeyInfo.AllTestShardKeyInfosGroupedByType[ShardKeyType.DateTimeOffset]
+                .ToArray();
+
+            for (int i = 0; i < dateTimeOffsetShardKeyInfos.Length - 1; i++)
+            {
+                ShardKeyInfo low = dateTimeOffsetShardKeyInfos[i];
+                ShardKeyInfo high = dateTimeOffsetShardKeyInfos[i + 1];
+
+                Console.WriteLine("({0}) < ({1})", low, high);
+
+                // https://github.com/Azure/elastic-db-tools/issues/117
+                // Bug? DateTimeOffsets with the same universal time but different offset are equal as ShardKeys. 
+                // According to SQL (and our normalization format), they should be unequal, although according to .NET they should be equal.
+                if (high.Value != null && ((DateTimeOffset)low.Value).UtcDateTime == ((DateTimeOffset)high.Value).UtcDateTime)
+                {
+                    Assert.AreEqual(low.ShardKeyFromValue, high.ShardKeyFromValue);
+                }
+                else
+                {
+                    AssertExtensions.AssertGreaterThan(low.ShardKeyFromValue, high.ShardKeyFromValue);
+                }
             }
         }
 

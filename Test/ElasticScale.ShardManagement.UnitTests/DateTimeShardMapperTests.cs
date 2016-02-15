@@ -211,52 +211,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         #endregion Common Methods
 
         #region WithDates
-        /// <summary>
-        /// Add a point mapping to list shard map
-        /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
-        public void DateAddPointMappingDefault()
-        {
-            CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
-
-            ShardMapManager smm = new ShardMapManager(
-                new SqlShardMapManagerCredentials(Globals.ShardMapManagerConnectionString),
-                new SqlStoreConnectionFactory(),
-                new StoreOperationFactory(),
-                countingCache,
-                ShardMapManagerLoadPolicy.Lazy,
-                new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero), RetryBehavior.DefaultRetryBehavior);
-
-            ListShardMap<DateTime> lsm = smm.GetListShardMap<DateTime>(DateTimeShardMapperTests.s_listShardMapName);
-
-            Assert.IsNotNull(lsm);
-
-            ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, DateTimeShardMapperTests.s_shardedDBs[0]);
-
-            Shard s = lsm.CreateShard(sl);
-
-            Assert.IsNotNull(s);
-
-            DateTime val = DateTime.Now;
-            PointMapping<DateTime> p1 = lsm.CreatePointMapping(val, s);
-
-            Assert.IsNotNull(p1);
-
-            PointMapping<DateTime> p2 = lsm.GetMappingForKey(val);
-
-            Assert.IsNotNull(p2);
-            Assert.AreEqual(0, countingCache.LookupMappingCount);
-            Assert.AreEqual(0, countingCache.LookupMappingHitCount);
-
-            // Validate mapping by trying to connect
-            using (SqlConnection conn = lsm.OpenConnection(
-                        p1,
-                        Globals.ShardUserConnectionString,
-                        ConnectionOptions.Validate))
-            {
-            }
-        }
 
         /// <summary>
         /// All combinations of getting point mappings from a list shard map

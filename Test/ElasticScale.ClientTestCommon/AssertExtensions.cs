@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -416,6 +417,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 array.Length,
                 string.Join<T>(",", array));
         }
+
+        public static void AssertScalarOrSequenceEqual(object o1, object o2, string message = null)
+        {
+            if (o1 is IEnumerable)
+            {
+                AssertSequenceEqual(((IEnumerable)o1).Cast<object>(), ((IEnumerable)o2).Cast<object>(), message);
+            }
+            else
+            {
+                Assert.AreEqual(o1, o2, message);
+            }
+        }
+
         /// <summary>
         /// Asserts that the enumerable contains only one element, and returns it.
         /// </summary>
