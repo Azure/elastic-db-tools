@@ -75,7 +75,9 @@
     <Compile Include="RecoveryManagerTests.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="ScenarioTests.cs" />
+    <Compile Include="ShardKeyInfo.cs" />
     <Compile Include="ShardKeyTests.cs" />
+    <Compile Include="ShardKeyTypeInfo.cs" />
     <Compile Include="ShardMapFaultHandlingTests.cs" />
     <Compile Include="ShardMapManagerConcurrencyTests.cs" />
     <Compile Include="ShardMapManagerTests.cs" />

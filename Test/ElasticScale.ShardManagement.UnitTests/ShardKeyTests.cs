@@ -16,426 +16,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
     public class ShardKeyTests
     {
         /// <summary>
-        /// A ShardKey and its corresponding RawValue in bytes.
-        /// </summary>
-        private struct ShardKeyAndRawValue
-        {
-            public ShardKey ShardKey { get; set; }
-            public byte[] RawValue { get; set; }
-
-            public override string ToString()
-            {
-                return string.Format("{0} <-> {1}", ToString(ShardKey), ToString(RawValue));
-            }
-
-            private static string ToString(ShardKey shardKey)
-            {
-                return string.Format("{0} {1}", shardKey.KeyType, shardKey);
-            }
-
-            private static string ToString(byte[] bytes)
-            {
-                if (bytes == null)
-                {
-                    return "(null)";
-                }
-                return "0x" + string.Join(string.Empty, bytes.Select(b => b.ToString("x2")));
-            }
-        }
-
-        /// <summary>
-        /// ShardKey and RawValue pairs to test for serialization/deserialization.
-        /// DO NOT EDIT EXISTING ENTRIES IN THIS LIST TO MAKE THE TEST PASS!!!
-        /// The binary serialization format must be consistent across different versions of EDCL.
-        /// Any incompatible changes to this format is a major breaking change!!!
-        /// 
-        /// The general strategy is to pick the following boundary values:
-        /// * Min value
-        /// * Min value + 1
-        /// * -1 (if it's a numerical type)
-        /// * 0 (if it's a numerical type), or some other value in the middle of the range
-        /// * +1 (if it's a numerical type)
-        /// * Max value - 1
-        /// * Max value
-        /// * +inf
-        /// </summary>
-        private readonly ShardKeyAndRawValue[] _shardKeyAndRawValues =
-        {
-            #region Int32
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = ShardKey.MinInt32,
-                RawValue = new byte[] {}
-            },
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(int.MinValue),
-                RawValue = new byte[] {}
-            },
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(int.MinValue + 1),
-                RawValue = new byte[] {0, 0, 0, 1},
-            },
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(-1),
-                RawValue = new byte[] {0x7f, 0xff, 0xff, 0xff}
-            },
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(0),
-                RawValue = new byte[] {0x80, 0, 0, 0}
-            },
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(1),
-                RawValue = new byte[] {0x80, 0, 0, 1}
-            },
-            new ShardKeyAndRawValue
-            {
-
-                ShardKey = new ShardKey(int.MaxValue - 1),
-                RawValue = new byte[] {0xff, 0xff, 0xff, 0xfe}
-            },
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(int.MaxValue),
-                RawValue = new byte[] {0xff, 0xff, 0xff, 0xff}
-            },
-            new ShardKeyAndRawValue
-            {
-                ShardKey = ShardKey.MaxInt32,
-                RawValue = null
-            },
-
-            #endregion
-
-            #region Int64
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = ShardKey.MinInt64,
-                RawValue = new byte[] {}
-            },
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(long.MinValue),
-                RawValue = new byte[] {}
-            },
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(long.MinValue + 1),
-                RawValue = new byte[] {0, 0, 0, 0, 0, 0, 0, 1},
-            },
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey((long) -1),
-                RawValue = new byte[] {0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
-            },
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey((long) 0),
-                RawValue = new byte[] {0x80, 0, 0, 0, 0, 0, 0, 0}
-            },
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey((long) 1),
-                RawValue = new byte[] {0x80, 0, 0, 0, 0, 0, 0, 1}
-            },
-            new ShardKeyAndRawValue
-            {
-
-                ShardKey = new ShardKey(long.MaxValue - 1),
-                RawValue = new byte[] {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe}
-            },
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(long.MaxValue),
-                RawValue = new byte[] {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
-            },
-            new ShardKeyAndRawValue
-            {
-                ShardKey = ShardKey.MaxInt64,
-                RawValue = null
-            },
-
-            #endregion
-
-            #region Guid
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = ShardKey.MinGuid,
-                RawValue = new byte[] {}
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(Guid.Empty),
-                RawValue = new byte[] {}
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(Guid.Parse("a0a1a2a3-a4a5-a6a7-a8a9-aaabacadaeaf")),
-                RawValue = new byte[]
-                {
-                    0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf, /* - */ 0xa8, 0xa9,
-                    /* - */ 0xa7, 0xa6, /* - */ 0xa5, 0xa4, /* - */ 0xa3, 0xa2, 0xa1, 0xa0
-                }
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = ShardKey.MaxGuid,
-                RawValue = null
-            },
-
-            #endregion
-
-            #region Binary
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = ShardKey.MinBinary,
-                RawValue = new byte[] {}
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(new byte[] {}),
-                RawValue = new byte[] {}
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(new byte[] {0}),
-                RawValue = new byte[] {}
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(ByteEnumerable.Range(0, 128).ToArray()),
-                RawValue = ByteEnumerable.Range(0, 128).ToArray()
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = ShardKey.MaxBinary,
-                RawValue = null
-            },
-
-            #endregion
-
-            #region DateTime
-
-            // https://github.com/Azure/elastic-db-tools/issues/116
-            //new ShardKeyAndRawValue
-            //{
-            //    ShardKey = ShardKey.MinDateTime,
-            //    RawValue = new byte[] {}
-            //},
-
-            // https://github.com/Azure/elastic-db-tools/issues/116
-            //new ShardKeyAndRawValue
-            //{
-            //    ShardKey = new ShardKey(DateTime.MinValue),
-            //    RawValue = new byte[] {}
-            //},
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(new DateTime(ticks: 1)),
-                RawValue = new byte[] {0x80, 0, 0, 0, 0, 0, 0, 1}
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc)),
-                // new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks == 0x0851055320574000
-                // 0x0851055320574000 + 0x8000000000000000 = 0x8851055320574000
-                RawValue = new byte[] {0x88, 0x51, 0x05, 0x53, 0x20, 0x57, 0x40, 0}
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(DateTime.MaxValue),
-                // DateTime.MaxValue.Ticks == 0x2bca2875f4373fff
-                // 0x2bca2875f4373fff + 0x8000000000000000 = 0xabca2875f4373fff
-                RawValue = new byte[] {0xab, 0xca, 0x28, 0x75, 0xf4, 0x37, 0x3f, 0xff}
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = ShardKey.MaxDateTime,
-                RawValue = null
-            },
-
-            #endregion
-
-            #region DateTimeOffset
-
-            // https://github.com/Azure/elastic-db-tools/issues/116
-            //new ShardKeyAndRawValue
-            //{
-            //    ShardKey = ShardKey.MinDateTimeOffset,
-            //    RawValue = new byte[] {}
-            //},
-
-            // https://github.com/Azure/elastic-db-tools/issues/116
-            //new ShardKeyAndRawValue
-            //{
-            //    ShardKey = new ShardKey(DateTimeOffset.MinValue),
-            //    RawValue = new byte[] {}
-            //},
-
-            // https://github.com/Azure/elastic-db-tools/issues/116
-            //new ShardKeyAndRawValue
-            //{
-            //    ShardKey = new ShardKey(new DateTimeOffset(DateTime.MinValue, TimeSpan.Zero)),
-            //    RawValue = new byte[] 
-            //    {
-            //        // DateTime part
-            //        0x80, 0, 0, 0, 0, 0, 0, 0, 
-            //         // Offset part
-            //        0x80, 0, 0, 0, 0, 0, 0, 0
-            //    }
-            //},
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(new DateTimeOffset(new DateTime(ticks: 1), TimeSpan.Zero)),
-                RawValue = new byte[]
-                {
-                    // DateTime part
-                    0x80, 0, 0, 0, 0, 0, 0, 1,
-                    // Offset part
-                    0x80, 0, 0, 0, 0, 0, 0, 0
-                }
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(new DateTimeOffset(1899, 12, 31, 23, 59, 0, TimeSpan.FromMinutes(-1))),
-                RawValue = new byte[]
-                {
-                    // DateTime part (note that 1899-12-31 23:59:00-00:01 is the same time as 1900-1-1 00:00:00Z)
-                    // new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks == 0x0851055320574000
-                    // 0x0851055320574000 + 0x8000000000000000 = 0x8851055320574000
-                    0x88, 0x51, 5, 0x53, 0x20, 0x57, 0x40, 0,
-                    // Offset part:
-                    // TimeSpan.FromMinutes(1).Ticks == 600000000 == 0x23c34600
-                    // 0x8000000000000000 - 0x23c34600 = 0x7fffffffdc3cba00
-                    0x7f, 0xff, 0xff, 0xff, 0xdc, 0x3c, 0xba, 0
-                }
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(new DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.Zero)),
-                // DateTime part (note that 1899-12-31 23:59:00-00:01 is the same time as 1900-1-1 00:00:00Z)
-                // new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks == 0x0851055320574000
-                // 0x0851055320574000 + 0x8000000000000000 = 0x8851055320574000
-                RawValue = new byte[]
-                {
-                    // DateTime part (note that 1899-12-31 23:59:00-00:01 is the same time as 1900-1-1 00:00:00Z)
-                    // new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks == 0x0851055320574000
-                    // 0x0851055320574000 + 0x8000000000000000 = 0x8851055320574000
-                    0x88, 0x51, 5, 0x53, 0x20, 0x57, 0x40, 0,
-                    // Offset part
-                    0x80, 0, 0, 0, 0, 0, 0, 0
-                }
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(new DateTimeOffset(1900, 1, 1, 0, 1, 0, TimeSpan.FromMinutes(1))),
-                RawValue = new byte[]
-                {
-                    // DateTime part (note that 1899-12-31 23:59:00+00:01 is the same time as 1900-1-1 00:00:00Z)
-                    // new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks == 0x0851055320574000
-                    // 0x0851055320574000 + 0x8000000000000000 = 0x8851055320574000
-                    0x88, 0x51, 5, 0x53, 0x20, 0x57, 0x40, 0,
-                    // Offset part:
-                    // TimeSpan.FromMinutes(1).Ticks == 600000000 == 0x23c34600
-                    // 0x8000000000000000 + 0x23c34600 = 0x8000000023c34600
-                    0x80, 0, 0, 0, 0x23, 0xC3, 0x46, 0
-                }
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(DateTimeOffset.MaxValue),
-
-                RawValue = new byte[]
-                {
-                    // DateTime part:
-                    // DateTime.MaxValue.Ticks == 0x2bca2875f4373fff
-                    // 0x2bca2875f4373fff + 0x8000000000000000 = 0xabca2875f4373fff
-                    0xab, 0xca, 0x28, 0x75, 0xf4, 0x37, 0x3f, 0xff,
-                    // Offset part:
-                    0x80, 0, 0, 0, 0, 0, 0, 0
-                }
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = ShardKey.MaxDateTimeOffset,
-                RawValue = null
-            },
-
-            #endregion
-
-            #region TimeSpan
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = ShardKey.MinTimeSpan,
-                RawValue = new byte[] {}
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(TimeSpan.FromTicks(long.MinValue)),
-                RawValue = new byte[] {}
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(TimeSpan.FromTicks(-1)),
-                RawValue = new byte[] {0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(TimeSpan.Zero),
-                RawValue = new byte[] {0x80, 0, 0, 0, 0, 0, 0, 0}
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(TimeSpan.FromTicks(1)),
-                RawValue = new byte[] {0x80, 0, 0, 0, 0, 0, 0, 1}
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = new ShardKey(TimeSpan.FromTicks(long.MaxValue)),
-                RawValue = new byte[] {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
-            },
-
-            new ShardKeyAndRawValue
-            {
-                ShardKey = ShardKey.MaxTimeSpan,
-                RawValue = null
-            },
-
-            #endregion
-        };
-
-        /// <summary>
         /// The length in bytes of each ShardKeyType.
         /// </summary>
         private readonly Dictionary<ShardKeyType, int> _shardKeyTypeLength = new Dictionary<ShardKeyType, int>
@@ -449,15 +29,44 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             {ShardKeyType.TimeSpan, 8}
         };
 
+        /// <summary>
+        /// Verifies that new ShardKey(keyType, value) returns the correct ShardKey.Value
+        /// </summary>
+        [TestMethod]
+        public void TestShardKeyValue()
+        {
+            foreach (ShardKeyInfo shardKeyInfo in ShardKeyInfo.AllTestShardKeyInfos)
+            {
+                Console.WriteLine(shardKeyInfo);
+
+                // Verify ShardKey.Value with value type-specific Equals
+                if (shardKeyInfo.KeyType == ShardKeyType.Binary && shardKeyInfo.Value != null)
+                {
+                    AssertValueOrByteArrayEqual(
+                        ((byte[])shardKeyInfo.Value).DropTrailingZeroes(),
+                        shardKeyInfo.ShardKeyFromValue.Value);
+                }
+                else
+                {
+                    Assert.AreEqual(
+                        shardKeyInfo.Value,
+                        shardKeyInfo.ShardKeyFromValue.Value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Verifies that new ShardKey(keyType, value) returns the correct RawValue
+        /// </summary>
         [TestMethod]
         public void TestShardKeySerialization()
         {
-            foreach (ShardKeyAndRawValue shardKeyAndRawValue in _shardKeyAndRawValues)
+            foreach (ShardKeyInfo shardKeyInfo in ShardKeyInfo.AllTestShardKeyInfos)
             {
-                Console.WriteLine(shardKeyAndRawValue);
+                Console.WriteLine(shardKeyInfo);
 
-                byte[] expectedSerializedValue = shardKeyAndRawValue.RawValue;
-                byte[] actualSerializedValue = shardKeyAndRawValue.ShardKey.RawValue;
+                byte[] expectedSerializedValue = shardKeyInfo.RawValue;
+                byte[] actualSerializedValue = shardKeyInfo.ShardKeyFromValue.RawValue;
 
                 if (expectedSerializedValue == null)
                 {
@@ -470,89 +79,114 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
         }
 
+        /// <summary>
+        /// Verifies that ShardKey.FromRawValue(keyType, rawValue) returns the correct ShardKey and ShardKey.Value
+        /// </summary>
         [TestMethod]
         public void TestShardKeyDeserialization()
         {
-            foreach (ShardKeyAndRawValue shardKeyAndRawValue in _shardKeyAndRawValues)
+            foreach (ShardKeyInfo shardKeyInfo in ShardKeyInfo.AllTestShardKeyInfos)
             {
-                Console.WriteLine(shardKeyAndRawValue);
+                Console.WriteLine(shardKeyInfo);
 
-                ShardKey expectedDeserializedShardKey = shardKeyAndRawValue.ShardKey;
-                ShardKey actualDeserializedShardKey = ShardKey.FromRawValue(expectedDeserializedShardKey.KeyType,
-                    shardKeyAndRawValue.RawValue);
+                ShardKey expectedDeserializedShardKey = shardKeyInfo.ShardKeyFromValue;
+                ShardKey actualDeserializedShardKey = shardKeyInfo.ShardKeyFromRawValue;
 
-                // Verify with ShardKey.Equals
+                // Verify ShardKey with ShardKey.Equals
                 Assert.AreEqual(
                     expectedDeserializedShardKey,
                     actualDeserializedShardKey);
 
-                // Verify with value type-specific Equals
-                if (expectedDeserializedShardKey.KeyType == ShardKeyType.Binary && expectedDeserializedShardKey.Value != null)
+                // Verify ShardKey.Value with value type-specific Equals
+                AssertValueOrByteArrayEqual(
+                    expectedDeserializedShardKey.Value,
+                    actualDeserializedShardKey.Value);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that ShardKey.FromRawValue(keyType, rawValue) returns the correct ShardKey and ShardKey.Value
+        /// if extra zeroes are added to the end of rawValue
+        /// </summary>
+        [TestMethod]
+        public void TestShardKeyDeserializationAddTrailingZeroes()
+        {
+            foreach (ShardKeyInfo shardKeyInfo in ShardKeyInfo.AllTestShardKeyInfos)
+            {
+                Console.WriteLine(shardKeyInfo);
+
+                int dataTypeLength = _shardKeyTypeLength[shardKeyInfo.KeyType];
+                if (shardKeyInfo.RawValue != null && shardKeyInfo.RawValue.Length != dataTypeLength)
                 {
-                    AssertExtensions.AssertSequenceEqual(
-                        (byte[]) expectedDeserializedShardKey.Value,
-                        (byte[]) actualDeserializedShardKey.Value);
-                }
-                else
-                {
-                    Assert.AreEqual(
-                        expectedDeserializedShardKey.Value,
-                        actualDeserializedShardKey.Value);
+                    // Add trailing zeroes
+                    byte[] originalRawValue = shardKeyInfo.RawValue;
+                    byte[] rawValueWithTrailingZeroes = new byte[dataTypeLength];
+                    originalRawValue.CopyTo(rawValueWithTrailingZeroes, 0);
+
+                    ShardKey expectedDeserializedShardKey = shardKeyInfo.ShardKeyFromValue;
+                    ShardKey actualDeserializedShardKey = ShardKey.FromRawValue(shardKeyInfo.KeyType, rawValueWithTrailingZeroes);
+
+                    // Bug? Below fails when there are trailing zeroes even though the value is Equal
+                    //// Verify ShardKey with ShardKey.Equals
+                    //Assert.AreEqual(
+                    //    expectedDeserializedShardKey,
+                    //    actualDeserializedShardKey);
+
+                    // Bug? Below fails for Binary type
+                    if (shardKeyInfo.KeyType != ShardKeyType.Binary)
+                    {
+                        // Verify ShardKey.Value with value type-specific Equals
+                        AssertValueOrByteArrayEqual(
+                            expectedDeserializedShardKey.Value,
+                            actualDeserializedShardKey.Value);
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// Tests that ShardKey.Min* and ShardKey.Max* have the correct KeyType, Value, and RawValue
+        /// </summary>
         [TestMethod]
-        public void TestShardKeyDeserializationAddTrailingZeroes()
+        public void TestShardKeyTypeInfo()
         {
-            foreach (ShardKeyAndRawValue shardKeyAndRawValue in _shardKeyAndRawValues)
+            foreach (var shardKeyTypeInfo in ShardKeyTypeInfo.ShardKeyTypeInfos.Values)
             {
-                Console.WriteLine(shardKeyAndRawValue);
+                Console.WriteLine(shardKeyTypeInfo.KeyType);
 
-                int dataTypeLength = _shardKeyTypeLength[shardKeyAndRawValue.ShardKey.KeyType];
-                if (shardKeyAndRawValue.RawValue != null && shardKeyAndRawValue.RawValue.Length != dataTypeLength)
+                // Min Value
+                // Skip for DateTime & DateTimeOffset due to https://github.com/Azure/elastic-db-tools/issues/116
+                if (shardKeyTypeInfo.KeyType != ShardKeyType.DateTime && shardKeyTypeInfo.KeyType != ShardKeyType.DateTimeOffset) 
                 {
-                    ShardKey originalShardKey = shardKeyAndRawValue.ShardKey;
-                    byte[] originalRawValue = shardKeyAndRawValue.RawValue;
-
-                    // Add trailing zeroes
-                    byte[] rawValueWithTrailingZeroes = new byte[dataTypeLength];
-                    originalRawValue.CopyTo(rawValueWithTrailingZeroes, 0);
-
-                    ShardKey actualDeserializedShardKey = ShardKey.FromRawValue(shardKeyAndRawValue.ShardKey.KeyType,
-                        rawValueWithTrailingZeroes);
-
-                    if (actualDeserializedShardKey.KeyType == ShardKeyType.Binary && actualDeserializedShardKey.Value != null)
-                    {
-                        // Unlike the other types that have fixed length, Binary values are sensitive to trailing zeroes.
-                        // Since we added trailing zeroes, that means that actualDeserializedShardKey and its value
-                        // inside should NOT equal originalShardKey ad its value
-
-                        // Verify with ShardKey.Equals
-                        Assert.AreNotEqual(
-                            originalShardKey,
-                            actualDeserializedShardKey);
-
-                        // Verify with value type-specific Equals
-                        // The deserialized ShardKey should have the same value as the byte[] that has extra zeroes
-                        AssertExtensions.AssertSequenceEqual(
-                            rawValueWithTrailingZeroes,
-                            (byte[]) actualDeserializedShardKey.Value);
-                    }
-                    else
-                    {
-                        // Bug? Below fails when there are trailing zeroes even though the value is Equal
-                        //// Verify with ShardKey.Equals
-                        //Assert.AreEqual(
-                        //    originalShardKey,
-                        //    actualDeserializedValue);
-
-                        // Verify with value type-specific Equals
-                        Assert.AreEqual(
-                            originalShardKey.Value,
-                            actualDeserializedShardKey.Value);
-                    }
+                    Assert.AreEqual(shardKeyTypeInfo.KeyType, shardKeyTypeInfo.MinShardKey.KeyType);
+                    AssertValueOrByteArrayEqual(shardKeyTypeInfo.MinValue, shardKeyTypeInfo.MinShardKey.Value);
+                    AssertExtensions.AssertSequenceEqual(new byte[0], shardKeyTypeInfo.MinShardKey.RawValue);
                 }
+
+                // Max value
+                Assert.AreEqual(shardKeyTypeInfo.KeyType, shardKeyTypeInfo.MaxShardKey.KeyType);
+                AssertValueOrByteArrayEqual(null, shardKeyTypeInfo.MaxShardKey.Value);
+                Assert.AreEqual(null, shardKeyTypeInfo.MaxShardKey.RawValue);
+            }
+        }
+
+        /// <summary>
+        /// Tests that ShardKey.Min* have the correct values
+        /// </summary>
+        public void TestShardKeyMax()
+        {
+
+        }
+
+        private void AssertValueOrByteArrayEqual(object o1, object o2, string message = null)
+        {
+            if (o1 is IEnumerable<byte>)
+            {
+                AssertExtensions.AssertSequenceEqual((IEnumerable<byte>)o1, (IEnumerable<byte>)o2, message);
+            }
+            else
+            {
+                Assert.AreEqual(o1, o2, message);
             }
         }
 
@@ -671,6 +305,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             {
                 yield return (byte) (start + count);
             }
+        }
+
+        public static IEnumerable<byte> DropTrailingZeroes(this byte[] source)
+        {
+            // Find last nonzero
+            int lastNonzero;
+            for (lastNonzero = source.Length - 1; lastNonzero >= 0 && source[lastNonzero] == 0; lastNonzero--)
+            {
+            }
+
+            return source.Take(lastNonzero + 1);
         }
     }
 }
