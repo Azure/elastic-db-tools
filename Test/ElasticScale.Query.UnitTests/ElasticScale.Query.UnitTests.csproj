@@ -50,6 +50,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="EnumerableHelpers.cs" />
+    <Compile Include="MultiShardCommandTests.cs" />
     <Compile Include="MultiShardConnectionTests.cs" />
     <Compile Include="MultiShardTestCaseColumn.cs" />
     <Compile Include="MockSqlCommand.cs">

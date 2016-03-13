@@ -651,10 +651,16 @@ END";
                 {
                     cmd.CommandText = createTbl;
                     cmd.ExecutionPolicy = MultiShardExecutionPolicy.PartialResults;
-                    cmd.ExecuteReader();
+                    using (cmd.ExecuteReader())
+                    {
+                        // Throw away result
+                    }
 
                     cmd.CommandText = createProc;
-                    cmd.ExecuteNonQueryAsync(CancellationToken.None, MultiShardExecutionPolicy.PartialResults).Wait();
+                    using (cmd.ExecuteReader())
+                    {
+                        // Throw away result
+                    }
                 }
 
                 Logger.Log("Schema installed..");
@@ -679,8 +685,15 @@ END";
                     param.SqlDbType = SqlDbType.Structured;
                     cmd.Parameters.Add(param);
 
-                    cmd.ExecuteNonQueryAsync(CancellationToken.None, MultiShardExecutionPolicy.PartialResults).Wait();
-                    cmd.ExecuteNonQueryAsync(CancellationToken.None, MultiShardExecutionPolicy.PartialResults).Wait();
+                    cmd.ExecutionPolicy = MultiShardExecutionPolicy.PartialResults;
+                    using (cmd.ExecuteReader())
+                    {
+                        // Throw away result
+                    }
+                    using (cmd.ExecuteReader())
+                    {
+                        // Throw away result
+                    }
                 }
 
                 Logger.Log("Command executed..");
@@ -734,7 +747,11 @@ end";
                 using (var cmd = _shardConnection.CreateCommand())
                 {
                     cmd.CommandText = dropSchema;
-                    cmd.ExecuteNonQueryAsync(CancellationToken.None, MultiShardExecutionPolicy.PartialResults).Wait();
+                    cmd.ExecutionPolicy = MultiShardExecutionPolicy.PartialResults;
+                    using (cmd.ExecuteReader())
+                    {
+                        // Throw away result
+                    }
                 }
             }
         }
