@@ -455,16 +455,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     connectionRetryPolicy,
                     executionPolicy).Result;
             }
-            catch (Exception ex)
+            catch (AggregateException aex)
             {
-                AggregateException aex = ex as AggregateException;
-
-                if (null != aex)
-                {
-                    throw aex.Flatten().InnerException;
-                }
-
-                throw;
+                throw aex.Flatten().InnerException;
             }
         }
 
