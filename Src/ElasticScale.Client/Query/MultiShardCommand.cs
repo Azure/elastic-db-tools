@@ -587,10 +587,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             try
             {
                 this.ValidateCommand(behavior);
-
-                // Create a list of sql commands to run against each of the shards
-                List<Tuple<ShardLocation, DbCommand>> shardCommands = this.GetShardDbCommands();
-
+                
                 // Don't allow a new invocation if a Cancel() is already in progress
                 lock (_cancellationLock)
                 {
@@ -616,7 +613,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
                         ReaderExecutionTasks readerExecutionTasks = this.ExecuteReaderOnEachShardAsync(
                             behavior,
-                            shardCommands,
                             cmdCancellationMgr,
                             commandRetryPolicy,
                             connectionRetryPolicy,
@@ -767,12 +763,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
         private ReaderExecutionTasks ExecuteReaderOnEachShardAsync(
             CommandBehavior behavior,
-            List<Tuple<ShardLocation, DbCommand>> commands,
             CommandCancellationManager cancellationToken,
             TransientFaultHandling.RetryPolicy commandRetryPolicy,
             TransientFaultHandling.RetryPolicy connectionRetryPolicy,
             MultiShardExecutionPolicy executionPolicy)
         {
+            // Create a list of sql commands to run against each of the shards
+            List<Tuple<ShardLocation, DbCommand>> commands = this.GetShardDbCommands();
+
             Task<LabeledDbDataReader>[] shardCommandTasks = new Task<LabeledDbDataReader>[commands.Count];
 
             for (int i = 0; i < shardCommandTasks.Length; i++)
