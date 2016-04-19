@@ -31,6 +31,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
+            ShardMapUtils.ValidateAuthenticationInConnectionString(connectionString);
 
             SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
 
@@ -121,8 +122,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="parameterName">Parameter name of the connection string object.</param>
         internal static void EnsureCredentials(SqlConnectionStringBuilder connectionString, string parameterName)
         {
-            // Check for integrated authentication.
-            if (!connectionString.IntegratedSecurity)
+            // Check for integrated authentication or active directory integrated authentication (if supported)
+            if (!(connectionString.IntegratedSecurity || 
+                 (ShardMapUtils.IsActiveDirectoryAuthenticationSupported && 
+                  connectionString[ShardMapUtils.Authentication].ToString().Equals(ShardMapUtils.ActiveDirectoryIntegratedStr))))
             {
                 // UserID must be set when integrated authentication is disabled.
                 if (string.IsNullOrEmpty(connectionString.UserID))

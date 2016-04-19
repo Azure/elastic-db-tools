@@ -689,6 +689,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             Debug.Assert(shardProvider != null);
             Debug.Assert(connectionString != null);
 
+            ShardMapUtils.ValidateAuthenticationInConnectionString(connectionString);
+
             SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
 
             // DataSource must not be set.

@@ -20,6 +20,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         internal static readonly string ConnectRetryCount = "ConnectRetryCount";
 
+        /// <summary>
+        /// SqlConnectionStringBuilder property that allows specifying
+        /// active directoty authentication to connect to SQL instance.
+        /// </summary>
+        internal static readonly string Authentication = "Authentication";
+
+        /// <summary>
+        /// String representation of SqlAuthenticationMethod.ActiveDirectoryIntegrated
+        /// </summary>
+        internal static readonly string ActiveDirectoryIntegratedStr = "ActiveDirectoryIntegrated";
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static ShardMapUtils()
         {
@@ -30,12 +41,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 IsConnectionResiliencySupported = true;
             }
+
+            if (bldr.ContainsKey(Authentication))
+            {
+                IsActiveDirectoryAuthenticationSupported = true;
+            }
         }
 
         /// <summary>
         /// Whether this SqlClient instance supports Connection Resiliency
         /// </summary>
         internal static bool IsConnectionResiliencySupported { get; private set; }
+
+        /// <summary>
+        /// Whether this SqlClient instance supports Azure Active Directory Authentication
+        /// </summary>
+        internal static bool IsActiveDirectoryAuthenticationSupported { get; private set; }
 
         /// <summary>
         /// Converts IStoreShardMap to ShardMap.
@@ -69,6 +90,28 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                             null,
                             new object[] { manager, ssm },
                             CultureInfo.InvariantCulture);
+            }
+        }
+
+        /// <summary>
+        /// Validate .Net runtime 4.6 if Active Directory Aughentication is specified in connection string.
+        /// </summary>
+        /// <param name="connectionString">Connection string to validate.</param>
+        internal static void ValidateAuthenticationInConnectionString(string connectionString)
+        {
+            try
+            {
+                SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
+            }
+            catch (ArgumentException ae)
+            {
+                if (!ShardMapUtils.IsActiveDirectoryAuthenticationSupported && ae.Message.ToLower().Contains("'authentication'"))
+                {
+                    throw new ArgumentException(
+                        Errors._ShardMap_OpenConnection_ActiveDirectoryAuthenticationDisallowed,
+                        "connectionString");
+                }
+                throw;
             }
         }
     }

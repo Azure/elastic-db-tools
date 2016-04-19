@@ -339,4 +339,7 @@
   <data name="_Store_SqlOperation_LockNotReleased" xml:space="preserve">
     <value>Exclusive access to application resource '{0}' could not be released.</value>
   </data>
+  <data name="_ShardMap_OpenConnection_ActiveDirectoryAuthenticationDisallowed" xml:space="preserve">
+    <value>Runtime .NET version does not support active directory authentication. Please migrate to .Net 4.6 or later.</value>
+  </data>
 </root>

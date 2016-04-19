@@ -67,6 +67,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 throw new ArgumentNullException("connectionString");
             }
 
+            ShardMapUtils.ValidateAuthenticationInConnectionString(connectionString);
+
             // Enhance the ApplicationName with this library's name as a suffix
             SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(
                 connectionString).WithApplicationNameSuffix(ApplicationNameSuffix); 
@@ -97,6 +99,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             {
                 throw new ArgumentNullException("connectionString");
             }
+
+            ShardMapUtils.ValidateAuthenticationInConnectionString(connectionString);
 
             // Enhance the ApplicationName with this library's name as a suffix
             SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(
