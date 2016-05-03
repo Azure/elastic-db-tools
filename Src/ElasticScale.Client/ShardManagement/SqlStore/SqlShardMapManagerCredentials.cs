@@ -123,9 +123,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         internal static void EnsureCredentials(SqlConnectionStringBuilder connectionString, string parameterName)
         {
             // Check for integrated authentication or active directory integrated authentication (if supported)
-            if (!(connectionString.IntegratedSecurity || 
-                 (ShardMapUtils.IsActiveDirectoryAuthenticationSupported && 
-                  connectionString[ShardMapUtils.Authentication].ToString().Equals(ShardMapUtils.ActiveDirectoryIntegratedStr))))
+            if (!(connectionString.IntegratedSecurity ||
+                  connectionString[ShardMapUtils.Authentication].ToString().Equals(ShardMapUtils.ActiveDirectoryIntegratedStr)))
             {
                 // UserID must be set when integrated authentication is disabled.
                 if (string.IsNullOrEmpty(connectionString.UserID))

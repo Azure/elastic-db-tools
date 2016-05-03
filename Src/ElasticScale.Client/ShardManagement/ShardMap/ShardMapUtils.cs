@@ -28,6 +28,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
         /// <summary>
         /// String representation of SqlAuthenticationMethod.ActiveDirectoryIntegrated
+        /// SqlAuthenticationMethod.ActiveDirectoryIntegrated.ToString() cannot be used 
+        /// because it may not be available in the .NET framework version that we are running in
         /// </summary>
         internal static readonly string ActiveDirectoryIntegratedStr = "ActiveDirectoryIntegrated";
 
@@ -95,24 +97,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
         /// <summary>
         /// Validate .Net runtime 4.6 if Active Directory Aughentication is specified in connection string.
+        /// Below call will throw if connection string specifies Active Directory authentication and library
+        /// is not running with .NET 4.6.
         /// </summary>
         /// <param name="connectionString">Connection string to validate.</param>
         internal static void ValidateAuthenticationInConnectionString(string connectionString)
         {
-            try
-            {
-                SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
-            }
-            catch (ArgumentException ae)
-            {
-                if (!ShardMapUtils.IsActiveDirectoryAuthenticationSupported && ae.Message.ToLower().Contains("'authentication'"))
-                {
-                    throw new ArgumentException(
-                        Errors._ShardMap_OpenConnection_ActiveDirectoryAuthenticationDisallowed,
-                        "connectionString");
-                }
-                throw;
-            }
+            SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
         }
     }
 }

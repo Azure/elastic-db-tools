@@ -241,15 +241,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Runtime .NET version does not support active directory authentication. Please migrate to .Net 4.6 or later..
-        /// </summary>
-        internal static string _ShardMap_OpenConnection_ActiveDirectoryAuthenticationDisallowed {
-            get {
-                return ResourceManager.GetString("_ShardMap_OpenConnection_ActiveDirectoryAuthenticationDisallowed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Property &apos;{0}&apos; must not be set in the input connection string for &apos;OpenConnection&apos; operations..
         /// </summary>
         internal static string _ShardMap_OpenConnection_ConnectionStringPropertyDisallowed {
