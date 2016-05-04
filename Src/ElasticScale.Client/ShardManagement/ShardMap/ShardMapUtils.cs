@@ -43,22 +43,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 IsConnectionResiliencySupported = true;
             }
-
-            if (bldr.ContainsKey(Authentication))
-            {
-                IsActiveDirectoryAuthenticationSupported = true;
-            }
         }
 
         /// <summary>
         /// Whether this SqlClient instance supports Connection Resiliency
         /// </summary>
         internal static bool IsConnectionResiliencySupported { get; private set; }
-
-        /// <summary>
-        /// Whether this SqlClient instance supports Azure Active Directory Authentication
-        /// </summary>
-        internal static bool IsActiveDirectoryAuthenticationSupported { get; private set; }
 
         /// <summary>
         /// Converts IStoreShardMap to ShardMap.
