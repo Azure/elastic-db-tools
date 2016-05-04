@@ -94,16 +94,5 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                             CultureInfo.InvariantCulture);
             }
         }
-
-        /// <summary>
-        /// Validate .Net runtime 4.6 if Active Directory Aughentication is specified in connection string.
-        /// Below call will throw if connection string specifies Active Directory authentication and library
-        /// is not running with .NET 4.6.
-        /// </summary>
-        /// <param name="connectionString">Connection string to validate.</param>
-        internal static void ValidateAuthenticationInConnectionString(string connectionString)
-        {
-            SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
-        }
     }
 }
