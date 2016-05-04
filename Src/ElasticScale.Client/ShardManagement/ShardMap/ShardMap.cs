@@ -689,6 +689,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             Debug.Assert(shardProvider != null);
             Debug.Assert(connectionString != null);
 
+            // Devnote: If connection string specifies Active Directory authentication and runtime is not 
+            // .NET 4.6 or higher, then below call will throw.
             SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
 
             // DataSource must not be set.

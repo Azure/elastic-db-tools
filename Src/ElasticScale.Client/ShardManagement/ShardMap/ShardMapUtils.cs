@@ -20,6 +20,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         internal static readonly string ConnectRetryCount = "ConnectRetryCount";
 
+        /// <summary>
+        /// SqlConnectionStringBuilder property that allows specifying
+        /// active directoty authentication to connect to SQL instance.
+        /// </summary>
+        internal static readonly string Authentication = "Authentication";
+
+        /// <summary>
+        /// String representation of SqlAuthenticationMethod.ActiveDirectoryIntegrated
+        /// SqlAuthenticationMethod.ActiveDirectoryIntegrated.ToString() cannot be used 
+        /// because it may not be available in the .NET framework version that we are running in
+        /// </summary>
+        internal static readonly string ActiveDirectoryIntegratedStr = "ActiveDirectoryIntegrated";
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static ShardMapUtils()
         {

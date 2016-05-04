@@ -31,7 +31,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
-
+            // Devnote: If connection string specifies Active Directory authentication and runtime is not
+            // .NET 4.6 or higher, then below call will throw.
             SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
 
             #region GSM Validation
@@ -121,8 +122,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="parameterName">Parameter name of the connection string object.</param>
         internal static void EnsureCredentials(SqlConnectionStringBuilder connectionString, string parameterName)
         {
-            // Check for integrated authentication.
-            if (!connectionString.IntegratedSecurity)
+            // Check for integrated authentication or active directory integrated authentication (if supported)
+            if (!(connectionString.IntegratedSecurity ||
+                  connectionString[ShardMapUtils.Authentication].ToString().Equals(ShardMapUtils.ActiveDirectoryIntegratedStr)))
             {
                 // UserID must be set when integrated authentication is disabled.
                 if (string.IsNullOrEmpty(connectionString.UserID))

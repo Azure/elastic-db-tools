@@ -68,6 +68,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
 
             // Enhance the ApplicationName with this library's name as a suffix
+            // Devnote: If connection string specifies Active Directory authentication and runtime is not
+            // .NET 4.6 or higher, then below call will throw.
             SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(
                 connectionString).WithApplicationNameSuffix(ApplicationNameSuffix); 
 
@@ -99,6 +101,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
 
             // Enhance the ApplicationName with this library's name as a suffix
+            // Devnote: If connection string specifies Active Directory authentication and runtime is not
+            // .NET 4.6 or higher, then below call will throw.
             SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(
                 connectionString).WithApplicationNameSuffix(ApplicationNameSuffix); 
 
