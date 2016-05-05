@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -52,14 +52,29 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         }
 
         public ShardKeyType KeyType { get; set; }
+
+        /// <summary>
+        /// The original value that is provided to the ShardKey(keyType, value) constructor
+        /// which should also exactly match ShardKey.Value [except that for binary type trailing zeroes are dropped]
+        /// </summary>
         public object Value { get; set; }
+
+        /// <summary>
+        /// The raw serialized value that is written to the database.
+        /// </summary>
         public byte[] RawValue { get; set; }
 
+        /// <summary>
+        /// Gets the ShardKey using new ShardKey(keyType, value);
+        /// </summary>
         public ShardKey ShardKeyFromValue
         {
             get { return new ShardKey(KeyType, Value); }
         }
 
+        /// <summary>
+        /// Gets the ShardKey using ShardKey.FromRawValue(keyType, rawValue);
+        /// </summary>
         public ShardKey ShardKeyFromRawValue
         {
             get { return ShardKey.FromRawValue(KeyType, RawValue); }
@@ -140,9 +155,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             #region Binary
 
             new ShardKeyInfo(new byte[] {}),
-            // new ShardKeyInfo(new byte[] {0}), // ShardKey counts as being equal to new byte[]
+            new ShardKeyInfo(new byte[] {1}),
             new ShardKeyInfo(ByteEnumerable.Range(0, 128).ToArray()),
-            new ShardKeyInfo(ShardKeyType.Binary, null, null),
+            new ShardKeyInfo(null),
 
             #endregion
 
@@ -187,7 +202,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             //        0x80, 0, 0, 0, 0, 0, 0, 0, 
             //         // Offset part
             //        0x80, 0, 0, 0, 0, 0, 0, 0
-            //    })
+            //    }),
 
             new ShardKeyInfo(
                 new DateTimeOffset(new DateTime(ticks: 1), TimeSpan.Zero),
@@ -198,6 +213,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     // Offset part
                     0x80, 0, 0, 0, 0, 0, 0, 0
                 }),
+
+            // BELOW ARE SORTED IN SQL SERVER ORDERING
 
             new ShardKeyInfo(
                 new DateTimeOffset(1899, 12, 31, 23, 59, 0, TimeSpan.FromMinutes(-1)),
@@ -283,7 +300,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 TimeSpan.FromTicks(long.MaxValue),
                 new byte[] {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}),
             
-
             new ShardKeyInfo(ShardKeyType.TimeSpan, null, null),
 
             #endregion
