@@ -78,12 +78,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 connectionString).WithApplicationNameSuffix(ApplicationNameSuffix);
             ValidateConnectionString(connectionStringBuilder);
 
+            // Set Shards property
             // Force evaluation of the input enumerable so that we don't evaluate it multiple times later
             this.Shards = shards.ToList();
             ValidateNotEmpty(this.Shards, "shards");
 
+            // Set ShardConnections property
+            string modifiedConnectionString = connectionStringBuilder.ToString();
             this.ShardConnections = this.Shards.Select(
-                s => CreateDbConnectionForLocation(s.Location, connectionStringBuilder)).ToList();
+                s => CreateDbConnectionForLocation(s.Location, modifiedConnectionString)).ToList();
         }
 
         /// <summary>
@@ -120,9 +123,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             IList<ShardLocation> shardLocationsList = shardLocations.ToList();
             ValidateNotEmpty(shardLocationsList, "shardLocations");
 
+            // Set Shards property
             this.Shards = null;
+
+            // Set ShardConnections property
+            string modifiedConnectionString = connectionStringBuilder.ToString();
             this.ShardConnections = shardLocationsList.Select(
-                s => CreateDbConnectionForLocation(s, connectionStringBuilder)).ToList();
+                s => CreateDbConnectionForLocation(s, modifiedConnectionString)).ToList();
         }
 
         /// <summary>
@@ -238,13 +245,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         private static Tuple<ShardLocation, DbConnection> CreateDbConnectionForLocation(
             ShardLocation shardLocation,
-            SqlConnectionStringBuilder connectionStringBuilder)
+            string connectionString)
         {
-            return new Tuple<ShardLocation, DbConnection>
-                    (
+            return new Tuple<ShardLocation, DbConnection>(
                     shardLocation,
                     new SqlConnection(
-                        new SqlConnectionStringBuilder(connectionStringBuilder.ConnectionString)
+                        new SqlConnectionStringBuilder(connectionString)
                         {
                             DataSource = shardLocation.DataSource,
                             InitialCatalog = shardLocation.Database
