@@ -614,7 +614,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                             this.CommandText,
                             this.ExecutionPolicy);
 
-                        FanOutTask fanOutTask = this.ExecuteReaderAsyncInternal(
+                        ReaderExecutionTasks readerExecutionTasks = this.ExecuteReaderOnEachShardAsync(
                             behavior,
                             shardCommands,
                             cmdCancellationMgr,
@@ -622,8 +622,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                             connectionRetryPolicy,
                             executionPolicy);
 
-                        Task<MultiShardDataReader> commandTask = fanOutTask
-                            .OuterTask
+                        Task<MultiShardDataReader> commandTask = readerExecutionTasks
+                            .WhenAllTask
                             .ContinueWith<Task<MultiShardDataReader>>(
                             (t) =>
                             {
@@ -637,7 +637,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                                         // Close any active readers.
                                         if (this.ExecutionPolicy == MultiShardExecutionPolicy.CompleteResults)
                                         {
-                                            MultiShardCommand.TerminateActiveCommands(fanOutTask.InnerTasks);
+                                            MultiShardCommand.TerminateActiveCommands(readerExecutionTasks.PerShardTasks);
                                         }
 
                                         this.HandleCommandExecutionException(
@@ -650,7 +650,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                                         // Close any active readers.
                                         if (this.ExecutionPolicy == MultiShardExecutionPolicy.CompleteResults)
                                         {
-                                            MultiShardCommand.TerminateActiveCommands(fanOutTask.InnerTasks);
+                                            MultiShardCommand.TerminateActiveCommands(readerExecutionTasks.PerShardTasks);
                                         }
 
                                         this.HandleCommandExecutionCanceled(
@@ -765,7 +765,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        private FanOutTask ExecuteReaderAsyncInternal(
+        private ReaderExecutionTasks ExecuteReaderOnEachShardAsync(
             CommandBehavior behavior,
             List<Tuple<ShardLocation, DbCommand>> commands,
             CommandCancellationManager cancellationToken,
@@ -788,11 +788,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     executionPolicy);
             }
 
-            return new FanOutTask
-            {
-                OuterTask = Task.WhenAll<LabeledDbDataReader>(shardCommandTasks),
-                InnerTasks = shardCommandTasks
-            };
+            return new ReaderExecutionTasks(shardCommandTasks);
         }
 
         // Suppression rationale: We are returning the LabeledDataReader via the task.  We don't want to dispose it.
@@ -1617,17 +1613,23 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <summary>
         /// Encapsulates data structures representing state of tasks executing across all the shards.
         /// </summary>
-        private class FanOutTask
+        private class ReaderExecutionTasks
         {
+            public ReaderExecutionTasks(Task<LabeledDbDataReader>[] tasks)
+            {
+                PerShardTasks = tasks;
+                WhenAllTask = Task.WhenAll(tasks);
+            }
+
             /// <summary>
-            /// Parent task of all per-shard tasks.
+            /// Task that completes when all PerShardTasks are completed.
             /// </summary>
-            internal Task<LabeledDbDataReader[]> OuterTask { get; set; }
+            internal Task<LabeledDbDataReader[]> WhenAllTask { get; private set; }
 
             /// <summary>
             /// Collection of inner tasks that run against each shard.
             /// </summary>
-            internal Task<LabeledDbDataReader>[] InnerTasks { get; set; }
+            internal Task<LabeledDbDataReader>[] PerShardTasks { get; private set; }
         }
 
         #endregion Inner Helper Classes
