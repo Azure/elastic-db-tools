@@ -473,7 +473,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         }
 
         /// <summary>
-        /// Validate ReadAsync throws a NotSupportedException.
+        /// Validate basic ReadAsync behavior.
         /// </summary>
         [TestMethod]
         [TestCategory("ExcludeFromGatedCheckin")]
@@ -481,24 +481,135 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         {
             LabeledDbDataReader[] readers = new LabeledDbDataReader[1];
             readers[0] = GetReader(_conn1, "select 1");
+            int numRowsRead = 0;
 
             using (MultiShardDataReader sdr = new MultiShardDataReader(_dummyCommand, readers, MultiShardExecutionPolicy.CompleteResults, true))
             {
-                try
+                while (sdr.ReadAsync().Result)
                 {
-                    Task readTask = sdr.ReadAsync();
-                }
-                catch (Exception e)
-                {
-                    Assert.IsInstanceOfType(e, typeof(NotSupportedException), "The thrown exception was of the wrong type.");
-                    return;
+                    numRowsRead++;
                 }
 
-                Assert.Fail("No exception was thrown by ReadAsync");
+                Assert.AreEqual(1, numRowsRead, "ReadAsync didn't return the expeceted number of rows.");
             }
         }
 
+        /// <summary>
+        /// Validate ReadAsync() behavior when multiple data readers are involved. This test is same as existing test TestMiddleResultEmptyOnSelect 
+        /// except that we are using ReadAsync() in this case instead of Read() to read individual rows.
+        /// 
+        /// NOTE: We needn't replicate every single Read() test for ReadAsync() since Read() ends up calling ReadAsync().Result under the
+        /// hood. So, by validating Read(), we are also validating ReadAsync() indirectly.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void TestReadSyncWithMultipleDataReaders()
+        {
+            // What we're doing:
+            // Grab all rows from each test database that satisfy a particular predicate (there should be 3 from db1 and
+            // db3 and 0 from db2).
+            // Load them into a MultiShardDataReader.
+            // Iterate through the rows using ReadAsync() and make sure that we have 6 rows.
+            //
+            string selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTable WHERE dbNameField='Test0' OR dbNameField='Test2'";
+            LabeledDbDataReader[] readers = new LabeledDbDataReader[3];
+            readers[0] = GetReader(_conn1, selectSql);
+            readers[1] = GetReader(_conn2, selectSql);
+            readers[2] = GetReader(_conn3, selectSql);
 
+            IList<MultiShardSchemaMismatchException> exceptions;
+
+            using (MultiShardDataReader sdr = GetMultiShardDataReaderFromDbDataReaders(readers, out exceptions, true))
+            {
+                Assert.AreEqual(0, exceptions.Count);
+
+                int recordsRetrieved = 0;
+                while (sdr.ReadAsync().Result)
+                {
+                    recordsRetrieved++;
+                }
+
+                sdr.Close();
+
+                Assert.AreEqual(recordsRetrieved, 6);
+            }
+        }
+
+        /// </summary>
+        [TestMethod]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void TestMultiShardQueryCancellation()
+        {
+            ManualResetEvent rollback = new ManualResetEvent(false);
+            ManualResetEvent readerInitialized = new ManualResetEvent(false);
+            string dbToUpdate = _conn2.Database;
+
+            // Start a task that would begin a transaction, update the rows on the second shard and then
+            // block on an event. While the transaction is still open and the task is blocked, another
+            // task will try to read rows off the shard.
+            Task lockRowTask = Task.Factory.StartNew(() =>
+                {
+                    using (SqlConnection conn = new SqlConnection(_conn2.ConnectionString))
+                    {
+                        conn.Open();
+                        SqlTransaction tran = conn.BeginTransaction();
+
+                        using (SqlCommand cmd = new SqlCommand(
+                            string.Format(
+                                "UPDATE ConsistentShardedTable SET dbNameField='TestN' WHERE dbNameField='{0}'",
+                                dbToUpdate),
+                            conn, tran))
+                        {
+                            // This will X-lock all rows in the second shard.
+                            cmd.ExecuteNonQuery();
+
+                            if (rollback.WaitOne())
+                            {
+                                tran.Rollback();
+                            }
+                        }
+                    }
+                });
+
+            CancellationTokenSource tokenSource = new CancellationTokenSource();
+
+            // Create a new task that would try to read rows off the second shard while they are locked by the previous task
+            // and block therefore.
+            Task readToBlockTask = Task.Factory.StartNew(() => 
+                {
+                    string selectSql = string.Format(
+                        "SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTable WHERE dbNameField='{0}'",
+                        dbToUpdate);
+
+                    using (MultiShardDataReader sdr = GetShardedDbReaderAsync(_shardConnection, selectSql, tokenSource.Token))
+                    {
+                        readerInitialized.Set();
+
+                        // This call should block.
+                        while (sdr.ReadAsync(tokenSource.Token).Result);
+                    }
+                });
+
+            // Cancel the second task.This should trigger the cancellation of the multi-shard query.
+            tokenSource.Cancel();
+
+            try
+            {
+                readToBlockTask.Wait();
+                Assert.IsTrue(false, "The task expected to block ran to completion.");
+            }
+            catch(AggregateException aggex)
+            {
+                TaskCanceledException ex = aggex.Flatten().InnerException as TaskCanceledException;
+
+                Assert.IsTrue(ex != null, "A task canceled exception was not received upon cancellation.");
+            }
+            
+            // Set the event signaling the first task to rollback its update transaction.
+            rollback.Set();
+
+            lockRowTask.Wait();
+        }
 
         /// <summary>
         /// Check that we do not hang when trying to read after adding null readers.
@@ -1480,6 +1591,22 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             cmd.CommandText = tsql;
             cmd.ExecutionOptions = MultiShardExecutionOptions.IncludeShardNameColumn;
             return cmd.ExecuteReader();
+        }
+
+        /// <summary>
+        /// Helper that grabs a MultiShardDataReader based on a MultiShardConnection and a tsql string to execute. This is different
+        /// from the GetShardedDbReader method in that it uses ExecuteReaderAsync() API under the hood and is cancellable.
+        /// </summary>
+        /// <param name="conn">The MultiShardConnection to use to get the command/reader.</param>
+        /// <param name="tsql">The tsql to execute on the shards.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
+        /// <returns>The MultiShardDataReader resulting from executing the given tsql on the given connection.</returns>
+        private MultiShardDataReader GetShardedDbReaderAsync(MultiShardConnection conn, string tsql, CancellationToken cancellationToken)
+        {
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = tsql;
+            cmd.ExecutionOptions = MultiShardExecutionOptions.IncludeShardNameColumn;
+            return cmd.ExecuteReaderAsync(cancellationToken).Result;
         }
 
         private MultiShardDataReader GetShardedDbReader(MultiShardConnection conn, string tsql, bool includeShardName)

@@ -1009,9 +1009,33 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <returns>True if there are more rows; otherwise false.</returns>
         public override bool Read()
         {
+            try
+            {
+                return ReadAsync(CancellationToken.None).Result;
+            }
+            catch (AggregateException ex)
+            {
+                // When we synchronously wait on Task.Result, any exception thrown
+                // inside the task is wrapped in an AggregateException. Catch the
+                // parent AggregateException here and throw the actual exception to the
+                // caller.
+                throw ex.Flatten().InnerException;
+            }
+        }
+
+        /// <summary>
+        /// An asynchronous version of Read, which advances the MultiShardDataReader to the next record.
+        ///
+        /// The cancellation token can be used to request that the operation be abandoned before the command timeout elapses. 
+        /// Exceptions will be reported via the returned Task object.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
+        {
             InduceErrorIfClosed();
 
-            // As a safety check, make sure that we have some at least one data reader to work with. Throw an exception if we do not.
+            // As a safety check, make sure that we have at least one data reader to work with. Throw an exception if we do not.
             //
             WaitForReaderOrThrow();
 
@@ -1022,11 +1046,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             // call out here since the common case is that we will usually have a row to return so we can skip the setup
             // and iteration through the loop.
             //
-            if (this.PerformReadToFillBuffer())
+            if (await PerformReadToFillBuffer(cancellationToken))
             {
                 stopwatch.Stop();
 
-                // We still had a valid row to fetch on the current reader, so just return true.
+                // We still have a valid row to fetch on the current reader, so just return true.
                 //
                 s_tracer.Verbose("MultiShardDataReader.Read.Complete; Duration: {0}; Shard: {1}", stopwatch.Elapsed,
                     GetCurrentShardLocation());
@@ -1061,9 +1085,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     return false;
                 }
 
-                // Now try a read call on the "new" current reader.
-                //
-                if (this.PerformReadToFillBuffer())
+                if (await PerformReadToFillBuffer(cancellationToken))
                 {
                     stopwatch.Stop();
 
@@ -1081,26 +1103,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             return false;
         }
 
-        // Cannot override Task<bool> ReadAsync().  should we use new?
-        //
-
-        /// <summary>
-        /// This method is currently not supported. Invoking the method will result in an exception.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token</param>
-        /// DEVNOTE (VSTS: 2158495): We need to figure out how to implement this operation properly.  Even something as simple as blocking 
-        /// until the read is complete and then returning the Task object.  For now, just throw.
-        public override Task<bool> ReadAsync(CancellationToken cancellationToken)
-        {
-            throw new NotSupportedException("ReadAsync is currently not supported");
-        }
-
         /// <summary>
         /// Returns a string that represents the current object.
         /// </summary>
         /// <returns>A string that represents the current object.</returns>
         /// We mimic DbDataReader and just call Object.ToString()
-        /// Overriden to convey intent clearly        
+        /// Overriden to convey intent clearly.
         public override string ToString()
         {
             return base.ToString();
@@ -1953,8 +1961,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// to ensure that we buffer the whole row on the client so that we don't have to deal
         /// with messy partial row read error cases.
         /// </summary>
-        /// <returns>True if we read another row from the current reader, false if we hit the end.</returns>
-        private bool PerformReadToFillBuffer()
+        /// <param name="token">The cancellation instruction.</param>
+        /// <returns>
+        /// An async task to perform the read; when executed the task returns true 
+        /// if we read another row from the current reader, false if we hit the end.
+        /// </returns>
+        private async Task<bool> PerformReadToFillBuffer(CancellationToken token)
         {
             // DEVNOTE: We could run this in either a try-catch or in a ContinueWith.
             // If we do any throwing, though, we want it to be on the main thread that called this function,
@@ -1963,11 +1975,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             // and then deal with the exception on the main thread (see the LabeledDataReader pattern).
             // To avoid intorducing that wrapper we will take the try-catch approach.  If we need to revisit later, we can.
             //
-            Task<bool> theReadTask = this.GetCurrentDataReader().ReadAsync();
             try
             {
-                theReadTask.Wait();  // To make sure we finished
-                return theReadTask.Result;
+                return await this.GetCurrentDataReader().ReadAsync(token);
             }
             catch (Exception ex)
             {
