@@ -27,7 +27,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     break;
             }
 
-            this.PerfCounters = new PerfCounterInstance(ssm.Name);
+            this._perfCounters = new PerfCounterInstance(ssm.Name);
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <summary>
         /// Performance counter instance for this shard map.
         /// </summary>
-        private PerfCounterInstance PerfCounters;
+        private PerfCounterInstance _perfCounters;
 
         /// <summary>
         /// Transfers the child cache objects to current instance from the source instance.
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="name">Name of performance counter to increment.</param>
         internal void IncrementPerformanceCounter(PerformanceCounterName name)
         {
-            this.PerfCounters.IncrementCounter(name);
+            this._perfCounters.IncrementCounter(name);
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// worry about multithreaded access here.</remarks>
         internal void SetPerformanceCounter(PerformanceCounterName name, long value)
         {
-            this.PerfCounters.SetCounter(name, value);
+            this._perfCounters.SetCounter(name, value);
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="disposing">Call came from Dispose.</param>
         protected override void Dispose(bool disposing)
         {
-            this.PerfCounters.Dispose();
+            this._perfCounters.Dispose();
             base.Dispose(disposing);
         }
 

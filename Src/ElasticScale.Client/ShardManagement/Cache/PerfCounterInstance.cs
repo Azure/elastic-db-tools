@@ -70,6 +70,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
     /// </summary>
     internal class PerfCounterInstance : IDisposable
     {
+        private static object _lockObject = new object();
+
         private static ILogger Tracer
         {
             get
@@ -109,7 +111,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             if (!PerformanceCounterCategory.Exists(PerformanceCounters.ShardManagementPerformanceCounterCategory))
             {
-                // We are not creating performance counter catagiry here as per recommendation in documentation, copying note from
+                // We are not creating performance counter category here as per recommendation in documentation, copying note from
                 // https://msdn.microsoft.com/en-us/library/sb32hxtc(v=vs.110).aspx
                 // It is strongly recommended that new performance counter categories be created 
                 // during the installation of the application, not during the execution of the application.
@@ -138,7 +140,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     // this should never happen. Trace out error and silently continue.
                     Tracer.TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter,
                         "create",
-                        "Performance counter instance {0} already exists. no performance data will be collected.", _instanceName);
+                        "Performance counter instance {0} already exists, no performance data will be collected.", _instanceName);
                 }
                 else
                 {
@@ -253,22 +255,25 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         public void Dispose()
         {
-            // If performance counter instance exists, remove it here.
-            if (_initialized)
+            lock (_lockObject)
             {
-                // We can assume here that performance counter catagory, instance and first counter in the cointerList exist as _initialized is set to true.
-                using (PerformanceCounter pcRemove = new PerformanceCounter())
+                // If performance counter instance exists, remove it here.
+                if (_initialized)
                 {
-                    pcRemove.CategoryName = PerformanceCounters.ShardManagementPerformanceCounterCategory;
-                    pcRemove.CounterName = counterList.First().CounterDisplayName;
-                    pcRemove.InstanceName = _instanceName;
-                    pcRemove.InstanceLifetime = PerformanceCounterInstanceLifetime.Process;
-                    pcRemove.ReadOnly = false;
-                    // Removing instance using a single counter removes all counters for that instance.
-                    pcRemove.RemoveInstance();
+                    // We can assume here that performance counter catagory, instance and first counter in the cointerList exist as _initialized is set to true.
+                    using (PerformanceCounter pcRemove = new PerformanceCounter())
+                    {
+                        pcRemove.CategoryName = PerformanceCounters.ShardManagementPerformanceCounterCategory;
+                        pcRemove.CounterName = counterList.First().CounterDisplayName;
+                        pcRemove.InstanceName = _instanceName;
+                        pcRemove.InstanceLifetime = PerformanceCounterInstanceLifetime.Process;
+                        pcRemove.ReadOnly = false;
+                        // Removing instance using a single counter removes all counters for that instance.
+                        pcRemove.RemoveInstance();
+                    }
                 }
+                _initialized = false;
             }
-            _initialized = false;
         }
     }
 }
