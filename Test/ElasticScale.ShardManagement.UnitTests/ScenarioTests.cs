@@ -1256,8 +1256,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 ListShardMap<int> perTenantShardMap = shardMapManager.CreateListShardMap<int>(shardMapName);
 
                 ShardLocation sl1 = new ShardLocation(
-                        Globals.ShardMapManagerTestsDatasourceName,
-                        ScenarioTests.s_perTenantDBs[0]);
+                    Globals.ShardMapManagerTestsDatasourceName,
+                    ScenarioTests.s_perTenantDBs[0]);
 
                 // Create first shard and add 1 point mapping.
                 Shard s = perTenantShardMap.CreateShard(sl1);
@@ -1271,12 +1271,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 ShardMapManagerFactory.CreatePerformanceCategoryAndCounters();
 
                 // Eager loading of shard map manager
-                ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(Globals.ShardMapManagerConnectionString, ShardMapManagerLoadPolicy.Eager);
+                ShardMapManager smm =
+                    ShardMapManagerFactory.GetSqlShardMapManager(Globals.ShardMapManagerConnectionString,
+                        ShardMapManagerLoadPolicy.Eager);
 
                 // check if perf counter instance exists, instance name logic is from PerfCounterInstance.cs
                 string instanceName = string.Concat(Process.GetCurrentProcess().Id.ToString(), "-", shardMapName);
 
-                Assert.IsTrue(ValidateInstance(instanceName));
+                Assert.IsTrue(ValidateInstanceExists(instanceName));
 
                 // verify # of mappings.
                 Assert.IsTrue(ValidateCounterValue(instanceName, PerformanceCounterName.MappingsCount, 1));
@@ -1285,13 +1287,34 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 // Add a new shard and mapping and verify updated counters
                 ShardLocation sl2 = new ShardLocation(
-                        Globals.ShardMapManagerTestsDatasourceName,
-                        ScenarioTests.s_perTenantDBs[1]);
+                    Globals.ShardMapManagerTestsDatasourceName,
+                    ScenarioTests.s_perTenantDBs[1]);
 
                 Shard s2 = lsm.CreateShard(sl2);
 
                 PointMapping<int> p2 = lsm.CreatePointMapping(2, s2);
                 Assert.IsTrue(ValidateCounterValue(instanceName, PerformanceCounterName.MappingsCount, 2));
+
+                // Create few more mappings and validate MappingsAddOrUpdatePerSec counter
+                s2 = lsm.GetShard(sl2); 
+                for (int i = 3; i < 11; i++)
+                {
+                    lsm.CreatePointMapping(i, s2);
+                    s2 = lsm.GetShard(sl2);
+                }
+
+                Assert.IsTrue(ValidateNonZeroCounterValue(instanceName,
+                    PerformanceCounterName.MappingsAddOrUpdatePerSec));
+
+                // try to lookup non-existing mapping and verify MappingsLookupFailedPerSec
+                for (int i = 0; i < 10; i++)
+                {
+                    ShardManagementException exception = AssertExtensions.AssertThrows<ShardManagementException>(
+                        () => lsm.OpenConnectionForKey(20, Globals.ShardUserConnectionString));
+                }
+
+                Assert.IsTrue(ValidateNonZeroCounterValue(instanceName,
+                    PerformanceCounterName.MappingsLookupFailedPerSec));
 
                 // perform DDR operation few times and validate non-zero counter values
                 for (int i = 0; i < 10; i++)
@@ -1302,11 +1325,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 }
 
                 Assert.IsTrue(ValidateNonZeroCounterValue(instanceName, PerformanceCounterName.DdrOperationsPerSec));
-                Assert.IsTrue(ValidateNonZeroCounterValue(instanceName, PerformanceCounterName.MappingsLookupSucceededPerSec));
+                Assert.IsTrue(ValidateNonZeroCounterValue(instanceName,
+                    PerformanceCounterName.MappingsLookupSucceededPerSec));
 
                 // Remove shard map after removing mappings and shard
-                lsm.DeleteMapping(lsm.MarkMappingOffline(lsm.GetMappingForKey(1)));
-                lsm.DeleteMapping(lsm.MarkMappingOffline(lsm.GetMappingForKey(2)));
+                for (int i = 1; i < 11; i++)
+                {
+                    lsm.DeleteMapping(lsm.MarkMappingOffline(lsm.GetMappingForKey(i)));
+                }
+                
+                Assert.IsTrue(ValidateNonZeroCounterValue(instanceName,
+                    PerformanceCounterName.MappingsRemovePerSec));
+
                 lsm.DeleteShard(lsm.GetShard(sl1));
                 lsm.DeleteShard(lsm.GetShard(sl2));
 
@@ -1315,7 +1345,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 smm.DeleteShardMap(lsm);
 
                 // make sure that perf counter instance is removed
-                Assert.IsFalse(ValidateInstance(instanceName));
+                Assert.IsFalse(ValidateInstanceExists(instanceName));
+            }
+            else
+            {
+                Assert.Inconclusive("Do not have permissions to create performance counter category, test skipped");
             }
         }
 
@@ -1345,7 +1379,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
         }
 
-        private bool ValidateInstance(string instanceName)
+        private bool ValidateInstanceExists(string instanceName)
         {
             return PerformanceCounterCategory.InstanceExists(instanceName, PerformanceCounters.ShardManagementPerformanceCounterCategory);
         }
