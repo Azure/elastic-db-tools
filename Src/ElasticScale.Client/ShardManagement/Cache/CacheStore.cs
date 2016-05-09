@@ -112,6 +112,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     {
                         csm.Mapper.AddOrUpdate(mapping, policy);
 
+                        // Update perf counters for add or update operation and mappings count.
+                        csm.IncrementPerformanceCounter(PerformanceCounterName.MappingsAddOrUpdatePerSec);
+                        csm.SetPerformanceCounter(PerformanceCounterName.MappingsCount, csm.Mapper.GetMappingsCount());
+
                         Tracer.TraceVerbose(
                             TraceSourceConstants.ComponentNames.ShardMapManager,
                             "OnAddOrUpdateMapping",
@@ -137,6 +141,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     using (WriteLockScope wlscsm = csm.GetWriteLockScope())
                     {
                         csm.Mapper.Remove(mapping);
+
+                        // Update perf counters for remove mapping operation and mappings count.
+                        csm.IncrementPerformanceCounter(PerformanceCounterName.MappingsRemovePerSec);
+                        csm.SetPerformanceCounter(PerformanceCounterName.MappingsCount, csm.Mapper.GetMappingsCount());
+
                         Tracer.TraceVerbose(
                             TraceSourceConstants.ComponentNames.ShardMapManager,
                             "OnDeleteMapping",
@@ -167,11 +176,36 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     {
                         IStoreMapping smDummy;
                         sm = csm.Mapper.LookupByKey(key, out smDummy);
+
+                        // perf counter can not be updated in csm.Mapper.LookupByKey() as this function is also called from csm.Mapper.AddOrUpdate()
+                        // so updating perf counter value here instead.
+                        csm.IncrementPerformanceCounter(sm == null ? PerformanceCounterName.MappingsLookupFailedPerSec : PerformanceCounterName.MappingsLookupSucceededPerSec);
                     }
                 }
             }
 
             return sm;
+        }
+
+        /// <summary>
+        /// Invoked for updating specified performance counter for a cached shard map object.
+        /// </summary>
+        /// <param name="shardMap">Storage representation of a shard map.</param>
+        /// <param name="name">Performance counter to increment.</param>
+        public void IncrementPerformanceCounter(IStoreShardMap shardMap, PerformanceCounterName name)
+        {
+            using (ReadLockScope rls = _cacheRoot.GetReadLockScope(false))
+            {
+                CacheShardMap csm = _cacheRoot.LookupById(shardMap.Id);
+
+                if (csm != null)
+                {
+                    using (ReadLockScope rlsShardMap = csm.GetReadLockScope(false))
+                    {
+                        csm.IncrementPerformanceCounter(name);
+                    }
+                }
+            }
         }
 
         /// <summary>

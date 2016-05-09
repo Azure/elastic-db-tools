@@ -87,6 +87,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             /// The RangeMapping component name
             /// </summary>
             public const string RangeMapping = "RangeMapping";
+
+            /// <summary>
+            /// The performance counter component name
+            /// </summary>
+            public const string PerfCounter = "PerfCounter";
         }
     }
 }
