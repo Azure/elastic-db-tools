@@ -144,6 +144,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     csm.ResetTimeToLive();
                 }
 
+                this.Manager.Cache.IncrementPerformanceCounter(this.ShardMap.StoreShardMap, PerformanceCounterName.DdrOperationsPerSec);
                 return result;
             }
             catch (ShardManagementException smme)
@@ -160,10 +161,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                         CacheStoreMappingUpdatePolicy.OverwriteExisting,
                         errorCategory);
 
-                    return this.ShardMap.OpenConnection(
+                    result = this.ShardMap.OpenConnection(
                         constructMapping(this.Manager, this.ShardMap, sm),
                         connectionString,
                         options);
+                    this.Manager.Cache.IncrementPerformanceCounter(this.ShardMap.StoreShardMap, PerformanceCounterName.DdrOperationsPerSec);
+                    return result;
                 }
                 else
                 {
@@ -211,6 +214,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                         csm.ResetTimeToLive();
                     }
 
+                    this.Manager.Cache.IncrementPerformanceCounter(this.ShardMap.StoreShardMap, PerformanceCounterName.DdrOperationsPerSec);
                     return result;
                 }
                 else

@@ -68,6 +68,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         ICacheStoreMapping LookupMappingByKey(IStoreShardMap shardMap, ShardKey key);
 
         /// <summary>
+        /// Increment specified perf counter.
+        /// </summary>
+        /// <param name="shardMap">Storage representation of shard map.</param>
+        /// <param name="name">Performance counter to increment.s</param>
+        void IncrementPerformanceCounter(IStoreShardMap shardMap, PerformanceCounterName name);
+
+        /// <summary>
         /// Clears the cache.
         /// </summary>
         void Clear();

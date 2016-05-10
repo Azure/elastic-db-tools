@@ -174,6 +174,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
+        /// Get number of range mappings cached in this mapper.
+        /// </summary>
+        /// <returns>Number of cached range mappings.</returns>
+        internal override long GetMappingsCount()
+        {
+            return _mappingsByRange.Count;
+        }
+
+        /// <summary>
         /// Clears all the mappings in the lookup by Id table as well
         /// as lookup by range table.
         /// </summary>
