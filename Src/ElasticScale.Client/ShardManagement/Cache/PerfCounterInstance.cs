@@ -178,7 +178,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 Tracer.TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter,
                     "PerfCounterInstance..ctor",
                     "Exception caught while creating performance counter instance, no performance data will be collected. Exception: {0}",
-                    e.Message);
+                    e.ToString());
             }
         }
 
