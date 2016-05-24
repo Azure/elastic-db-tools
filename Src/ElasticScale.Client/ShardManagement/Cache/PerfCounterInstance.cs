@@ -107,55 +107,78 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             _instanceName = string.Concat(Process.GetCurrentProcess().Id.ToString(), "-", shardMapName);
 
-            // check if PerformanceCounterCategory exists
-
-            if (!PerformanceCounterCategory.Exists(PerformanceCounters.ShardManagementPerformanceCounterCategory))
+            try
             {
-                // We are not creating performance counter category here as per recommendation in documentation, copying note from
-                // https://msdn.microsoft.com/en-us/library/sb32hxtc(v=vs.110).aspx
-                // It is strongly recommended that new performance counter categories be created 
-                // during the installation of the application, not during the execution of the application.
-                // This allows time for the operating system to refresh its list of registered performance counter categories.
-                // If the list has not been refreshed, the attempt to use the category will fail.
-
-                // Trace out warning and continue
-                Tracer.TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter,
-                    "create",
-                    "Performance counter category {0} does not exist, no performance data will be collected.", PerformanceCounters.ShardManagementPerformanceCounterCategory);
-            }
-            // check if caller has permissions to create performance counters.
-            else if (!PerfCounterInstance.HasCreatePerformanceCounterPermissions())
-            {
-                // Trace out warning and continue
-                Tracer.TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter,
-                    "create",
-                    "User does not have permissions to create performance counters, no performance data will be collected.");
-            }
-            else
-            {
-                // Remove instance, if already exists
-                if (PerformanceCounterCategory.InstanceExists(_instanceName, PerformanceCounters.ShardManagementPerformanceCounterCategory))
+                // check if caller has permissions to create performance counters.
+                if (!PerfCounterInstance.HasCreatePerformanceCounterPermissions())
                 {
-                    // As performance counters are created with Process lifetime and instance name is unique (PID + shard map name),
-                    // this should never happen. Trace out error and silently continue.
+                    // Trace out warning and continue
                     Tracer.TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter,
                         "create",
-                        "Performance counter instance {0} already exists, no performance data will be collected.", _instanceName);
+                        "User does not have permissions to create performance counters, no performance data will be collected.");
                 }
                 else
                 {
-                    // now initialize all counters for this instance
-                    _counters = new Dictionary<PerformanceCounterName, PerformanceCounterWrapper>();
+                    // check if PerformanceCounterCategory exists
 
-                    foreach (PerfCounterCreationData d in PerfCounterInstance.counterList)
+                    if (!PerformanceCounterCategory.Exists(PerformanceCounters.ShardManagementPerformanceCounterCategory))
                     {
-                        _counters.Add(d.CounterName,
-                            new PerformanceCounterWrapper(PerformanceCounters.ShardManagementPerformanceCounterCategory, _instanceName, d.CounterDisplayName));
-                    }
+                        // We are not creating performance counter category here as per recommendation in documentation, copying note from
+                        // https://msdn.microsoft.com/en-us/library/sb32hxtc(v=vs.110).aspx
+                        // It is strongly recommended that new performance counter categories be created 
+                        // during the installation of the application, not during the execution of the application.
+                        // This allows time for the operating system to refresh its list of registered performance counter categories.
+                        // If the list has not been refreshed, the attempt to use the category will fail.
 
-                    // check that atleast one performance counter was created, so that we can remove instance as part of Dispose()
-                    _initialized = _counters.Any(c => c.Value._isValid = true);
+                        // Trace out warning and continue
+                        Tracer.TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter,
+                            "create",
+                            "Performance counter category {0} does not exist, no performance data will be collected.",
+                            PerformanceCounters.ShardManagementPerformanceCounterCategory);
+                    }
+                    else
+                    {
+                        // Check if specific instance exists
+                        if (PerformanceCounterCategory.InstanceExists(_instanceName,
+                            PerformanceCounters.ShardManagementPerformanceCounterCategory))
+                        {
+                            // As performance counters are created with Process lifetime and instance name is unique (PID + shard map name),
+                            // this should never happen. Trace out error and silently continue.
+                            Tracer.TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter,
+                                "create",
+                                "Performance counter instance {0} already exists, no performance data will be collected.",
+                                _instanceName);
+                        }
+                        else
+                        {
+                            // now initialize all counters for this instance
+                            _counters = new Dictionary<PerformanceCounterName, PerformanceCounterWrapper>();
+
+                            foreach (PerfCounterCreationData d in PerfCounterInstance.counterList)
+                            {
+                                _counters.Add(d.CounterName,
+                                    new PerformanceCounterWrapper(
+                                        PerformanceCounters.ShardManagementPerformanceCounterCategory, _instanceName,
+                                        d.CounterDisplayName));
+                            }
+
+                            // check that atleast one performance counter was created, so that we can remove instance as part of Dispose()
+                            _initialized = _counters.Any(c => c.Value._isValid = true);
+                        }
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                // Note: If any of the initialization calls throws, log the exception and silently continue.
+                // No perf data will be collected in this case.
+                // All other non-static code paths access PerformanceCounter and PerformanceCounterCategory
+                // objects only if _initialized is set to true.
+
+                Tracer.TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter,
+                    "PerfCounterInstance..ctor",
+                    "Exception caught while creating performance counter instance, no performance data will be collected. Exception: {0}",
+                    e.Message);
             }
         }
 
