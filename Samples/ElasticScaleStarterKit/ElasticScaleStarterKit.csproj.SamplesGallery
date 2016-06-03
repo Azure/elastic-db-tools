@@ -37,7 +37,7 @@
     <Reference Include="..\packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data.dll">
       <Name>Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data</Name>
     </Reference>
-    <Reference Include="..\packages\Microsoft.Azure.SqlDatabase.ElasticScale.Client.1.2.0\lib\net45\Microsoft.Azure.SqlDatabase.ElasticScale.Client.dll">
+    <Reference Include="..\packages\Microsoft.Azure.SqlDatabase.ElasticScale.Client.1.3.1\lib\net45\Microsoft.Azure.SqlDatabase.ElasticScale.Client.dll">
       <Name>Microsoft.Azure.SqlDatabase.ElasticScale.Client</Name>
     </Reference>
     <Reference Include="System" />
