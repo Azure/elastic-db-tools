@@ -122,29 +122,37 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="parameterName">Parameter name of the connection string object.</param>
         internal static void EnsureCredentials(SqlConnectionStringBuilder connectionString, string parameterName)
         {
-            // Check for integrated authentication or active directory integrated authentication (if supported)
-            if (!(connectionString.IntegratedSecurity ||
-                  connectionString[ShardMapUtils.Authentication].ToString().Equals(ShardMapUtils.ActiveDirectoryIntegratedStr)))
+            // Check for integrated authentication
+            if (connectionString.IntegratedSecurity)
             {
-                // UserID must be set when integrated authentication is disabled.
-                if (string.IsNullOrEmpty(connectionString.UserID))
-                {
-                    throw new ArgumentException(
-                        StringUtils.FormatInvariant(
-                            Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired,
-                            "UserID"),
-                        parameterName);
-                }
+                return;
+            }
 
-                // Password must be set when integrated authentication is disabled.
-                if (string.IsNullOrEmpty(connectionString.Password))
-                {
-                    throw new ArgumentException(
-                        StringUtils.FormatInvariant(
-                            Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired,
-                            "Password"),
-                        parameterName);
-                }
+            // Check for active directory integrated authentication (if supported)
+            if (connectionString.ContainsKey(ShardMapUtils.Authentication) &&
+                connectionString[ShardMapUtils.Authentication].ToString().Equals(ShardMapUtils.ActiveDirectoryIntegratedStr))
+            {
+                return;
+            }
+
+            // UserID must be set when integrated authentication is disabled.
+            if (string.IsNullOrEmpty(connectionString.UserID))
+            {
+                throw new ArgumentException(
+                    StringUtils.FormatInvariant(
+                        Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired,
+                        "UserID"),
+                    parameterName);
+            }
+
+            // Password must be set when integrated authentication is disabled.
+            if (string.IsNullOrEmpty(connectionString.Password))
+            {
+                throw new ArgumentException(
+                    StringUtils.FormatInvariant(
+                        Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired,
+                        "Password"),
+                    parameterName);
             }
         }
     }
