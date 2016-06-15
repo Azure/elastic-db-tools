@@ -44,6 +44,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             "MultiTenantDB1", "MultiTenantDB2", "MultiTenantDB3", "MultiTenantDB4", "MultiTenantDB5"
         };
 
+        // Test user to create for Sql Login tests.
+        private static string s_testUser = "TestUser";
+
+        // Password for test user.
+        private static string s_testPassword = "dogmat1C";
+
         #region Common Methods
 
         /// <summary>
@@ -339,7 +345,104 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
         [TestMethod()]
         [TestCategory("ExcludeFromGatedCheckin")]
-        public void BasicScenarioListShardMaps()
+        public void BasicScenarioListShardMapsWithIntegratedSecurity()
+        {
+            BasicScenarioListShardMapsInternal(Globals.ShardMapManagerConnectionString, Globals.ShardUserConnectionString);
+        }
+
+        [TestMethod()]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void BasicScenarioListShardMapsWithSqlAuthentication()
+        {
+            // Try to create a test login
+            if (CreateTestLogin())
+            {
+                SqlConnectionStringBuilder gsmSb = new SqlConnectionStringBuilder(Globals.ShardMapManagerConnectionString)
+                {
+                    IntegratedSecurity = false,
+                    UserID = s_testUser,
+                    Password = s_testPassword,
+                };
+
+                SqlConnectionStringBuilder lsmSb = new SqlConnectionStringBuilder(Globals.ShardUserConnectionString)
+                {
+                    IntegratedSecurity = false,
+                    UserID = s_testUser,
+                    Password = s_testPassword,
+                };
+
+                BasicScenarioListShardMapsInternal(gsmSb.ConnectionString, lsmSb.ConnectionString);
+
+                // Drop test login
+                DropTestLogin();
+            }
+            else
+            {
+                Assert.Inconclusive("Failed to create sql login, test skipped");
+            }
+        }
+
+        bool CreateTestLogin()
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerConnectionString))
+                {
+                    conn.Open();
+                    conn.ChangeDatabase("master");
+                    using (SqlCommand cmd = new SqlCommand())
+                    {
+                        cmd.Connection = conn;
+                        cmd.CommandText = string.Format(@"
+if exists (select name from syslogins where name = '{0}')
+begin
+	drop login {0}
+end
+create login {0} with password = '{1}'", s_testUser, s_testPassword);
+                        cmd.ExecuteNonQuery();
+
+                        cmd.CommandText = string.Format("SP_ADDSRVROLEMEMBER  '{0}', 'sysadmin'", s_testUser);
+                        cmd.ExecuteNonQuery();
+
+                        return true;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(string.Format("Exception caught in CreateTestLogin(): {0}", e.ToString()));
+            }
+
+            return false;
+        }
+
+        void DropTestLogin()
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerConnectionString))
+                {
+                    conn.Open();
+                    conn.ChangeDatabase("master");
+                    using (SqlCommand cmd = new SqlCommand())
+                    {
+                        cmd.Connection = conn;
+                        cmd.CommandText = string.Format(@"
+if exists (select name from syslogins where name = '{0}')
+begin
+	drop login {0}
+end", s_testUser);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(string.Format("Exception caught in DropTestLogin(): {0}", e.ToString()));
+            }
+        }
+
+        private void BasicScenarioListShardMapsInternal(string shardMapManagerConnectionString, string shardUserConnectionString)
         {
             bool success = true;
             string shardMapName = "PerTenantShardMap";
@@ -350,7 +453,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 // Deploy shard map manager.
                 ShardMapManagerFactory.CreateSqlShardMapManager(
-                    Globals.ShardMapManagerConnectionString,
+                    shardMapManagerConnectionString,
                     ShardMapManagerCreateMode.ReplaceExisting);
 
                 #endregion DeployShardMapManager
@@ -359,7 +462,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 // Obtain shard map manager.
                 ShardMapManager shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    Globals.ShardMapManagerConnectionString,
+                    shardMapManagerConnectionString,
                 ShardMapManagerLoadPolicy.Lazy);
 
                 #endregion GetShardMapManager
@@ -484,7 +587,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 using (SqlConnection conn = perTenantShardMap.OpenConnectionForKey(
                     2,
-                    Globals.ShardUserConnectionString,
+                    shardUserConnectionString,
                     ConnectionOptions.None))
                 {
                 }
@@ -499,7 +602,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 {
                     using (SqlConnection conn = perTenantShardMap.OpenConnection(
                         mappingToDelete,
-                        Globals.ShardUserConnectionString,
+                        shardUserConnectionString,
                         ConnectionOptions.Validate))
                     {
                     }
@@ -518,7 +621,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 // Obtain a new ShardMapManager instance
                 ShardMapManager newShardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    Globals.ShardMapManagerConnectionString,
+                    shardMapManagerConnectionString,
                 ShardMapManagerLoadPolicy.Lazy);
 
                 // Get the ShardMap
@@ -526,7 +629,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 using (SqlConnection conn = newPerTenantShardMap.OpenConnectionForKey(
                     2,
-                    Globals.ShardUserConnectionString,
+                    shardUserConnectionString,
                     ConnectionOptions.None))
                 {
                 }
@@ -540,7 +643,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 // Obtain a new ShardMapManager instance
                 newShardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    Globals.ShardMapManagerConnectionString,
+                    shardMapManagerConnectionString,
                 ShardMapManagerLoadPolicy.Lazy);
 
                 // Get the ShardMap
@@ -564,7 +667,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 {
                     using (SqlConnection conn = newPerTenantShardMap.OpenConnection(
                         newMappingToDelete,
-                        Globals.ShardUserConnectionString,
+                        shardUserConnectionString,
                         ConnectionOptions.Validate))
                     {
                     }
@@ -583,7 +686,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 using (SqlConnection conn = perTenantShardMap.OpenConnectionForKeyAsync(
                     2,
-                    Globals.ShardUserConnectionString,
+                    shardUserConnectionString,
                     ConnectionOptions.None).Result)
                 {
                 }
@@ -598,7 +701,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 {
                     using (SqlConnection conn = perTenantShardMap.OpenConnectionAsync(
                         mappingToDelete,
-                        Globals.ShardUserConnectionString,
+                        shardUserConnectionString,
                         ConnectionOptions.Validate).Result)
                     {
                     }
@@ -621,14 +724,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 // Obtain a new ShardMapManager instance
                 newShardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    Globals.ShardMapManagerConnectionString,
+                    shardMapManagerConnectionString,
                 ShardMapManagerLoadPolicy.Lazy);
 
                 // Get the ShardMap
                 newPerTenantShardMap = newShardMapManager.GetListShardMap<int>(shardMapName);
                 using (SqlConnection conn = newPerTenantShardMap.OpenConnectionForKeyAsync(
                     2,
-                    Globals.ShardUserConnectionString,
+                    shardUserConnectionString,
                     ConnectionOptions.None).Result)
                 {
                 }
@@ -642,7 +745,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 // Obtain a new ShardMapManager instance
                 newShardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    Globals.ShardMapManagerConnectionString,
+                    shardMapManagerConnectionString,
                 ShardMapManagerLoadPolicy.Lazy);
 
                 // Get the ShardMap
@@ -666,7 +769,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 {
                     using (SqlConnection conn = newPerTenantShardMap.OpenConnectionAsync(
                         newMappingToDelete,
-                        Globals.ShardUserConnectionString,
+                        shardUserConnectionString,
                         ConnectionOptions.Validate).Result)
                     {
                     }
@@ -1110,13 +1213,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     }
                     else
                         if (i < 4)
-                    {
-                        Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[i + 1]);
-                    }
-                    else
-                    {
-                        Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[2]);
-                    }
+                        {
+                            Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[i + 1]);
+                        }
+                        else
+                        {
+                            Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[2]);
+                        }
                 }
 
                 // Perform tenant lookup. This will read from the cache.
@@ -1135,13 +1238,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     }
                     else
                         if (i < 4)
-                    {
-                        Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[i + 1]);
-                    }
-                    else
-                    {
-                        Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[2]);
-                    }
+                        {
+                            Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[i + 1]);
+                        }
+                        else
+                        {
+                            Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[2]);
+                        }
                 }
 
                 #endregion GetMapping
@@ -1296,7 +1399,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 Assert.IsTrue(ValidateCounterValue(instanceName, PerformanceCounterName.MappingsCount, 2));
 
                 // Create few more mappings and validate MappingsAddOrUpdatePerSec counter
-                s2 = lsm.GetShard(sl2); 
+                s2 = lsm.GetShard(sl2);
                 for (int i = 3; i < 11; i++)
                 {
                     lsm.CreatePointMapping(i, s2);
@@ -1333,7 +1436,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 {
                     lsm.DeleteMapping(lsm.MarkMappingOffline(lsm.GetMappingForKey(i)));
                 }
-                
+
                 Assert.IsTrue(ValidateNonZeroCounterValue(instanceName,
                     PerformanceCounterName.MappingsRemovePerSec));
 
