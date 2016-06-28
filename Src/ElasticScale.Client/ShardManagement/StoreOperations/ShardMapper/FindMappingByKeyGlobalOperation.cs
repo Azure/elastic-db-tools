@@ -116,7 +116,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             // If no ranges are specified, blindly mark everything for deletion.
             return await ts.ExecuteOperationAsync(
                 StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal,
-                StoreOperationRequestBuilder.FindShardMappingByKeyGlobal(_shardMap, _key));
+                StoreOperationRequestBuilder.FindShardMappingByKeyGlobal(_shardMap, _key)).ConfigureAwait(false);
         }
 
         /// <summary>

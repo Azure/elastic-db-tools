@@ -163,9 +163,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     0,
                     0);
 
-                using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
                 {
-                    await lsmResult.FetchAsync(reader);
+                    await lsmResult.FetchAsync(reader).ConfigureAwait(false);
                 }
 
                 // Output parameter will be used to specify the outcome.
@@ -345,9 +345,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     0,
                     0);
 
-                using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
                 {
-                    await lsmResult.FetchAsync(reader);
+                    await lsmResult.FetchAsync(reader).ConfigureAwait(false);
                 }
 
                 // Output parameter will be used to specify the outcome.

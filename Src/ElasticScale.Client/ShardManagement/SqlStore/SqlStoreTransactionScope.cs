@@ -141,9 +141,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                     SqlParameter result = SqlUtils.AddCommandParameter(cmd, "@result", SqlDbType.Int, ParameterDirection.Output, 0, 0);
 
-                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
                     {
-                        await results.FetchAsync(reader);
+                        await results.FetchAsync(reader).ConfigureAwait(false);
                     }
 
                     // Output parameter will be used to specify the outcome.
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 }
 
                 return results;
-            });
+            }).ConfigureAwait(false);
         }
 
         /// <summary>

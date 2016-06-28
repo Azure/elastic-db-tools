@@ -143,11 +143,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                         try
                         {
                             // Open connection.
-                            await this.EstablishConnnectionAsync();
+                            await this.EstablishConnnectionAsync().ConfigureAwait(false);
 
                             using (IStoreTransactionScope ts = this.GetTransactionScope())
                             {
-                                r = await this.DoGlobalExecuteAsync(ts);
+                                r = await this.DoGlobalExecuteAsync(ts).ConfigureAwait(false);
 
                                 ts.Success = r.Result == StoreResult.Success;
                             }
@@ -171,14 +171,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                             // Close connection.
                             this.TeardownConnection();
                         }
-                    });
+                    }).ConfigureAwait(false);
 
                     // If pending operation, deserialize the pending operation and perform Undo.
                     if (result.StoreOperations.Any())
                     {
                         Debug.Assert(result.StoreOperations.Count() == 1);
 
-                        await this.UndoPendingStoreOperationsAsync(result.StoreOperations.Single());
+                        await this.UndoPendingStoreOperationsAsync(result.StoreOperations.Single()).ConfigureAwait(false);
                     }
                 }
                 while (result.StoreOperations.Any());
@@ -324,7 +324,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         private async Task EstablishConnnectionAsync()
         {
             _globalConnection = new SqlStoreConnection(StoreConnectionKind.Global, _credentials.ConnectionStringShardMapManager);
-            await _globalConnection.OpenAsync();
+            await _globalConnection.OpenAsync().ConfigureAwait(false);
         }
 
         /// <summary>

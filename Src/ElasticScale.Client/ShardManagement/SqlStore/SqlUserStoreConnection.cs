@@ -51,7 +51,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>Task to await completion of the Open</returns>
         public async Task OpenAsync()
         {
-            await _conn.OpenAsync();
+            await _conn.OpenAsync().ConfigureAwait(false);
         }
 
         #region IDisposable

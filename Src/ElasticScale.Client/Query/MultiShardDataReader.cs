@@ -988,7 +988,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
                     WaitForReaderOrThrow();
 
-                    bool hasNextResult = await GetCurrentDataReader().NextResultAsync(cancellationToken);
+                    bool hasNextResult = await GetCurrentDataReader().NextResultAsync(cancellationToken).ConfigureAwait(false);
 
                     if (hasNextResult)
                     {
@@ -1046,7 +1046,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             // call out here since the common case is that we will usually have a row to return so we can skip the setup
             // and iteration through the loop.
             //
-            if (await PerformReadToFillBuffer(cancellationToken))
+            if (await PerformReadToFillBuffer(cancellationToken).ConfigureAwait(false))
             {
                 stopwatch.Stop();
 
@@ -1085,7 +1085,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     return false;
                 }
 
-                if (await PerformReadToFillBuffer(cancellationToken))
+                if (await PerformReadToFillBuffer(cancellationToken).ConfigureAwait(false))
                 {
                     stopwatch.Stop();
 
@@ -1977,7 +1977,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             //
             try
             {
-                return await this.GetCurrentDataReader().ReadAsync(token);
+                return await this.GetCurrentDataReader().ReadAsync(token).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

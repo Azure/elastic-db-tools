@@ -58,7 +58,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             await SqlUtils.WithSqlExceptionHandlingAsync(async () =>
             {
-                await _conn.OpenAsync();
+                await _conn.OpenAsync().ConfigureAwait(false);
             });
         }
 

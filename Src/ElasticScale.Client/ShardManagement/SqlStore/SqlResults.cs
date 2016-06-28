@@ -169,7 +169,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             Func<Action, Task> ReadAsync = async (readAction) =>
             {
-                while (await reader.ReadAsync())
+                while (await reader.ReadAsync().ConfigureAwait(false))
                 {
                     readAction();
                 }
@@ -184,25 +184,25 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     switch (resultType)
                     {
                         case SqlResultType.ShardMap:
-                            await ReadAsync(() => _ssm.Add(new SqlShardMap(reader, 1)));
+                            await ReadAsync(() => _ssm.Add(new SqlShardMap(reader, 1))).ConfigureAwait(false);
                             break;
                         case SqlResultType.Shard:
-                            await ReadAsync(() => _ss.Add(new SqlShard(reader, 1)));
+                            await ReadAsync(() => _ss.Add(new SqlShard(reader, 1))).ConfigureAwait(false);
                             break;
                         case SqlResultType.ShardMapping:
-                            await ReadAsync(() => _sm.Add(new SqlMapping(reader, 1)));
+                            await ReadAsync(() => _sm.Add(new SqlMapping(reader, 1))).ConfigureAwait(false);
                             break;
                         case SqlResultType.ShardLocation:
-                            await ReadAsync(() => _sl.Add(new SqlLocation(reader, 1)));
+                            await ReadAsync(() => _sl.Add(new SqlLocation(reader, 1))).ConfigureAwait(false);
                             break;
                         case SqlResultType.SchemaInfo:
-                            await ReadAsync(() => _si.Add(new SqlSchemaInfo(reader, 1)));
+                            await ReadAsync(() => _si.Add(new SqlSchemaInfo(reader, 1))).ConfigureAwait(false);
                             break;
                         case SqlResultType.StoreVersion:
-                            await ReadAsync(() => _version = new SqlVersion(reader, 1));
+                            await ReadAsync(() => _version = new SqlVersion(reader, 1)).ConfigureAwait(false);
                             break;
                         case SqlResultType.Operation:
-                            await ReadAsync(() => _ops.Add(new SqlLogEntry(reader, 1)));
+                            await ReadAsync(() => _ops.Add(new SqlLogEntry(reader, 1))).ConfigureAwait(false);
                             break;
                         default:
                             // This code is unreachable, since the all values of the SqlResultType enum are explicitly handled above.
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     }
                 }
             }
-            while (await reader.NextResultAsync());
+            while (await reader.NextResultAsync().ConfigureAwait(false));
         }
 
         /// <summary>

@@ -366,7 +366,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             try
             {
-                await operation();
+                await operation().ConfigureAwait(false);
             }
             catch (SqlException se)
             {
@@ -406,7 +406,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             try
             {
-                return await operation();
+                return await operation().ConfigureAwait(false);
             }
             catch (SqlException se)
             {
