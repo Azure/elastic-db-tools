@@ -321,10 +321,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Asynchronously establishes connection to the SMM GSM database.
         /// </summary>
         /// <returns>Task to await connection establishment</returns>
-        private async Task EstablishConnnectionAsync()
+        private Task EstablishConnnectionAsync()
         {
             _globalConnection = new SqlStoreConnection(StoreConnectionKind.Global, _credentials.ConnectionStringShardMapManager);
-            await _globalConnection.OpenAsync().ConfigureAwait(false);
+            return _globalConnection.OpenAsync();
         }
 
         /// <summary>

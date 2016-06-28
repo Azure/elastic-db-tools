@@ -124,9 +124,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="operationName">Operation to execute.</param>
         /// <param name="operationData">Input data for operation.</param>
         /// <returns>Task encapsulating storage results object.</returns>
-        public virtual async Task<IStoreResults> ExecuteOperationAsync(string operationName, XElement operationData)
+        public virtual Task<IStoreResults> ExecuteOperationAsync(string operationName, XElement operationData)
         {
-            return await SqlUtils.WithSqlExceptionHandlingAsync<IStoreResults>(async () =>
+            return SqlUtils.WithSqlExceptionHandlingAsync<IStoreResults>(async () =>
             {
                 SqlResults results = new SqlResults();
 
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 }
 
                 return results;
-            }).ConfigureAwait(false);
+            });
         }
 
         /// <summary>

@@ -56,14 +56,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>A Task encapsulating an opened SqlConnection.</returns>
         /// <remarks>All non usage-error exceptions will be reported via the returned Task</remarks>
-        public async Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, string connectionString, ConnectionOptions options = ConnectionOptions.Validate)
+        public Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, string connectionString, ConnectionOptions options = ConnectionOptions.Validate)
         {
-            return await this.OpenConnectionForKeyAsync<PointMapping<TKey>, TKey>(
+            return this.OpenConnectionForKeyAsync<PointMapping<TKey>, TKey>(
                 key,
                 (smm, sm, ssm) => new PointMapping<TKey>(smm, sm, ssm),
                 ShardManagementErrorCategory.ListShardMap,
                 connectionString,
-                options).ConfigureAwait(false);
+                options);
         }
 
         /// <summary>
