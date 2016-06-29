@@ -49,9 +49,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Asynchronously opens the connection.
         /// </summary>
         /// <returns>Task to await completion of the Open</returns>
-        public async Task OpenAsync()
+        public Task OpenAsync()
         {
-            await _conn.OpenAsync();
+            return _conn.OpenAsync();
         }
 
         #region IDisposable

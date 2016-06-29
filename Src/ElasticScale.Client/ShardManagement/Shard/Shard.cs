@@ -378,7 +378,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 conn,
                 this.Manager,
                 shardMap,
-                this.StoreShard);
+                this.StoreShard).ConfigureAwait(false);
 
             stopwatch.Stop();
 

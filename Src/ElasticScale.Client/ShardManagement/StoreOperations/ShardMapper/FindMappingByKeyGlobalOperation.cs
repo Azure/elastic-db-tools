@@ -111,10 +111,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>
         /// Task encapsulating results of the operation.
         /// </returns>
-        public override async Task<IStoreResults> DoGlobalExecuteAsync(IStoreTransactionScope ts)
+        public override Task<IStoreResults> DoGlobalExecuteAsync(IStoreTransactionScope ts)
         {
             // If no ranges are specified, blindly mark everything for deletion.
-            return await ts.ExecuteOperationAsync(
+            return ts.ExecuteOperationAsync(
                 StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal,
                 StoreOperationRequestBuilder.FindShardMappingByKeyGlobal(_shardMap, _key));
         }

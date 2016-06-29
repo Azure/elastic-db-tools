@@ -143,11 +143,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                         try
                         {
                             // Open connection.
-                            await this.EstablishConnnectionAsync();
+                            await this.EstablishConnnectionAsync().ConfigureAwait(false);
 
                             using (IStoreTransactionScope ts = this.GetTransactionScope())
                             {
-                                r = await this.DoGlobalExecuteAsync(ts);
+                                r = await this.DoGlobalExecuteAsync(ts).ConfigureAwait(false);
 
                                 ts.Success = r.Result == StoreResult.Success;
                             }
@@ -171,14 +171,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                             // Close connection.
                             this.TeardownConnection();
                         }
-                    });
+                    }).ConfigureAwait(false);
 
                     // If pending operation, deserialize the pending operation and perform Undo.
                     if (result.StoreOperations.Any())
                     {
                         Debug.Assert(result.StoreOperations.Count() == 1);
 
-                        await this.UndoPendingStoreOperationsAsync(result.StoreOperations.Single());
+                        await this.UndoPendingStoreOperationsAsync(result.StoreOperations.Single()).ConfigureAwait(false);
                     }
                 }
                 while (result.StoreOperations.Any());
@@ -321,10 +321,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Asynchronously establishes connection to the SMM GSM database.
         /// </summary>
         /// <returns>Task to await connection establishment</returns>
-        private async Task EstablishConnnectionAsync()
+        private Task EstablishConnnectionAsync()
         {
             _globalConnection = new SqlStoreConnection(StoreConnectionKind.Global, _credentials.ConnectionStringShardMapManager);
-            await _globalConnection.OpenAsync();
+            return _globalConnection.OpenAsync();
         }
 
         /// <summary>

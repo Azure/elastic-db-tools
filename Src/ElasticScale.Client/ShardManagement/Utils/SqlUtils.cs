@@ -360,13 +360,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <summary>
         /// Executes the code asynchronously with SqlException handling.
         /// </summary>
-        /// <param name="operation">Operation to execute.</param>
+        /// <param name="operationAsync">Operation to execute.</param>
         /// <returns>Task to await sql exception handling completion</returns>
-        internal static async Task WithSqlExceptionHandlingAsync(Func<Task> operation)
+        internal static async Task WithSqlExceptionHandlingAsync(Func<Task> operationAsync)
         {
             try
             {
-                await operation();
+                await operationAsync().ConfigureAwait(false);
             }
             catch (SqlException se)
             {
@@ -400,13 +400,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Asynchronously executes the code with SqlException handling.
         /// </summary>
         /// <typeparam name="TResult">Type of result.</typeparam>
-        /// <param name="operation">Operation to execute.</param>
+        /// <param name="operationAsync">Operation to execute.</param>
         /// <returns>Task encapsulating the result of the operation.</returns>
-        internal async static Task<TResult> WithSqlExceptionHandlingAsync<TResult>(Func<Task<TResult>> operation)
+        internal async static Task<TResult> WithSqlExceptionHandlingAsync<TResult>(Func<Task<TResult>> operationAsync)
         {
             try
             {
-                return await operation();
+                return await operationAsync().ConfigureAwait(false);
             }
             catch (SqlException se)
             {

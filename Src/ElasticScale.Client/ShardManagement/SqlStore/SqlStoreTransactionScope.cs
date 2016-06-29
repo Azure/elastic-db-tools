@@ -124,9 +124,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="operationName">Operation to execute.</param>
         /// <param name="operationData">Input data for operation.</param>
         /// <returns>Task encapsulating storage results object.</returns>
-        public virtual async Task<IStoreResults> ExecuteOperationAsync(string operationName, XElement operationData)
+        public virtual Task<IStoreResults> ExecuteOperationAsync(string operationName, XElement operationData)
         {
-            return await SqlUtils.WithSqlExceptionHandlingAsync<IStoreResults>(async () =>
+            return SqlUtils.WithSqlExceptionHandlingAsync<IStoreResults>(async () =>
             {
                 SqlResults results = new SqlResults();
 
@@ -141,9 +141,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                     SqlParameter result = SqlUtils.AddCommandParameter(cmd, "@result", SqlDbType.Int, ParameterDirection.Output, 0, 0);
 
-                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
                     {
-                        await results.FetchAsync(reader);
+                        await results.FetchAsync(reader).ConfigureAwait(false);
                     }
 
                     // Output parameter will be used to specify the outcome.

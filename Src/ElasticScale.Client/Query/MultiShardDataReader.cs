@@ -988,7 +988,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
                     WaitForReaderOrThrow();
 
-                    bool hasNextResult = await GetCurrentDataReader().NextResultAsync(cancellationToken);
+                    bool hasNextResult = await GetCurrentDataReader().NextResultAsync(cancellationToken).ConfigureAwait(false);
 
                     if (hasNextResult)
                     {
@@ -1046,7 +1046,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             // call out here since the common case is that we will usually have a row to return so we can skip the setup
             // and iteration through the loop.
             //
-            if (await PerformReadToFillBuffer(cancellationToken))
+            if (await PerformReadToFillBufferAsync(cancellationToken).ConfigureAwait(false))
             {
                 stopwatch.Stop();
 
@@ -1085,7 +1085,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     return false;
                 }
 
-                if (await PerformReadToFillBuffer(cancellationToken))
+                if (await PerformReadToFillBufferAsync(cancellationToken).ConfigureAwait(false))
                 {
                     stopwatch.Stop();
 
@@ -1966,7 +1966,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// An async task to perform the read; when executed the task returns true 
         /// if we read another row from the current reader, false if we hit the end.
         /// </returns>
-        private async Task<bool> PerformReadToFillBuffer(CancellationToken token)
+        private async Task<bool> PerformReadToFillBufferAsync(CancellationToken token)
         {
             // DEVNOTE: We could run this in either a try-catch or in a ContinueWith.
             // If we do any throwing, though, we want it to be on the main thread that called this function,
@@ -1977,7 +1977,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             //
             try
             {
-                return await this.GetCurrentDataReader().ReadAsync(token);
+                return await this.GetCurrentDataReader().ReadAsync(token).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

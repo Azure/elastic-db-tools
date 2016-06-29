@@ -54,11 +54,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Asynchronously open the store connection.
         /// </summary>
         /// <returns>A task to await completion of the Open</returns>
-        public virtual async Task OpenAsync()
+        public virtual Task OpenAsync()
         {
-            await SqlUtils.WithSqlExceptionHandlingAsync(async () =>
+            return SqlUtils.WithSqlExceptionHandlingAsync(() =>
             {
-                await _conn.OpenAsync();
+                return _conn.OpenAsync();
             });
         }
 
