@@ -134,6 +134,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
                                 // because the connected party did not properly respond after a period of time, or established connection failed 
                                 // because connected host has failed to respond.)"}
                                 case 10060:
+                                // SQL Error Code: 18401
+                                // Login failed for user '%s'. Reason: Server is in script upgrade mode. Only administrator can connect at this time.
+                                // Devnote: this can happen when SQL is going through recovery (e.g. after failover)
+                                case 18401:
                                 // SQL Error Code: 40197
                                 // The service has encountered an error processing your request. Please try again.
                                 case 40197:
