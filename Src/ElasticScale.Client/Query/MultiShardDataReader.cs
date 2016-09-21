@@ -645,6 +645,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             return HandleGetValuesCall(values, GetCurrentDataReader().GetProviderSpecificValues, GetProviderSpecificValue);
         }
 
+#if NET40
         /// <summary>
         /// Returns a <see cref="DataTable"/> that describes the column metadata of the MultiShardDataReader.
         /// </summary>
@@ -653,6 +654,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             return GetPropertyOrVariableWithStateCheck<DataTable>(_finalSchemaTable);
         }
+#endif
 
         /// <summary>
         /// Gets the value of the specified column as a SqlBinary.
@@ -915,6 +917,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             return GetColumn<XmlReader>(GetCurrentDataReaderAsSqlDataReader().GetXmlReader, ordinal);
         }
 
+#if NET40
         /// <summary>
         /// This method is currently not supported. Invoking the method will result in an exception.
         /// </summary>
@@ -922,6 +925,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             throw new NotSupportedException("InitializeLifetimeService is currently not supported");
         }
+#endif
 
         /// <summary>
         /// Gets a value that indicates whether the column contains nonexistent or missing values (NULL values).
