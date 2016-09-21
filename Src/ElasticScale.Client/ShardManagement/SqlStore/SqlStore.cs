@@ -10,7 +10,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Microsoft.Azure.SqlDatabase.ElasticScale.Common.TransientFaultHandling.Implementation;
 using System.Xml;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
@@ -87,7 +86,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <summary>
         /// SQL transient fault detection strategy.
         /// </summary>
-        private static SqlDatabaseTransientErrorDetectionStrategy sqlTransientErrorDetector = new SqlDatabaseTransientErrorDetectionStrategy();
+        private static TransientFaultHandling.SqlDatabaseTransientErrorDetectionStrategy sqlTransientErrorDetector = new TransientFaultHandling.SqlDatabaseTransientErrorDetectionStrategy();
         
         /// <summary>
         /// Transient failure detector function.
