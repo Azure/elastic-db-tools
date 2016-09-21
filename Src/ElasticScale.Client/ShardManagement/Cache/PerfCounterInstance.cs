@@ -160,10 +160,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                             foreach (PerfCounterCreationData d in PerfCounterInstance.counterList)
                             {
+#if NET40
                                 _counters.Add(d.CounterName,
                                     new PerformanceCounterWrapper(
                                         PerformanceCounters.ShardManagementPerformanceCounterCategory, _instanceName,
                                         d.CounterDisplayName));
+#endif
                             }
 
                             // check that atleast one performance counter was created, so that we can remove instance as part of Dispose()
@@ -236,7 +238,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 foreach (PerfCounterCreationData d in PerfCounterInstance.counterList)
                 {
+#if NET40
                     smmCounters.Add(new CounterCreationData(d.CounterDisplayName, d.CounterHelpText, d.CounterType));
+#endif
                 }
 
                 PerformanceCounterCategory.Create(
@@ -292,6 +296,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                         // We can assume here that performance counter catagory, instance and first counter in the cointerList exist as _initialized is set to true.
                         using (PerformanceCounter pcRemove = new PerformanceCounter())
                         {
+#if NET40
                             pcRemove.CategoryName = PerformanceCounters.ShardManagementPerformanceCounterCategory;
                             pcRemove.CounterName = counterList.First().CounterDisplayName;
                             pcRemove.InstanceName = _instanceName;
@@ -299,6 +304,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                             pcRemove.ReadOnly = false;
                             // Removing instance using a single counter removes all counters for that instance.
                             pcRemove.RemoveInstance();
+#endif
                         }
                     }
                     _initialized = false;
