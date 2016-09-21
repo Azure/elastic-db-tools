@@ -22,7 +22,9 @@ using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
+#if NET40
 using System.Runtime.Remoting;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -240,6 +242,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
+#if NET40
         /// <summary>
         /// This method is currently not supported. Invoking the method will result in an exception.
         /// </summary>
@@ -248,6 +251,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             throw new RemotingException("MultiShardDataReader is not a valid remoting object.");
         }
+#endif
 
         /// <summary>
         /// Determines whether the specified object is equal to the current object. (Inherited from <see cref="Object"/>.)
