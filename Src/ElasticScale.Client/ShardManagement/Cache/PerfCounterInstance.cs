@@ -109,6 +109,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             _initialized = false;
 
+#if NET40
             _instanceName = string.Concat(Process.GetCurrentProcess().Id.ToString(), "-", shardMapName);
 
             try
@@ -160,12 +161,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                             foreach (PerfCounterCreationData d in PerfCounterInstance.counterList)
                             {
-#if NET40
                                 _counters.Add(d.CounterName,
                                     new PerformanceCounterWrapper(
                                         PerformanceCounters.ShardManagementPerformanceCounterCategory, _instanceName,
                                         d.CounterDisplayName));
-#endif
                             }
 
                             // check that atleast one performance counter was created, so that we can remove instance as part of Dispose()
@@ -186,6 +185,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     "Exception caught while creating performance counter instance, no performance data will be collected. Exception: {0}",
                     e.ToString());
             }
+#endif
         }
 
         /// <summary>
@@ -220,11 +220,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 }
             }
         }
+
         /// <summary>
         /// Static method to recreate Shard Management performance counter catagory with given counter list.
         /// </summary>
         internal static void CreatePerformanceCategoryAndCounters()
         {
+#if NET40
             // Creation of performance counters need Administrator privilege
             if (HasCreatePerformanceCategoryPermissions())
             {
@@ -238,9 +240,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 foreach (PerfCounterCreationData d in PerfCounterInstance.counterList)
                 {
-#if NET40
                     smmCounters.Add(new CounterCreationData(d.CounterDisplayName, d.CounterHelpText, d.CounterType));
-#endif
                 }
 
                 PerformanceCounterCategory.Create(
@@ -256,8 +256,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     "createCategory",
                     "User does not have permissions to create performance counter category");
             }
+#endif
         }
 
+#if NET40
         /// <summary>
         /// Check if caller has permissions to create performance counter catagory.
         /// </summary>
@@ -269,7 +271,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             WindowsPrincipal wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
             return wp.IsInRole(WindowsBuiltInRole.Administrator);
         }
+#endif
 
+#if NET40
         /// <summary>
         /// Check if caller has permissions to create performance counter instance
         /// </summary>
@@ -280,12 +284,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             WindowsPrincipal wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
             return wp.IsInRole(WindowsBuiltInRole.Administrator) || wp.IsInRole(PerformanceCounters.PerformanceMonitorUsersGroupName);
         }
+#endif
 
         /// <summary>
         /// Dispose performance counter instance
         /// </summary>
         public void Dispose()
         {
+#if NET40
             if (_initialized)
             {
                 lock (_lockObject)
@@ -296,7 +302,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                         // We can assume here that performance counter catagory, instance and first counter in the cointerList exist as _initialized is set to true.
                         using (PerformanceCounter pcRemove = new PerformanceCounter())
                         {
-#if NET40
                             pcRemove.CategoryName = PerformanceCounters.ShardManagementPerformanceCounterCategory;
                             pcRemove.CounterName = counterList.First().CounterDisplayName;
                             pcRemove.InstanceName = _instanceName;
@@ -304,12 +309,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                             pcRemove.ReadOnly = false;
                             // Removing instance using a single counter removes all counters for that instance.
                             pcRemove.RemoveInstance();
-#endif
                         }
                     }
                     _initialized = false;
                 }
             }
+#endif
         }
     }
 }
