@@ -1,7 +1,10 @@
+# Nuget restore
+packages
+project.lock.json
+
 # Build folders
 bin
 FakesAssemblies
-packages
 obj
 
 # Other misc build output
