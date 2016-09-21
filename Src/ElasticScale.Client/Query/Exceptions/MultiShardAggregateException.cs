@@ -26,7 +26,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
     {
         private readonly ReadOnlyCollection<Exception> _innerExceptions;
 
-        #region Standard Exception Constructors
+#region Standard Exception Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MultiShardAggregateException"/> class
@@ -55,6 +55,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
         }
 
+#if NET40
+
         /// <summary>
         /// Initializes a new instance of the MultiShardAggregateException class with serialized data.
         /// </summary>
@@ -66,9 +68,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             _innerExceptions = (ReadOnlyCollection<Exception>)(info.GetValue("InnerExceptions", typeof(ReadOnlyCollection<Exception>)));
         }
 
-        #endregion Standard Exception Constructors
+#endif
 
-        #region Additional Constructors
+#endregion Standard Exception Constructors
+
+#region Additional Constructors
 
         /// <summary>
         /// 
@@ -113,9 +117,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             _innerExceptions = new ReadOnlyCollection<Exception>(exceptions);
         }
 
-        #endregion Additional Constructors
+#endregion Additional Constructors
 
-        #region Serialization Support
+#region Serialization Support
 
 #if NET40
         /// <summary>
@@ -130,7 +134,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         }
 #endif
 
-        #endregion Serialization Support
+#endregion Serialization Support
 
         /// <summary>
         /// Gets a read-only collection of the <see cref="Exception"/> instances 
