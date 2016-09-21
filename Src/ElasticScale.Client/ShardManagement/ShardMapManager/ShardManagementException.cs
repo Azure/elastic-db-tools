@@ -333,6 +333,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
         #region Serialization Support
 
+#if NET40
         /// <summary>
         /// Populates a SerializationInfo with the data needed to serialize the target object.
         /// </summary>
@@ -347,6 +348,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 base.GetObjectData(info, context);
             }
         }
+#endif
 
         #endregion Serialization Support
 

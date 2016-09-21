@@ -131,6 +131,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
         #region Serialization Methods
 
+#if NET40
         /// <summary>
         /// Populates the provided <see cref="SerializationInfo"/> parameter with the data needed to serialize the target object.
         /// </summary>
@@ -141,6 +142,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             base.GetObjectData(info, context);
             info.AddValue("ShardLocation", _shardLocation);
         }
+#endif
 
         #endregion Serialization Methods
 

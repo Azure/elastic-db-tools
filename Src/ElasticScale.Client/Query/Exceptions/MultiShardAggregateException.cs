@@ -117,6 +117,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
         #region Serialization Support
 
+#if NET40
         /// <summary>
         /// Populates a SerializationInfo with the data needed to serialize the target object.
         /// </summary>
@@ -127,6 +128,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             base.GetObjectData(info, context);
             info.AddValue("InnerExceptions", _innerExceptions);
         }
+#endif
 
         #endregion Serialization Support
 
