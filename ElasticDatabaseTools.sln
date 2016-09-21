@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticScale.Client", "Src\ElasticScale.Client\ElasticScale.Client.csproj", "{663D22BB-483A-46B0-A504-861C5335DAD1}"
 EndProject
@@ -22,6 +22,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFrameworkMultiTenant", "Samples\EFMultiTenant\EntityFrameworkMultiTenant.csproj", "{9AD1DDF3-213C-47B1-B136-733C9FFF9FD1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticDapper", "Samples\Dapper\ElasticDapper.csproj", "{7B67F0A1-A5A9-477B-9B7E-FA2E16ED34DE}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ElasticScale.Client.Core", "Src\ElasticScale.Client\ElasticScale.Client.Core.xproj", "{A4AE0AF5-0567-4CF6-95B0-35058E6CA3F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -90,6 +92,12 @@ Global
 		{7B67F0A1-A5A9-477B-9B7E-FA2E16ED34DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B67F0A1-A5A9-477B-9B7E-FA2E16ED34DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B67F0A1-A5A9-477B-9B7E-FA2E16ED34DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4AE0AF5-0567-4CF6-95B0-35058E6CA3F9}.Cover|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4AE0AF5-0567-4CF6-95B0-35058E6CA3F9}.Cover|Any CPU.Build.0 = Debug|Any CPU
+		{A4AE0AF5-0567-4CF6-95B0-35058E6CA3F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4AE0AF5-0567-4CF6-95B0-35058E6CA3F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4AE0AF5-0567-4CF6-95B0-35058E6CA3F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4AE0AF5-0567-4CF6-95B0-35058E6CA3F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
