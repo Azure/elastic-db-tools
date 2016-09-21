@@ -10,7 +10,7 @@
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement {
     using System;
-    
+    using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Utils;
     
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ReadOnlyScripts", typeof(ReadOnlyScripts).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ReadOnlyScripts", typeof(ReadOnlyScripts).GetAssembly());
                     resourceMan = temp;
                 }
                 return resourceMan;

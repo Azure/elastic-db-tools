@@ -256,6 +256,7 @@
     <Compile Include="ShardManagement\Store\IUserStoreConnection.cs" />
     <Compile Include="ShardManagement\Store\StoreException.cs" />
     <Compile Include="ShardManagement\Utils\ExceptionUtils.cs" />
+    <Compile Include="ShardManagement\Utils\ReflectionUtils.cs" />
     <Compile Include="ShardManagement\Utils\GlobalConstants.cs" />
     <Compile Include="ShardManagement\Utils\ICloneable.cs" />
     <Compile Include="ShardManagement\Utils\SqlUtils.cs" />

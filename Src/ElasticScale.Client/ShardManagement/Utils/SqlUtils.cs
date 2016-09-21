@@ -10,6 +10,7 @@ using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Resources;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -491,7 +492,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             List<UpgradeSteps> upgradeSteps = new List<UpgradeSteps>();
 
-            ResourceSet rs = Scripts.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentCulture, true, true);
+            // Previously Scripts.ResourceManager.GetResourceSet was used, but that is not available in .NET Core
+            IEnumerable<PropertyInfo> props = typeof(Scripts).GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy).Where(p => p.PropertyType == typeof(string));
 
             string upgradeFileNameFilter = @"^UpgradeShardMapManagerGlobalFrom(\d*).(\d*)";
 
@@ -505,15 +507,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
             // Filter upgrade scripts based on file name and order by initial Major.Minor version
-            var upgradeScriptObjects = from r in rs.Cast<DictionaryEntry>()
-                                       let m = fileNameRegEx.Match(r.Key.ToString())
+            var upgradeScriptObjects = from r in props
+                                       let m = fileNameRegEx.Match(r.Name.ToString())
                                        where
                                            m.Success
                                        orderby new Version(Convert.ToInt32(m.Groups[1].Value), Convert.ToInt32(m.Groups[2].Value))
                                        select new
                                        {
-                                           Key = r.Key,
-                                           Value = r.Value,
+                                           Key = r.Name,
+                                           Value = r.GetValue(null),
                                            initialMajorVersion = Convert.ToInt32(m.Groups[1].Value),
                                            initialMinorVersion = Convert.ToInt32(m.Groups[2].Value)
                                        };
