@@ -42,7 +42,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             params object[] vars)
         {
             string fmtMessage = string.Format(message, vars);
-            logger.Info("Method: {0}; {1}; ActivityId: {2};", methodName, fmtMessage, Trace.CorrelationManager.ActivityId);
+            logger.Info("Method: {0}; {1}; ActivityId: {2};", methodName, fmtMessage, CorrelationManager.ActivityId);
         }
 
         internal static void TraceWarning(this ILogger logger,
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             string fmtMessage = string.Format(message, vars);
             logger.Warning("Method: {0}; {1}; ActivityId: {2};", methodName, fmtMessage,
-                Trace.CorrelationManager.ActivityId);
+                CorrelationManager.ActivityId);
         }
 
         internal static void TraceError(this ILogger logger,
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             string fmtMessage = string.Format(message, vars);
             logger.Error("Method: {0}; {1}; Exception: {2}; ActivityId: {3};", methodName, fmtMessage, ex.ToString(),
-                Trace.CorrelationManager.ActivityId);
+                CorrelationManager.ActivityId);
         }
     }
 }

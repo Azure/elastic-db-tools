@@ -42,7 +42,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             params object[] vars)
         {
             string fmtMessage = string.Format(message, vars);
-            logger.Verbose("{0}.{1}; {2}; ActivityId: {3};", componentName, methodName, fmtMessage, Trace.CorrelationManager.ActivityId);
+            logger.Verbose("{0}.{1}; {2}; ActivityId: {3};", componentName, methodName, fmtMessage, CorrelationManager.ActivityId);
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             params object[] vars)
         {
             string fmtMessage = string.Format(message, vars);
-            logger.Info("{0}.{1}; {2}; ActivityId: {3};", componentName, methodName, fmtMessage, Trace.CorrelationManager.ActivityId);
+            logger.Info("{0}.{1}; {2}; ActivityId: {3};", componentName, methodName, fmtMessage, CorrelationManager.ActivityId);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             params object[] vars)
         {
             string fmtMessage = string.Format(message, vars);
-            logger.Warning("{0}.{1}; {2}; ActivityId: {3};", componentName, methodName, fmtMessage, Trace.CorrelationManager.ActivityId);
+            logger.Warning("{0}.{1}; {2}; ActivityId: {3};", componentName, methodName, fmtMessage, CorrelationManager.ActivityId);
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             params object[] vars)
         {
             string fmtMessage = string.Format(message, vars);
-            logger.Error("{0}.{1}; {2}; ActivityId: {3};", componentName, methodName, fmtMessage, Trace.CorrelationManager.ActivityId);
+            logger.Error("{0}.{1}; {2}; ActivityId: {3};", componentName, methodName, fmtMessage, CorrelationManager.ActivityId);
         }
     }
 }
