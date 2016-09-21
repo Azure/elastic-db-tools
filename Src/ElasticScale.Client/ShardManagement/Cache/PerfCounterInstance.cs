@@ -31,6 +31,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
     /// </summary>
     internal struct PerfCounterCreationData
     {
+#if NET40
         private PerformanceCounterName counterName;
         private PerformanceCounterType counterType;
         private string counterDisplayName;
@@ -63,6 +64,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             get { return counterHelpText; }
         }
+#endif
     }
 
     /// <summary>
@@ -82,6 +84,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
         internal static readonly List<PerfCounterCreationData> counterList = new List<PerfCounterCreationData>()
         {
+#if NET40
             new PerfCounterCreationData(PerformanceCounterName.MappingsCount, PerformanceCounterType.NumberOfItems64, PerformanceCounters.MappingsCountDisplayName, PerformanceCounters.MappingsCountHelpText),
             new PerfCounterCreationData(PerformanceCounterName.MappingsAddOrUpdatePerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.MappingsAddOrUpdatePerSecDisplayName, PerformanceCounters.MappingsAddOrUpdatePerSecHelpText),
             new PerfCounterCreationData(PerformanceCounterName.MappingsRemovePerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.MappingsRemovePerSecDisplayName, PerformanceCounters.MappingsRemovePerSecHelpText),
@@ -89,6 +92,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             new PerfCounterCreationData(PerformanceCounterName.MappingsLookupFailedPerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.MappingsLookupFailedPerSecDisplayName, PerformanceCounters.MappingsLookupFailedPerSecHelpText),
 
             new PerfCounterCreationData(PerformanceCounterName.DdrOperationsPerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.DdrOperationsPerSecDisplayName, PerformanceCounters.DdrOperationsPerSecHelpText),
+#endif
         };
 
         private Dictionary<PerformanceCounterName, PerformanceCounterWrapper> _counters;
