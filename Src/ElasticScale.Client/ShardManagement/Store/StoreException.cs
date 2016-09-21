@@ -66,6 +66,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
         }
 
+#if NET40
+
         /// <summary>
         /// Initializes a new instance with serialized data.
         /// </summary>
@@ -75,5 +77,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             : base(info, context)
         {
         }
+
+#endif
     }
 }

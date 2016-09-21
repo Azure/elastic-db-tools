@@ -70,6 +70,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
         }
 
+#if NET40
+
         /// <summary>
         /// Initializes a new instance of the MultiShardPartialReadException class with serialized data.
         /// </summary>
@@ -83,6 +85,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             : base(info, context)
         {
         }
+
+#endif
 
         #endregion Standard Exception Constructors
     }

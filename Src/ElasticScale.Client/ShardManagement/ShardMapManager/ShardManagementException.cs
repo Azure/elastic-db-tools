@@ -319,6 +319,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             this.ErrorCode = code;
         }
 
+        #region Serialization Support
+
+#if NET40
+
         /// <summary>
         /// Initializes a new instance with serialized data.
         /// </summary>
@@ -331,9 +335,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             this.ErrorCode = (ShardManagementErrorCode)info.GetValue("ErrorCode", typeof(ShardManagementErrorCode));
         }
 
-        #region Serialization Support
 
-#if NET40
         /// <summary>
         /// Populates a SerializationInfo with the data needed to serialize the target object.
         /// </summary>
@@ -348,6 +350,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 base.GetObjectData(info, context);
             }
         }
+
 #endif
 
         #endregion Serialization Support
