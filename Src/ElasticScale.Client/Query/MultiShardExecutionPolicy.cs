@@ -4,6 +4,8 @@
 // Purpose:
 // Defines the possible query execution policies 
 
+#if NET40 // TODO Fix MSQ to work in .NET Core
+
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 {
     // Suppression rationale: "Multi" is the spelling we want here.
@@ -32,3 +34,5 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         PartialResults
     };
 }
+
+#endif

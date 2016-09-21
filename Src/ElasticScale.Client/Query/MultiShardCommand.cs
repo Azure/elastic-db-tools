@@ -11,6 +11,8 @@
 // connection string property "context connection = true" are not supported.
 // * Transaction semantics are not supported
 
+#if NET40 // TODO Fix MSQ to work in .NET Core
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -1776,3 +1778,5 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         #endregion Inner Helper Classes
     }
 }
+
+#endif

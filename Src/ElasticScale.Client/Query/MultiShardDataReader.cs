@@ -11,6 +11,8 @@
 //  Probably will not expose this as a standalone public class on its own.
 //  CLASS IS NOT THREAD SAFE.
 
+#if NET40 // TODO Fix MSQ to work in .NET Core
+
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -55,7 +57,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         private const String NameOfShardIdPseudoColumn = "$ShardName";
 
-        #region Private Fields
+#region Private Fields
 
         private readonly static ILogger s_tracer = TraceHelper.Tracer;
 
@@ -95,9 +97,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         private bool _closed;
         private bool _disposed;
 
-        #endregion Private Fields
+#endregion Private Fields
 
-        #region Constructors
+#region Constructors
 
         /// <summary>
         ///     Instantiates a MultiShardDataReader object that wraps DbDataReader objects.
@@ -144,9 +146,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion Constructors
+#endregion Constructors
 
-        #region Properties
+#region Properties
 
         /// <summary>
         /// Gets the <see cref="MultiShardConnection"/> associated with the MultiShardDataReader.
@@ -182,9 +184,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             private set;
         }
 
-        #endregion
+#endregion
 
-        #region Public Methods
+#region Public Methods
 
         /// <summary>
         /// Closes the MultiShardDataReader object.
@@ -192,7 +194,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <remarks>
         /// Similar to DbDataReader, close is idempotent.
         /// </remarks>
-        public override void Close()
+        public
+#if NET40 // TODO https://github.com/dotnet/corefx/issues/11949
+            override
+#endif
+            void Close()
         {
             if (this.IsClosed)
             {
@@ -1122,9 +1128,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             return base.ToString();
         }
 
-        #endregion Public Methods
+#endregion Public Methods
 
-        #region Public Properties
+#region Public Properties
 
         /// <summary>
         /// Gets a value indicating the depth of nesting for the current row.
@@ -1214,9 +1220,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion Public Properties
+#endregion Public Properties
 
-        #region Internal Methods
+#region Internal Methods
 
         /// <summary>
         /// Cancels all the active commands executing for this reader.
@@ -1239,9 +1245,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion Internal Methods
+#endregion Internal Methods
 
-        #region Protected Methods
+#region Protected Methods
 
         /// <summary>
         /// Releases the managed resources used by the DbDataReader and optionally releases the unmanaged resources.
@@ -1293,9 +1299,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion Protected Methods
+#endregion Protected Methods
 
-        #region Internal Methods
+#region Internal Methods
 
         /// <summary>
         /// Method to add another DbDataReader to the set of underlying sources we are concatenating.
@@ -1345,6 +1351,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     return;
                 }
 
+#if NET40 // https://github.com/dotnet/corefx/issues/3423
                 // Skip adding readers with a null schema table
                 if (toAdd.DbDataReader != null && toAdd.DbDataReader.GetSchemaTable() == null)
                 {
@@ -1359,6 +1366,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
                     return;
                 }
+#endif
 
                 try
                 {
@@ -1470,9 +1478,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion Internal Methods
+#endregion Internal Methods
 
-        #region Private Methods
+#region Private Methods
 
         /// <summary>
         /// Checks the schema of the passed in DbDataReader against the schema we are expecting for our 
@@ -1540,6 +1548,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </remarks>
         private static void ValidateSchemaTableStructure(ShardLocation shardLocation, DataTable toValidate, DataTable expected)
         {
+#if NET40 // https://github.com/dotnet/corefx/issues/3423
             // Let's make sure that we have the same column count and the same column names, orderings,
             // types, etc...
             //
@@ -1588,6 +1597,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                         dcExpected.ColumnName));
                 }
             }
+#endif
         }
 
         /// <summary>
@@ -2017,7 +2027,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
             DataRow theRow = _finalSchemaTable.NewRow();
 
-            #region Shard Id Pseudo Column Schema Table information
+#region Shard Id Pseudo Column Schema Table information
             theRow[SchemaTableColumn.ColumnName] = MultiShardDataReader.NameOfShardIdPseudoColumn;
             theRow[SchemaTableColumn.ColumnOrdinal] = _indexOfShardIdPseudoColumn;
             theRow[SchemaTableColumn.ColumnSize] = (Int32)4000;
@@ -2050,12 +2060,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             theRow[SchemaTableColumn.NonVersionedProviderType] = (Int32)12;
             theRow["IsColumnSet"] = (Boolean)false;
 
-            #endregion Shard Id Pseudo Column Schema Table information
+#endregion Shard Id Pseudo Column Schema Table information
 
             _finalSchemaTable.Rows.Add(theRow);
             _finalSchemaTable.AcceptChanges();
         }
 
-        #endregion Private Methods
+#endregion Private Methods
     }
 }
+
+#endif

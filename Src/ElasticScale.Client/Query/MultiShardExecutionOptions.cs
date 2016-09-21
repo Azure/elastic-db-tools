@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#if NET40 // TODO Fix MSQ to work in .NET Core
+
 using System;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
@@ -25,3 +27,5 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         IncludeShardNameColumn
     };
 }
+
+#endif
