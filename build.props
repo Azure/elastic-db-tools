@@ -20,7 +20,7 @@
     <!-- Common compile properties -->
     <ErrorReport Condition="'$(ErrorReport)' == ''">prompt</ErrorReport>
     <WarningLevel Condition="'$(WarningLevel)' == ''">4</WarningLevel>
-    <DefineConstants>$(DefineConstants);STANDALONE_BUILD</DefineConstants>
+    <DefineConstants>$(DefineConstants);STANDALONE_BUILD;NET40</DefineConstants>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <TargetFrameworkProfile />
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
