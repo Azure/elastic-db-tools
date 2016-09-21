@@ -72,6 +72,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
     /// </summary>
     internal class PerfCounterInstance : IDisposable
     {
+#if NET40
         private static object _lockObject = new object();
 
         private static ILogger Tracer
@@ -84,7 +85,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
         internal static readonly List<PerfCounterCreationData> counterList = new List<PerfCounterCreationData>()
         {
-#if NET40
             new PerfCounterCreationData(PerformanceCounterName.MappingsCount, PerformanceCounterType.NumberOfItems64, PerformanceCounters.MappingsCountDisplayName, PerformanceCounters.MappingsCountHelpText),
             new PerfCounterCreationData(PerformanceCounterName.MappingsAddOrUpdatePerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.MappingsAddOrUpdatePerSecDisplayName, PerformanceCounters.MappingsAddOrUpdatePerSecHelpText),
             new PerfCounterCreationData(PerformanceCounterName.MappingsRemovePerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.MappingsRemovePerSecDisplayName, PerformanceCounters.MappingsRemovePerSecHelpText),
@@ -92,7 +92,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             new PerfCounterCreationData(PerformanceCounterName.MappingsLookupFailedPerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.MappingsLookupFailedPerSecDisplayName, PerformanceCounters.MappingsLookupFailedPerSecHelpText),
 
             new PerfCounterCreationData(PerformanceCounterName.DdrOperationsPerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.DdrOperationsPerSecDisplayName, PerformanceCounters.DdrOperationsPerSecHelpText),
-#endif
         };
 
         private Dictionary<PerformanceCounterName, PerformanceCounterWrapper> _counters;
@@ -100,6 +99,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         private bool _initialized;
 
         private string _instanceName;
+#endif
 
         /// <summary>
         /// Initialize perf counter instance based on shard map name
@@ -107,9 +107,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="shardMapName"></param>
         public PerfCounterInstance(string shardMapName)
         {
+#if NET40
             _initialized = false;
 
-#if NET40
             _instanceName = string.Concat(Process.GetCurrentProcess().Id.ToString(), "-", shardMapName);
 
             try
@@ -194,6 +194,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="counterName">Counter to increment.</param>
         internal void IncrementCounter(PerformanceCounterName counterName)
         {
+#if NET40
             if (_initialized)
             {
                 PerformanceCounterWrapper pc;
@@ -202,6 +203,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     pc.Increment();
                 }
             }
+#endif
         }
 
         /// <summary>
@@ -211,6 +213,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="value">New value.</param>
         internal void SetCounter(PerformanceCounterName counterName, long value)
         {
+#if NET40
             if (_initialized)
             {
                 PerformanceCounterWrapper pc;
@@ -219,6 +222,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     pc.SetRawValue(value);
                 }
             }
+#endif
         }
 
         /// <summary>
@@ -271,9 +275,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             WindowsPrincipal wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
             return wp.IsInRole(WindowsBuiltInRole.Administrator);
         }
-#endif
 
-#if NET40
         /// <summary>
         /// Check if caller has permissions to create performance counter instance
         /// </summary>
