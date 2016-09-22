@@ -93,11 +93,11 @@
   <ItemGroup>
     <ProjectReference Include="..\ElasticScale.ClientTestCommon\ElasticScale.ClientTestCommon.csproj">
       <Project>{13200c7c-8606-47b8-a004-570b56e3a9a8}</Project>
-      <Name>ClientTestCommon</Name>
+      <Name>ElasticScale.ClientTestCommon</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Src\ElasticScale.Client\ElasticScale.Client.csproj">
       <Project>{663d22bb-483a-46b0-a504-861c5335dad1}</Project>
-      <Name>Microsoft.Azure.SqlDatabase.ElasticScale.Client</Name>
+      <Name>ElasticScale.Client</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -49,6 +49,8 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("SplitMergeWorker" + AssemblyRef.TestPublicKey)]
 [assembly: InternalsVisibleTo("ShardSplitMergeTests" + AssemblyRef.TestPublicKey)]
 
+[assembly: InternalsVisibleTo("ElasticScale.ShardManagement.UnitTests.Core")]
+
 [assembly: CLSCompliant(true)]
 
 // Associated VSTS #2466045
