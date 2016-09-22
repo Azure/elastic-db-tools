@@ -79,12 +79,6 @@
       <Name>ElasticScale.ClientTestCommon</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Src\ElasticScale.Client\ElasticScale.Client.csproj">
-      <Project>{663D22BB-483A-46B0-A504-861C5335DAD1}</Project>
-      <Name>ElasticScale.Client</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

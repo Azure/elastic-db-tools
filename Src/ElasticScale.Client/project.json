@@ -1,29 +1,109 @@
 {
-  "version": "1.0.0-*",
+  // NOTE: there does not appear to be a way to specify the output path for build configurations
+
+  "version": "1.3.2",
+  "authors": [ "Microsoft" ],
+  "title": "Microsoft Azure SQL Database: Elastic Database Client Library",
+  "description": "This client library allows ADO.NET developers to create applications that implement and use the pattern known as database sharding in Azure SQL Database. Sharding is a scale-out strategy that spreads data across a number of independent databases. The library includes APIs for creating and managing shard maps, routing SQL operations to the appropriate shard, and performing queries that cross many shards. To learn more about elastic database tools, check out http://azure.microsoft.com/en-us/documentation/articles/sql-database-elastic-scale-documentation-map/.",
+  "copyright": "Copyright © Microsoft Corporation. All rights reserved.",
+  "language": "en-US",
+
   "dependencies": {
-    "NETStandard.Library": "1.6.0",
-    "System.ComponentModel.Primitives": "4.1.0",
-    "System.Data.SqlClient": "4.1.0",
-    "System.Diagnostics.Contracts": "4.0.1",
-    "System.Diagnostics.TraceSource": "4.0.0",
-    "System.Reflection.TypeExtensions": "4.1.0",
-    "System.Resources.Reader": "4.0.0",
-    "System.Resources.ResourceManager": "4.0.1",
-    "System.Runtime.Serialization.Formatters": "4.0.0-rc3-24212-01",
-    "System.Runtime.Serialization.Xml": "4.1.1",
-    "System.Security.Principal": "4.0.1"
+    // define dependencies under the "frameworks" section
   },
+  
   "frameworks": {
     "netstandard1.6": {
+      "dependencies": {
+        "NETStandard.Library": {
+          "type": "platform",
+          "version": "1.6.0"
+        },
+        "System.Diagnostics.TraceSource": "4.0.0",
+        "System.Reflection.TypeExtensions": "4.1.0",
+        "System.Runtime.Serialization.Formatters": "4.0.0-rc3-24212-01",
+        "System.ComponentModel.Primitives": "4.1.0",
+        "System.Data.SqlClient": "4.1.0",
+        "System.Diagnostics.Contracts": "4.0.1",
+        "System.Resources.Reader": "4.0.0",
+        "System.Resources.ResourceManager": "4.0.1",
+        "System.Runtime.Serialization.Xml": "4.1.1",
+        "System.Security.Principal": "4.0.1",
+        "System.Xml.ReaderWriter": "4.0.11"
+      },
       "imports": [
         "dnxcore50",
         "dotnet5.6",
         "portable-net45+win8"
-      ]
+      ],
+      "buildOptions": {
+        "define": [
+          "NETSTANDARD16"
+        ]
+      }
+    },
+    "net451": {
+      "dependencies": {
+
+      },
+      "buildOptions": {
+        "define": [
+          "NET40"
+        ]
+      },
+      "frameworkAssemblies": {
+        "System.Data": "4.0.0.0",
+        "System.Data.DataSetExtensions": "4.0.0.0",
+        "System.Runtime.Serialization": "4.0.0.0",
+        "System.Xml": "4.0.0.0",
+        "System.Xml.Linq": "4.0.0.0",
+        "System.Xml.ReaderWriter": "4.0.0.0"
+      }
     }
   },
+
+  "runtimes": {
+    "win": {},
+    "unix": {}
+  },
+
+  "configurations": {
+    "Debug": {
+      "buildOptions": {
+        "define": [
+          "DEBUG",
+          "TRACE"
+        ]
+      }
+    },
+    "Release": {
+      "buildOptions": {
+        "define": []
+      }
+    }
+  },
+
   "buildOptions": {
-    "define": [ "STANDALONE_BUILD" ]
+    "define": [ "STANDALONE_BUILD" ],
+    "outputName": "Microsoft.Azure.SqlDatabase.ElasticScale.Client",
+  },
+
+  "packOptions": {
+    "owners": [
+      "azure-sdk",
+      "Microsoft"
+    ],
+    "requireLicenseAcceptance": true,
+    "licenseUrl": "http://go.microsoft.com/?linkid=9862941",
+    "iconUrl": "http://go.microsoft.com/fwlink/?LinkID=288890",
+    "summary": ".NET Client library for sharding in Azure SQL Database – part of Elastic Database Tools",
+    "releaseNotes": "This refresh fixes a bug related to SqlConnectionStringBuilder exception in library. No API changes have been introduced.\r\n\r\nIn 1.3.2:\r\n- Bugfix to handle SqlConnectionStringBuilder properties correctly when running with 4.5.2 or earlier version of .NET.\r\n\r\nIn 1.3.1:\r\n- Bugfix to handle exceptions in performance counter creation code.\r\n\r\nIn 1.3.0:\r\n- Introduction of performance counters for caching and Data Dependent Routing (DDR) scenarios in Elastic Database Client Library.\r\n- New API addition for creation of performance category and counters: ShardMapManagerFactory.CreatePerformanceCategoryAndCounters();. Please check documentation map for more information on performance counters at https://azure.microsoft.com/en-us/documentation/learning-paths/sql-database-elastic-scale/. \r\n- Active Directory authentication support.\r\n- Bug fix to explicitly release the lock at connection close. This will allow addition of multiple mappings at the same time faster.\r\n- ReadAsync support for MultiShardDataReader\r\n\r\nIn 1.2.0:\r\n- Fixed a bug in SchemaInfo serialization\r\n\r\nIn 1.1.0:\r\n- Responsiveness of cancellation in Multi-Shard Query has been improved.\r\n- This assembly can now loaded from a byte stream instead of from a file. This can be a useful way to load the assembly in SQL CLR, using syntax CREATE ASSEMBLY {assembly name} FROM {bytes}.",
+    "tags": [ "Microsoft", "Elastic", "Scale", "Azure", "SQL", "DB", "Database", "Shard", "Sharding", "Management", "Query", "azureofficial" ],
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Azure/elastic-db-tools"
+    },
+    "projectUrl": "http://go.microsoft.com/?linkid=9862897"
   },
 
   "scripts": {

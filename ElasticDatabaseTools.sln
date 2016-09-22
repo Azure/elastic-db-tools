@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticScale.Client", "Src\ElasticScale.Client\ElasticScale.Client.csproj", "{663D22BB-483A-46B0-A504-861C5335DAD1}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticScale.ClientTestCommon", "Test\ElasticScale.ClientTestCommon\ElasticScale.ClientTestCommon.csproj", "{13200C7C-8606-47B8-A004-570B56E3A9A8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticScale.Query.UnitTests", "Test\ElasticScale.Query.UnitTests\ElasticScale.Query.UnitTests.csproj", "{56DDEC7E-0B14-4636-B287-DB38DEC55192}"
@@ -23,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFrameworkMultiTenant"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticDapper", "Samples\Dapper\ElasticDapper.csproj", "{7B67F0A1-A5A9-477B-9B7E-FA2E16ED34DE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ElasticScale.Client.Core", "Src\ElasticScale.Client\ElasticScale.Client.Core.xproj", "{A4AE0AF5-0567-4CF6-95B0-35058E6CA3F9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Azure.SqlDatabase.ElasticScale.Client", "Src\ElasticScale.Client\Microsoft.Azure.SqlDatabase.ElasticScale.Client.xproj", "{A4AE0AF5-0567-4CF6-95B0-35058E6CA3F9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3677686B-611B-42DF-B00C-68E22E5C1784}"
 	ProjectSection(SolutionItems) = preProject
@@ -39,12 +37,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{663D22BB-483A-46B0-A504-861C5335DAD1}.Cover|Any CPU.ActiveCfg = Release|Any CPU
-		{663D22BB-483A-46B0-A504-861C5335DAD1}.Cover|Any CPU.Build.0 = Release|Any CPU
-		{663D22BB-483A-46B0-A504-861C5335DAD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{663D22BB-483A-46B0-A504-861C5335DAD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{663D22BB-483A-46B0-A504-861C5335DAD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{663D22BB-483A-46B0-A504-861C5335DAD1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{13200C7C-8606-47B8-A004-570B56E3A9A8}.Cover|Any CPU.ActiveCfg = Release|Any CPU
 		{13200C7C-8606-47B8-A004-570B56E3A9A8}.Cover|Any CPU.Build.0 = Release|Any CPU
 		{13200C7C-8606-47B8-A004-570B56E3A9A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
