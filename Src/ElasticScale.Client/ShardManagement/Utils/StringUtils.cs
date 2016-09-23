@@ -119,7 +119,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             }
         }
 
-#if NET40
+#if NET451
         public static string ToUpperInvariant(this string s)
         {
             return s.ToUpper(CultureInfo.InvariantCulture);

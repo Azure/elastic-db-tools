@@ -31,7 +31,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
     /// </summary>
     internal struct PerfCounterCreationData
     {
-#if NET40
+#if NET451
         private PerformanceCounterName counterName;
         private PerformanceCounterType counterType;
         private string counterDisplayName;
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
     /// </summary>
     internal class PerfCounterInstance : IDisposable
     {
-#if NET40
+#if NET451
         private static object _lockObject = new object();
 
         private static ILogger Tracer
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="shardMapName"></param>
         public PerfCounterInstance(string shardMapName)
         {
-#if NET40
+#if NET451
             _initialized = false;
 
             _instanceName = string.Concat(Process.GetCurrentProcess().Id.ToString(), "-", shardMapName);
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="counterName">Counter to increment.</param>
         internal void IncrementCounter(PerformanceCounterName counterName)
         {
-#if NET40
+#if NET451
             if (_initialized)
             {
                 PerformanceCounterWrapper pc;
@@ -213,7 +213,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="value">New value.</param>
         internal void SetCounter(PerformanceCounterName counterName, long value)
         {
-#if NET40
+#if NET451
             if (_initialized)
             {
                 PerformanceCounterWrapper pc;
@@ -230,7 +230,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         internal static void CreatePerformanceCategoryAndCounters()
         {
-#if NET40
+#if NET451
             // Creation of performance counters need Administrator privilege
             if (HasCreatePerformanceCategoryPermissions())
             {
@@ -263,7 +263,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 #endif
         }
 
-#if NET40
+#if NET451
         /// <summary>
         /// Check if caller has permissions to create performance counter catagory.
         /// </summary>
@@ -293,7 +293,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         public void Dispose()
         {
-#if NET40
+#if NET451
             if (_initialized)
             {
                 lock (_lockObject)

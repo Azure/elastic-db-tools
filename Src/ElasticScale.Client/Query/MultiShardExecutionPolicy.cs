@@ -4,7 +4,7 @@
 // Purpose:
 // Defines the possible query execution policies 
 
-#if NET40 // TODO Fix MSQ to work in .NET Core
+#if NET451 // TODO Fix MSQ to work in .NET Core
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 {

@@ -66,7 +66,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
         }
 
-#if NET40
+#if NET451
 
         /// <summary>
         /// Initializes a new instance with serialized data.

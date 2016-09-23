@@ -23,7 +23,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             }
         }
 
-#if NET40
+#if NET451
         private PerformanceCounter _counter;
 #endif
 
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             this._instanceName = instanceName;
             this._counterName = counterName;
 
-#if NET40
+#if NET451
             // Check if counter exists in the specified category and then create its instance
             if (PerformanceCounterCategory.CounterExists(_counterName, _categoryName))
             {
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         public void Close()
         {
-#if NET40
+#if NET451
             if (_isValid)
             {
                 _counter.Close();
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public void Increment()
         {
-#if NET40
+#if NET451
             if (_isValid)
             {
                 try
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public void SetRawValue(long value)
         {
-#if NET40
+#if NET451
             if (_isValid)
             {
                 try
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         public void Dispose()
         {
-#if NET40
+#if NET451
             _counter.Dispose();
 #endif
         }

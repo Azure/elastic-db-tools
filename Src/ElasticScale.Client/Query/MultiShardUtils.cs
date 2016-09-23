@@ -4,7 +4,7 @@
 // Purpose:
 // Various utilities used by other classes in this project
 
-#if NET40 // TODO Fix MSQ to work in .NET Core
+#if NET451 // TODO Fix MSQ to work in .NET Core
 
 using System;
 using System.Data;

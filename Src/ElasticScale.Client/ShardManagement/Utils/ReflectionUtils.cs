@@ -10,7 +10,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Utils
     {
         public static Assembly GetAssembly(this Type type)
         {
-#if NET40
+#if NET451
             return type.Assembly;
 #else
             return type.GetTypeInfo().Assembly;

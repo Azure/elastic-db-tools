@@ -112,7 +112,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
         }
 
-#if NET40
+#if NET451
 
         /// <summary>
         /// Initializes a new instance of the MultiShardException class with serialized data.
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
         #region Serialization Methods
 
-#if NET40
+#if NET451
         /// <summary>
         /// Populates the provided <see cref="SerializationInfo"/> parameter with the data needed to serialize the target object.
         /// </summary>

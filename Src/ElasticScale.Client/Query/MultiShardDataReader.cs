@@ -11,7 +11,7 @@
 //  Probably will not expose this as a standalone public class on its own.
 //  CLASS IS NOT THREAD SAFE.
 
-#if NET40 // TODO Fix MSQ to work in .NET Core
+#if NET451 // TODO Fix MSQ to work in .NET Core
 
 using System;
 using System.Collections;
@@ -24,7 +24,7 @@ using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
-#if NET40
+#if NET451
 using System.Runtime.Remoting;
 #endif
 using System.Threading;
@@ -195,7 +195,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// Similar to DbDataReader, close is idempotent.
         /// </remarks>
         public
-#if NET40 // TODO https://github.com/dotnet/corefx/issues/11949
+#if NET451 // TODO https://github.com/dotnet/corefx/issues/11949
             override
 #endif
             void Close()
@@ -248,7 +248,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-#if NET40
+#if NET451
         /// <summary>
         /// This method is currently not supported. Invoking the method will result in an exception.
         /// </summary>
@@ -651,7 +651,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             return HandleGetValuesCall(values, GetCurrentDataReader().GetProviderSpecificValues, GetProviderSpecificValue);
         }
 
-#if NET40
+#if NET451
         /// <summary>
         /// Returns a <see cref="DataTable"/> that describes the column metadata of the MultiShardDataReader.
         /// </summary>
@@ -923,7 +923,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             return GetColumn<XmlReader>(GetCurrentDataReaderAsSqlDataReader().GetXmlReader, ordinal);
         }
 
-#if NET40
+#if NET451
         /// <summary>
         /// This method is currently not supported. Invoking the method will result in an exception.
         /// </summary>
@@ -1351,7 +1351,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     return;
                 }
 
-#if NET40 // https://github.com/dotnet/corefx/issues/3423
+#if NET451 // https://github.com/dotnet/corefx/issues/3423
                 // Skip adding readers with a null schema table
                 if (toAdd.DbDataReader != null && toAdd.DbDataReader.GetSchemaTable() == null)
                 {
@@ -1548,7 +1548,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </remarks>
         private static void ValidateSchemaTableStructure(ShardLocation shardLocation, DataTable toValidate, DataTable expected)
         {
-#if NET40 // https://github.com/dotnet/corefx/issues/3423
+#if NET451 // https://github.com/dotnet/corefx/issues/3423
             // Let's make sure that we have the same column count and the same column names, orderings,
             // types, etc...
             //

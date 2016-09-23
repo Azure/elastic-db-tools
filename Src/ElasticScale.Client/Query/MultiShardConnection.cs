@@ -8,7 +8,7 @@
 // Notes:
 // * This class is NOT thread-safe.
 
-#if NET40 // TODO Fix MSQ to work in .NET Core
+#if NET451 // TODO Fix MSQ to work in .NET Core
 
 using System;
 using System.Collections.Generic;

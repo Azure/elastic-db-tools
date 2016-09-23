@@ -62,7 +62,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
         }
 
-#if NET40
+#if NET451
 
         /// <summary>
         /// Initializes a new instance of the MultiShardSchemaMismatchException class with serialized data.
