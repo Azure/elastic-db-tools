@@ -11,12 +11,11 @@
 //  Probably will not expose this as a standalone public class on its own.
 //  CLASS IS NOT THREAD SAFE.
 
-#if NET451 // TODO Fix MSQ to work in .NET Core
-
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -24,6 +23,7 @@ using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
+using System.Linq;
 #if NET451
 using System.Runtime.Remoting;
 #endif
@@ -90,8 +90,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         private readonly ConcurrentBag<MultiShardException> _multiShardExceptions;
 
         private int _indexOfShardIdPseudoColumn;
-        private DataTable _schemaComparisonTemplate;
-        private DataTable _finalSchemaTable;
+        private IReadOnlyCollection<DbColumn> _schemaComparisonTemplate;
+        private IReadOnlyCollection<DbColumn> _finalSchemaTable;
+#if NET451
+        private DataTable _finalSchemaTable_DataTable;
+#endif
         private bool _foundNullSchemaReader;
 
         private bool _closed;
@@ -392,7 +395,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
             if (this.IsPseudoColumnReference(ordinal))
             {
-                return _finalSchemaTable.Rows[ordinal]["DataTypeName"] as string;
+                return _finalSchemaTable.ElementAt(ordinal).DataTypeName;
             }
             else
             {
@@ -658,9 +661,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <returns>A <see cref="DataTable"/> that describes the column metadata.</returns>
         public override DataTable GetSchemaTable()
         {
-            return GetPropertyOrVariableWithStateCheck<DataTable>(_finalSchemaTable);
+            return GetPropertyOrVariableWithStateCheck<DataTable>(_finalSchemaTable_DataTable);
         }
 #endif
+
+        /// <summary>
+        /// Returns a <see cref="IReadOnlyCollection<DbColumn>"/> that describes the column metadata of the MultiShardDataReader.
+        /// </summary>
+        /// <param name="NotExtensionMethod">set a value to indicate this method and not the extension method, value is ignored internally.</param>
+        /// <returns>A <see cref="IReadOnlyCollection<DbColumn>"/> that describes the column metadata.</returns>
+        public IReadOnlyCollection<DbColumn> GetColumnSchema(bool NotExtensionMethod)
+        {
+            return GetPropertyOrVariableWithStateCheck<IReadOnlyCollection<DbColumn>>(_finalSchemaTable);
+        }
 
         /// <summary>
         /// Gets the value of the specified column as a SqlBinary.
@@ -1284,13 +1297,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
                 if (_schemaComparisonTemplate != null)
                 {
-                    _schemaComparisonTemplate.Dispose();
                     _schemaComparisonTemplate = null;
                 }
 
                 if (_finalSchemaTable != null)
                 {
-                    _finalSchemaTable.Dispose();
                     _finalSchemaTable = null;
                 }
 
@@ -1351,9 +1362,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     return;
                 }
 
-#if NET451 // https://github.com/dotnet/corefx/issues/3423
                 // Skip adding readers with a null schema table
-                if (toAdd.DbDataReader != null && toAdd.DbDataReader.GetSchemaTable() == null)
+                if (toAdd.DbDataReader != null && !toAdd.DbDataReader.CanGetColumnSchema())
                 {
                     // We tried adding a reader that we expected, but it was invalid. Let's expect one fewer inputReader as a result.
                     this.DecrementExpectedReaders();
@@ -1361,12 +1371,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     // Validate schema for each reader, logging an exception if the schema is null.
                     //
                     ValidateNullSchematable(toAdd.ShardLocation);
-
+#if NET451
                     toAdd.DbDataReader.Close();
-
+#endif
                     return;
                 }
-#endif
 
                 try
                 {
@@ -1389,9 +1398,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     {
                         // Perform cancellation in order to avoid flushing of large resultsets.
                         toAdd.Command.Cancel();
-
+#if NET451
                         toAdd.DbDataReader.Close();
-
+#endif
                         _multiShardExceptions.Add(smex);
                     }
                     else
@@ -1493,15 +1502,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             DbDataReader reader = labeledReader.DbDataReader;
             ShardLocation shard = labeledReader.ShardLocation;
 
-            DataTable currentDataTable = reader.GetSchemaTable();
-            if (null == currentDataTable)
+            if(!reader.CanGetColumnSchema())
             {
                 throw new MultiShardDataReaderInternalException("Unexpected null SchemaTable encountered in ValidateReaderSchema.");
             }
+            IReadOnlyCollection<DbColumn> currentDataTable = reader.GetColumnSchema();
+
 
             // Check if we encountered a reader with a null schema earlier
             //
-            if (_foundNullSchemaReader)
+            if(_foundNullSchemaReader)
             {
                 throw new MultiShardDataReaderInternalException("Unexpected reader with null schema encountered among non-null readers");
             }
@@ -1509,13 +1519,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             // The SchemaTable holds 1 *row* for each *column* of the actual output returned.  So in order to compare 
             // column metadata for the inputDataReaders we need to compare row information contained in the schemaTable.
             //
-            DataRowCollection currentRows = currentDataTable.Rows;
-            if (null == currentRows)
+            if(currentDataTable.Count == 0)
             {
                 throw new MultiShardDataReaderInternalException("Unexpected null DataRowCollection encountered in ValidateReaderSchema.");
             }
 
-            if (null == _schemaComparisonTemplate)
+            if(null == _schemaComparisonTemplate) 
             {
                 // This is our first call to validate, so grab the table template off of this guy and use it as the 
                 // expected schema for our results.  No need to validate since we are using this one as ground truth.
@@ -1524,80 +1533,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 return;
             }
 
-            // First let's make sure that the formats of the schema tables are the same.
-            //
-            ValidateSchemaTableStructure(shard, currentDataTable, _schemaComparisonTemplate);
-
             // Now Validate that the same columns exist with the same name and type in the same ordinal position
             // on the retruned result sets themsleves.
             //
             ValidateSchemaTableContents(shard, currentDataTable, _schemaComparisonTemplate);
-        }
-
-        /// <summary>
-        /// Helper that compares the columns present in two different DataTables to ensure that they match.
-        /// </summary>
-        /// <param name="shardLocation">The shard being validated</param>
-        /// <param name="toValidate">The DataTable to validate.</param>
-        /// <param name="expected">The DataTable we expect to see.</param>
-        /// <remarks>
-        /// We should expect to see few (if any) errors actually encountered in here since these are
-        /// Schema Table structure comparisons (i.e., comparisons in how the Schema information is reported out)
-        /// and not comparisons on the schema of the returned result sets themselves (which is contained in
-        /// the rows of these tables).
-        /// </remarks>
-        private static void ValidateSchemaTableStructure(ShardLocation shardLocation, DataTable toValidate, DataTable expected)
-        {
-#if NET451 // https://github.com/dotnet/corefx/issues/3423
-            // Let's make sure that we have the same column count and the same column names, orderings,
-            // types, etc...
-            //
-
-            // Here we check the column count.
-            //
-            if (toValidate.Columns.Count != expected.Columns.Count)
-            {
-                throw new MultiShardSchemaMismatchException(shardLocation, String.Format(
-                    "Expected {0} columns on the schema table, but encountered {1} columns.",
-                    expected.Columns.Count, toValidate.Columns.Count));
-            }
-
-            // Now we'll go column by column and check the information that we care about.
-            //
-            for (int i = 0; i < expected.Columns.Count; i++)
-            {
-                DataColumn dcExpected = expected.Columns[i];
-                DataColumn dcToValidate = toValidate.Columns[i];
-
-                if (!(dcExpected.ColumnName.Equals(dcToValidate.ColumnName)))
-                {
-                    throw new MultiShardSchemaMismatchException(shardLocation, String.Format
-                        ("Expected schema column name {0}, but encounterd schema column name {1}.",
-                        dcExpected.ColumnName, dcToValidate.ColumnName));
-                }
-
-                if (!(dcExpected.AllowDBNull == dcToValidate.AllowDBNull))
-                {
-                    throw new MultiShardSchemaMismatchException(shardLocation, String.Format(
-                        "Mismatched AllowDBNull values for schema column {0}.",
-                        dcExpected.ColumnName));
-                }
-
-                if (!(dcExpected.DataType.Equals(dcToValidate.DataType)))
-                {
-                    throw new MultiShardSchemaMismatchException(shardLocation, String.Format(
-                        "Mismatched DataType values for schema column {0}.",
-                        dcExpected.ColumnName));
-                }
-
-                if (!(dcExpected.MaxLength.Equals(dcToValidate.MaxLength)))
-                {
-                    throw new MultiShardSchemaMismatchException(shardLocation, String.Format(
-                        "Mismatched MaxLength values for schema column {0}.",
-                        dcExpected.ColumnName));
-                }
-            }
-#endif
         }
 
         /// <summary>
@@ -1616,28 +1555,21 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// If there is a mismatch on any column information in for any column of the table (i.e., if any pair
         /// of corresponding rows don't match exactly.)
         /// </exception>
-        private static void ValidateSchemaTableContents(ShardLocation shardLocation, DataTable toValidate, DataTable expected)
+        private static void ValidateSchemaTableContents(ShardLocation shardLocation, IReadOnlyCollection<DbColumn> toValidate, IReadOnlyCollection<DbColumn> expected)
         {
-            DataColumnCollection dcc = expected.Columns;
-            DataRowCollection rowsToValidate = toValidate.Rows;
-            DataRowCollection rowsExpected = expected.Rows;
-
-            // Eventually we may wish to be a bit more relaxed about the comparisons (e.g., if we expect bigint and we
-            // see int that may be ok) but for now let's just be super-strict and make the behavior different and/or 
-            // configurable later.
-            //
-            for (int curRowIndex = 0; curRowIndex < rowsExpected.Count; curRowIndex++)
+            for(int curIndex = 0; curIndex < expected.Count; curIndex++)
             {
-                DataRow rowToValidate = rowsToValidate[curRowIndex];
-                DataRow rowTemplate = rowsExpected[curRowIndex];
-                foreach (DataColumn col in dcc)
+                DbColumn colToValidate = toValidate.ElementAt(curIndex);
+                DbColumn colTemplate = expected.ElementAt(curIndex);
+
+                foreach(var col in pseudoDbColumn.GetPropertyNames())
                 {
-                    if (!(rowToValidate[col.ColumnName].Equals(rowTemplate[col.ColumnName])))
+                    if(!(colToValidate[col].Equals(colTemplate[col])))
                     {
                         throw new MultiShardSchemaMismatchException(shardLocation, String.Format(
                             "Expected a value of {0} for {1}, but encountered a value of {2} instead for column {3}.",
-                            rowTemplate[col.ColumnName], col.ColumnName, rowToValidate[col.ColumnName],
-                            rowTemplate["ColumnName"]));
+                            colTemplate[col], col, colToValidate[col],
+                            colTemplate["ColumnName"]));
                     }
                 }
             }
@@ -1688,7 +1620,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 // Avoid the race condition resulting in dead-locks in SqlClient that might occur between Cancellation and Close.
                 lock (_cancelLock)
                 {
+#if NET451
                     toClose.DbDataReader.Close();
+#endif
 
                     // Close the connection associated with this reader as well
                     toClose.Connection.Close();
@@ -1796,8 +1730,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </param>
         private void InitSchemaTemplate(DbDataReader templateReader)
         {
-            _schemaComparisonTemplate = templateReader.GetSchemaTable().Copy();
-            _finalSchemaTable = templateReader.GetSchemaTable().Copy();
+            _schemaComparisonTemplate = templateReader.CanGetColumnSchema() ? templateReader.GetColumnSchema() : null;
+            _finalSchemaTable = templateReader.CanGetColumnSchema() ? templateReader.GetColumnSchema() : null;
+#if NET451
+            _finalSchemaTable_DataTable = templateReader.GetSchemaTable().Copy();
+#endif
 
             if (_hasShardIdPseudoColumn)
             {
@@ -2023,51 +1960,197 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         private void AddShardIdPseudoColumnRecordToSchemaTable()
         {
-            _indexOfShardIdPseudoColumn = _finalSchemaTable.Rows.Count;
 
-            DataRow theRow = _finalSchemaTable.NewRow();
+            _indexOfShardIdPseudoColumn = _finalSchemaTable.Count;
+
+            pseudoDbColumn theRow = new pseudoDbColumn();
 
 #region Shard Id Pseudo Column Schema Table information
-            theRow[SchemaTableColumn.ColumnName] = MultiShardDataReader.NameOfShardIdPseudoColumn;
-            theRow[SchemaTableColumn.ColumnOrdinal] = _indexOfShardIdPseudoColumn;
-            theRow[SchemaTableColumn.ColumnSize] = (Int32)4000;
-            theRow[SchemaTableColumn.NumericPrecision] = (Int16)255;
-            theRow[SchemaTableColumn.NumericScale] = (Int16)255;
-            theRow[SchemaTableColumn.IsUnique] = (Boolean)false;
-            theRow[SchemaTableColumn.IsKey] = DBNull.Value; //Boolean 
-            theRow[SchemaTableOptionalColumn.BaseServerName] = null; //string 
-            theRow[SchemaTableOptionalColumn.BaseCatalogName] = null; //string 
-            theRow[SchemaTableColumn.BaseColumnName] = MultiShardDataReader.NameOfShardIdPseudoColumn;
-            theRow[SchemaTableColumn.BaseSchemaName] = null; //string 
-            theRow[SchemaTableColumn.BaseTableName] = null; //string 
-            theRow[SchemaTableColumn.DataType] = typeof(string); //System.Type
-            theRow[SchemaTableColumn.AllowDBNull] = (Boolean)true;
-            theRow[SchemaTableColumn.ProviderType] = (Int32)12;
-            theRow[SchemaTableColumn.IsAliased] = DBNull.Value; //Boolean 
-            theRow[SchemaTableColumn.IsExpression] = DBNull.Value; //Boolean 
-            theRow["IsIdentity"] = (Boolean)false;
-            theRow[SchemaTableOptionalColumn.IsAutoIncrement] = (Boolean)false;
-            theRow[SchemaTableOptionalColumn.IsRowVersion] = (Boolean)false;
-            theRow[SchemaTableOptionalColumn.IsHidden] = DBNull.Value; //Boolean 
-            theRow[SchemaTableColumn.IsLong] = (Boolean)false;
-            theRow[SchemaTableOptionalColumn.IsReadOnly] = (Boolean)false;
-            theRow[SchemaTableOptionalColumn.ProviderSpecificDataType] = typeof(SqlString); //System.Type
-            theRow["DataTypeName"] = "nvarchar"; //string
-            theRow["XmlSchemaCollectionDatabase"] = null; //string 
-            theRow["XmlSchemaCollectionOwningSchema"] = null; //string 
-            theRow["XmlSchemaCollectionName"] = null; //string 
-            theRow["UdtAssemblyQualifiedName"] = null; //string 
-            theRow[SchemaTableColumn.NonVersionedProviderType] = (Int32)12;
-            theRow["IsColumnSet"] = (Boolean)false;
+            theRow.setProperty("ColumnName", MultiShardDataReader.NameOfShardIdPseudoColumn);
+            theRow.setProperty("ColumnOrdinal", _indexOfShardIdPseudoColumn as int?);
+            theRow.setProperty("ColumnSize", (Int32)4000);
+            theRow.setProperty("NumericPrecision", (Int16)255);
+            theRow.setProperty("NumericScale", (Int16)255);
+            theRow.setProperty("IsUnique", (Boolean)false);
+            theRow.setProperty("IsKey", DBNull.Value); //Boolean 
+            theRow.setProperty("BaseServerName", (string)null); //string 
+            theRow.setProperty("BaseCatalogName", (string)null); //string 
+            theRow.setProperty("BaseColumnName", MultiShardDataReader.NameOfShardIdPseudoColumn);
+            theRow.setProperty("BaseSchemaName", (string)null); //string 
+            theRow.setProperty("BaseTableName", (string)null); //string 
+            theRow.setProperty("DataType", typeof(string)); //System.Type
+            theRow.setProperty("AllowDBNull", (Boolean)true);
+            theRow.setProperty("IsAliased", DBNull.Value); //Boolean 
+            theRow.setProperty("IsExpression", DBNull.Value); //Boolean 
+            theRow.setProperty("IsIdentity", (Boolean)false);
+            theRow.setProperty("IsAutoIncrement", (Boolean)false);
+            theRow.setProperty("IsHidden", DBNull.Value); //Boolean 
+            theRow.setProperty("IsLong", (Boolean)false);
+            theRow.setProperty("IsReadOnly", (Boolean)false);
+            theRow.setProperty("DataTypeName", "nvarchar"); //string
+            theRow.setProperty("UdtAssemblyQualifiedName", (string)null); //string 
 
 #endregion Shard Id Pseudo Column Schema Table information
 
-            _finalSchemaTable.Rows.Add(theRow);
-            _finalSchemaTable.AcceptChanges();
+            _finalSchemaTable = new ReadOnlyCollection<DbColumn>(_finalSchemaTable.Concat(new List<DbColumn>() { theRow }).ToList());
+
+#if NET451
+            DataRow theDataRow = _finalSchemaTable_DataTable.NewRow();
+
+#region Shard Id Pseudo Column Schema Table information
+            theDataRow[SchemaTableColumn.ColumnName] = MultiShardDataReader.NameOfShardIdPseudoColumn;
+            theDataRow[SchemaTableColumn.ColumnOrdinal] = _indexOfShardIdPseudoColumn;
+            theDataRow[SchemaTableColumn.ColumnSize] = (Int32)4000;
+            theDataRow[SchemaTableColumn.NumericPrecision] = (Int16)255;
+            theDataRow[SchemaTableColumn.NumericScale] = (Int16)255;
+            theDataRow[SchemaTableColumn.IsUnique] = (Boolean)false;
+            theDataRow[SchemaTableColumn.IsKey] = DBNull.Value; //Boolean 
+            theDataRow[SchemaTableOptionalColumn.BaseServerName] = null; //string 
+            theDataRow[SchemaTableOptionalColumn.BaseCatalogName] = null; //string 
+            theDataRow[SchemaTableColumn.BaseColumnName] = MultiShardDataReader.NameOfShardIdPseudoColumn;
+            theDataRow[SchemaTableColumn.BaseSchemaName] = null; //string 
+            theDataRow[SchemaTableColumn.BaseTableName] = null; //string 
+            theDataRow[SchemaTableColumn.DataType] = typeof(string); //System.Type
+            theDataRow[SchemaTableColumn.AllowDBNull] = (Boolean)true;
+            theDataRow[SchemaTableColumn.ProviderType] = (Int32)12;
+            theDataRow[SchemaTableColumn.IsAliased] = DBNull.Value; //Boolean 
+            theDataRow[SchemaTableColumn.IsExpression] = DBNull.Value; //Boolean 
+            theDataRow["IsIdentity"] = (Boolean)false;
+            theDataRow[SchemaTableOptionalColumn.IsAutoIncrement] = (Boolean)false;
+            theDataRow[SchemaTableOptionalColumn.IsRowVersion] = (Boolean)false;
+            theDataRow[SchemaTableOptionalColumn.IsHidden] = DBNull.Value; //Boolean 
+            theDataRow[SchemaTableColumn.IsLong] = (Boolean)false;
+            theDataRow[SchemaTableOptionalColumn.IsReadOnly] = (Boolean)false;
+            theDataRow[SchemaTableOptionalColumn.ProviderSpecificDataType] = typeof(SqlString); //System.Type
+            theDataRow["DataTypeName"] = "nvarchar"; //string
+            theDataRow["XmlSchemaCollectionDatabase"] = null; //string 
+            theDataRow["XmlSchemaCollectionOwningSchema"] = null; //string 
+            theDataRow["XmlSchemaCollectionName"] = null; //string 
+            theDataRow["UdtAssemblyQualifiedName"] = null; //string 
+            theDataRow[SchemaTableColumn.NonVersionedProviderType] = (Int32)12;
+            theDataRow["IsColumnSet"] = (Boolean)false;
+
+#endregion Shard Id Pseudo Column Schema Table information
+
+            _finalSchemaTable_DataTable.Rows.Add(theDataRow);
+            _finalSchemaTable_DataTable.AcceptChanges();
+#endif
         }
 
 #endregion Private Methods
     }
-}
 
-#endif
+    internal class pseudoDbColumn : DbColumn 
+    {
+        public pseudoDbColumn() : base()
+        {
+
+        }
+
+        public static string[] GetPropertyNames() 
+        {
+            return new string[] 
+            {
+                "AllowDBNull",
+                "BaseCatalogName",
+                "BaseColumnName",
+                "BaseSchemaName",
+                "BaseServerName",
+                "BaseTableName",
+                "ColumnName",
+                "ColumnOrdinal",
+                "ColumnSize",
+                "DataType",
+                "DataTypeName",
+                "IsAliased",
+                "IsAutoIncrement",
+                "IsExpression",
+                "IsHidden",
+                "IsIdentity",
+                "IsKey",
+                "IsLong",
+                "IsReadOnly",
+                "IsUnique",
+                "NumericPrecision",
+                "NumericScale",
+                "UdtAssemblyQualifiedName",
+            };
+        }
+
+        public void setProperty<T>(string property, T value) 
+        {
+            switch(property) 
+            {
+                case "AllowDBNull":
+                    this.AllowDBNull = (value as bool?);
+                    break;
+                case "BaseCatalogName":
+                    this.BaseCatalogName = (value as string);
+                    break;
+                case "BaseColumnName":
+                    this.BaseColumnName = (value as string);
+                    break;
+                case "BaseSchemaName":
+                    this.BaseSchemaName = (value as string);
+                    break;
+                case "BaseServerName":
+                    this.BaseServerName = (value as string);
+                    break;
+                case "BaseTableName":
+                    this.BaseTableName = (value as string);
+                    break;
+                case "ColumnName":
+                    this.ColumnName = (value as string);
+                    break;
+                case "ColumnOrdinal":
+                    this.ColumnOrdinal = (value as int?);
+                    break;
+                case "ColumnSize":
+                    this.ColumnSize = (value as int?);
+                    break;
+                case "DataType":
+                    this.DataType = (value as Type);
+                    break;
+                case "DataTypeName":
+                    this.DataTypeName = (value as string);
+                    break;
+                case "IsAliased":
+                    this.IsAliased = (value as bool?);
+                    break;
+                case "IsAutoIncrement":
+                    this.IsAutoIncrement = (value as bool?);
+                    break;
+                case "IsExpression":
+                    this.IsExpression = (value as bool?);
+                    break;
+                case "IsHidden":
+                    this.IsHidden = (value as bool?);
+                    break;
+                case "IsIdentity":
+                    this.IsIdentity = (value as bool?);
+                    break;
+                case "IsKey":
+                    this.IsKey = (value as bool?);
+                    break;
+                case "IsLong":
+                    this.IsLong = (value as bool?);
+                    break;
+                case "IsReadOnly":
+                    this.IsReadOnly = (value as bool?);
+                    break;
+                case "IsUnique":
+                    this.IsUnique = (value as bool?);
+                    break;
+                case "NumericPrecision":
+                    this.NumericPrecision = (value as int?);
+                    break;
+                case "NumericScale":
+                    this.NumericScale = (value as int?);
+                    break;
+                case "UdtAssemblyQualifiedName":
+                    this.UdtAssemblyQualifiedName = (value as string);
+                    break;
+            }
+        }
+    }
+}

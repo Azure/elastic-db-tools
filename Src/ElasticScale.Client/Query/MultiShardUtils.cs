@@ -4,8 +4,6 @@
 // Purpose:
 // Various utilities used by other classes in this project
 
-#if NET451 // TODO Fix MSQ to work in .NET Core
-
 using System;
 using System.Data;
 using System.Data.Common;
@@ -70,7 +68,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <returns>Clone of <paramref name="cmd"/>.</returns>
         internal static DbCommand CloneDbCommand(DbCommand cmd, DbConnection conn)
         {
-            DbCommand clone = (DbCommand)(cmd as ICloneable).Clone();
+            DbCommand clone = cmd.BestAttemptClone();
             clone.Connection = conn;
 
             return clone;
@@ -98,5 +96,3 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         }
     }
 }
-
-#endif

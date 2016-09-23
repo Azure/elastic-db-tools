@@ -5,10 +5,11 @@
   "authors": [ "Microsoft" ],
   "title": "Microsoft Azure SQL Database: Elastic Database Client Library",
   "description": "This client library allows ADO.NET developers to create applications that implement and use the pattern known as database sharding in Azure SQL Database. Sharding is a scale-out strategy that spreads data across a number of independent databases. The library includes APIs for creating and managing shard maps, routing SQL operations to the appropriate shard, and performing queries that cross many shards. To learn more about elastic database tools, check out http://azure.microsoft.com/en-us/documentation/articles/sql-database-elastic-scale-documentation-map/.",
-  "copyright": "Copyright © Microsoft Corporation. All rights reserved.",
+  "copyright": "Copyright ï¿½ Microsoft Corporation. All rights reserved.",
   "language": "en-US",
 
   "dependencies": {
+    "System.Data.Common": "4.1.0"
     // define dependencies under the "frameworks" section
   },
   
@@ -94,7 +95,7 @@
     "requireLicenseAcceptance": true,
     "licenseUrl": "http://go.microsoft.com/?linkid=9862941",
     "iconUrl": "http://go.microsoft.com/fwlink/?LinkID=288890",
-    "summary": ".NET Client library for sharding in Azure SQL Database – part of Elastic Database Tools",
+    "summary": ".NET Client library for sharding in Azure SQL Database ï¿½ part of Elastic Database Tools",
     "releaseNotes": "This refresh fixes a bug related to SqlConnectionStringBuilder exception in library. No API changes have been introduced.\r\n\r\nIn 1.3.2:\r\n- Bugfix to handle SqlConnectionStringBuilder properties correctly when running with 4.5.2 or earlier version of .NET.\r\n\r\nIn 1.3.1:\r\n- Bugfix to handle exceptions in performance counter creation code.\r\n\r\nIn 1.3.0:\r\n- Introduction of performance counters for caching and Data Dependent Routing (DDR) scenarios in Elastic Database Client Library.\r\n- New API addition for creation of performance category and counters: ShardMapManagerFactory.CreatePerformanceCategoryAndCounters();. Please check documentation map for more information on performance counters at https://azure.microsoft.com/en-us/documentation/learning-paths/sql-database-elastic-scale/. \r\n- Active Directory authentication support.\r\n- Bug fix to explicitly release the lock at connection close. This will allow addition of multiple mappings at the same time faster.\r\n- ReadAsync support for MultiShardDataReader\r\n\r\nIn 1.2.0:\r\n- Fixed a bug in SchemaInfo serialization\r\n\r\nIn 1.1.0:\r\n- Responsiveness of cancellation in Multi-Shard Query has been improved.\r\n- This assembly can now loaded from a byte stream instead of from a file. This can be a useful way to load the assembly in SQL CLR, using syntax CREATE ASSEMBLY {assembly name} FROM {bytes}.",
     "tags": [ "Microsoft", "Elastic", "Scale", "Azure", "SQL", "DB", "Database", "Shard", "Sharding", "Management", "Query", "azureofficial" ],
     "repository": {

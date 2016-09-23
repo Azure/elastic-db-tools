@@ -28,8 +28,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ElasticScale.ShardManagement.UnitTests.Core", "Test\ElasticScale.ShardManagement.UnitTests\ElasticScale.ShardManagement.UnitTests.Core.xproj", "{9DB56FFA-B485-404E-8948-0FB8C9C5EACD}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Cover|Any CPU = Cover|Any CPU
@@ -97,12 +95,6 @@ Global
 		{A4AE0AF5-0567-4CF6-95B0-35058E6CA3F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4AE0AF5-0567-4CF6-95B0-35058E6CA3F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4AE0AF5-0567-4CF6-95B0-35058E6CA3F9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9DB56FFA-B485-404E-8948-0FB8C9C5EACD}.Cover|Any CPU.ActiveCfg = Debug|Any CPU
-		{9DB56FFA-B485-404E-8948-0FB8C9C5EACD}.Cover|Any CPU.Build.0 = Debug|Any CPU
-		{9DB56FFA-B485-404E-8948-0FB8C9C5EACD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9DB56FFA-B485-404E-8948-0FB8C9C5EACD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9DB56FFA-B485-404E-8948-0FB8C9C5EACD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9DB56FFA-B485-404E-8948-0FB8C9C5EACD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

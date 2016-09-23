@@ -11,7 +11,6 @@
 // connection string property "context connection = true" are not supported.
 // * Transaction semantics are not supported
 
-#if NET451 // TODO Fix MSQ to work in .NET Core
 
 using System;
 using System.Collections.Generic;
@@ -178,14 +177,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <remarks>DEVNOTE: Should we expose a DbCommand instead? Do we even want to expose this at all?</remarks>
         internal static MultiShardCommand Create(MultiShardConnection connection, DbCommand command, int commandTimeout)
         {
+#if NET451
             Contract.Requires(command is ICloneable);
+#endif
 
             return new MultiShardCommand(connection, command, commandTimeout);
         }
 
-        #endregion
+#endregion
 
-        #region Public Properties
+#region Public Properties
 
         // Suppression rationale:  The point of this property is precisely to allow the user to specify whatever SQL they wish.
         /// <summary>
@@ -334,9 +335,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         internal event EventHandler<ShardExecutionEventArgs> ShardExecutionReaderReturned;
 
-        #endregion Public Properties
+#endregion Public Properties
 
-        #region Internal Properties
+#region Internal Properties
 
         /// <summary>
         /// The retry policy to use when connecting to and
@@ -348,9 +349,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             set;
         }
 
-        #endregion Internal Properties
+#endregion Internal Properties
 
-        #region Protected Properties
+#region Protected Properties
 
         /// <summary>
         /// Gets the SqlParameter Collection
@@ -363,15 +364,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion Protected Properties
+#endregion Protected Properties
 
-        #region APIs
+#region APIs
 
-        #region Supported DbCommand APIs
+#region Supported DbCommand APIs
 
-        #region ExecuteReader Methods
+#region ExecuteReader Methods
 
-        #region Synchronous Methods
+#region Synchronous Methods
 
         /// <summary>
         /// The ExecuteReader methods of the MultiShardCommand execute the given command statement on each shard 
@@ -470,9 +471,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion
+#endregion
 
-        #region Async Methods
+#region Async Methods
 
         /// <summary>
         /// The ExecuteReader methods of the MultiShardCommand execute the given command statement on each shard 
@@ -734,7 +735,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion
+#endregion
 
         /// <summary>
         /// Terminates any active commands/readers for scenarios where we fail the request due to
@@ -763,7 +764,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                             // arise potentially due to parallel Cancel and Close calls because this is the only
                             // thread that will be responsible for cleanup.
                             labeledReader.Command.Cancel();
+#if NET451
                             labeledReader.DbDataReader.Close();
+#endif
                         }
                     }
                     catch (Exception)
@@ -1007,7 +1010,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             .ConfigureAwait(false);
         }
 
-        #endregion ExecuteReader Methods
+#endregion ExecuteReader Methods
 
         // Suppression rationale: We don't want cancel throwing any exceptions.  Just cancel.
         //
@@ -1127,7 +1130,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion Supported DbCommand APIs
+#endregion Supported DbCommand APIs
 
         /// <summary>
         /// Resets the <see cref="CommandTimeout"/> property
@@ -1147,9 +1150,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             this.CommandTimeoutPerShard = MultiShardCommand.DefaultCommandTimeoutPerShard;
         }
 
-        #endregion APIs
+#endregion APIs
 
-        #region Helpers
+#region Helpers
 
         private void ValidateCommand(CommandBehavior behavior)
         {
@@ -1274,7 +1277,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #region Event Raisers
+#region Event Raisers
 
         /// <summary>
         /// Raise the ShardExecutionBegan event.
@@ -1406,11 +1409,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion Event Raisers
+#endregion Event Raisers
 
-        #endregion Helpers
+#endregion Helpers
 
-        #region UnSupported DbCommand APIs
+#region UnSupported DbCommand APIs
 
         /// <summary>
         /// This method is currently not supported. Invoking the property will result in an exception.
@@ -1420,7 +1423,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             throw new NotSupportedException("Prepare is currently not supported");
         }
 
-        #region ExecuteNonQuery Methods
+#region ExecuteNonQuery Methods
 
         /// <summary>
         /// ExecuteNonQuery is currently not supported
@@ -1558,9 +1561,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion
+#endregion
 
-        #region ExecuteScalar Methods
+#region ExecuteScalar Methods
 
         /// <summary>
         /// ExecuteScalar is currently not supported
@@ -1580,11 +1583,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             return base.ExecuteScalarAsync(cancellationToken);
         }
-        #endregion
+#endregion
 
-        #endregion
+#endregion
 
-        #region UnSupported DbCommand Properties
+#region UnSupported DbCommand Properties
 
         // DEVNOTE (VSTS 2202707): We also do not suppport SqlNotificationRequest and
         // NotificationAutoEnlist handling yet
@@ -1651,9 +1654,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion
+#endregion
 
-        #region Inner Helper Classes
+#region Inner Helper Classes
 
         /// <summary>
         /// Sets up and manages the cancellation of the Execute* methods.
@@ -1691,7 +1694,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 _linkedToken = CreateLinkedToken(innerCts, outerCts);
             }
 
-            #region Properties
+#region Properties
 
             public CancellationToken Token
             {
@@ -1721,7 +1724,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 }
             }
 
-            #endregion
+#endregion
 
             public void Dispose()
             {
@@ -1775,8 +1778,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             internal Task<LabeledDbDataReader>[] InnerTasks { get; set; }
         }
 
-        #endregion Inner Helper Classes
+#endregion Inner Helper Classes
     }
 }
-
-#endif
