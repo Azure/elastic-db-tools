@@ -9,7 +9,7 @@ using System.Data.SqlTypes;
 using System.Security;
 using System.Text;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 {
@@ -225,7 +225,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// </remarks>
         private static string GetTestConnectionString(string database)
         {
-            Assert.IsNotNull(database, "null database");
+            Assert.NotNull(database);
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
             builder.DataSource = s_serverLocation;
             builder.IntegratedSecurity = true;
@@ -246,7 +246,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// </remarks>
         private static ShardLocation GetTestShard(string database)
         {
-            Assert.IsNotNull(database, "null database");
+            Assert.NotNull(database);
             ShardLocation rVal = new ShardLocation(s_serverLocation, database);
             return rVal;
         }

@@ -19,14 +19,25 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ClientTestCommon;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
+using Xunit;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 {
-    [TestClass]
-    public class MultiShardUnitTests
+
+    public class MultiShardUnitTests : IDisposable
     {
+
+        public MultiShardUnitTests() {
+            // Init before each test here
+        }
+
+        public void Dispose() {
+            // Cleanup after each test here
+        }
+
         #region Tests
 
         /// <summary>
@@ -34,41 +45,35 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// by a particular shard is propagated by
         /// MultiShardConnection back to the user
         /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(InsufficientMemoryException))]
+        [Fact]
         public void TestShardConnectionOpenException()
         {
-            try
-            {
-                Action executeOnOpen = () =>
-                    {
+            Assert.Throws<InsufficientMemoryException>(() => {
+                try {
+                    Action executeOnOpen = () => {
                         throw new InsufficientMemoryException();
                     };
-                var shardConnections = CreateConnections(10, executeOnOpen);
-                var mockCmd = new MockSqlCommand();
-                mockCmd.CommandText = "Select 1";
-                using (var conn = new MultiShardConnection(shardConnections))
-                {
-                    using (var cmd = MultiShardCommand.Create(conn, mockCmd, 100))
-                    {
-                        cmd.CommandText = "select 1";
-                        cmd.ExecuteReader();
+                    var shardConnections = CreateConnections(10, executeOnOpen);
+                    var mockCmd = new MockSqlCommand();
+                    mockCmd.CommandText = "Select 1";
+                    using(var conn = new MultiShardConnection(shardConnections)) {
+                        using(var cmd = MultiShardCommand.Create(conn, mockCmd, 100)) {
+                            cmd.CommandText = "select 1";
+                            cmd.ExecuteReader();
+                        }
                     }
-                }
-            }
-            catch (Exception ex)
-            {
-                if (ex is MultiShardAggregateException)
-                {
-                    var maex = (MultiShardAggregateException)ex;
-                    Logger.Log("Exception message: {0}.\n Exception tostring: {1}",
-                        ex.Message, ex.ToString());
+                } catch(Exception ex) {
+                    if(ex is MultiShardAggregateException) {
+                        var maex = (MultiShardAggregateException)ex;
+                        Logger.Log("Exception message: {0}.\n Exception tostring: {1}",
+                            ex.Message, ex.ToString());
 
-                    throw (maex.InnerException).InnerException;
-                }
+                        throw (maex.InnerException).InnerException;
+                    }
 
-                throw;
-            }
+                    throw;
+                }
+            });
         }
 
         /// <summary>
@@ -76,8 +81,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// and validate that MultiShardCommand throws a 
         /// timeout exception to the user
         /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(TimeoutException))]
+        [Fact]
         public void TestShardCommandTimeoutException()
         {
             var shardConnections = CreateConnections(10, () => { });
@@ -94,7 +98,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             {
                 using (var cmd = MultiShardCommand.Create(conn, mockCmd, 1))
                 {
-                    cmd.ExecuteReader();
+                    Assert.Throws<TimeoutException>(() => { cmd.ExecuteReader(); });
                 }
             }
         }
@@ -102,7 +106,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Test the command Cancel()
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestShardCommandFaultHandler()
         {
             var shardConnections = CreateConnections(10, () => { });
@@ -123,9 +127,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                     cmd.CommandTimeout = 300;
                     cmd.ShardExecutionFaulted += new EventHandler<ShardExecutionEventArgs>((obj, eventArgs) =>
                         {
-                            Assert.IsTrue(shardConnections.Select(x => x.Item1).Contains(eventArgs.ShardLocation), "The ShardLocation passed to the event handler does not exist in the set of passed in ShardLocations");
+                            Assert.True(shardConnections.Select(x => x.Item1).Contains(eventArgs.ShardLocation), "The ShardLocation passed to the event handler does not exist in the set of passed in ShardLocations");
                             passedLocations[eventArgs.ShardLocation] = true;
-                            Assert.IsInstanceOfType(eventArgs.Exception, typeof(InsufficientMemoryException), "An incorrect exception type was passed to the event handler.");
+                            Assert.IsType<InsufficientMemoryException>(eventArgs.Exception);
                         });
                     try
                     {
@@ -136,13 +140,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                 }
             }
 
-            Assert.AreEqual(shardConnections.Count, passedLocations.Count, "Not every ShardLocation had its corresponding event handler invoked.");
+            Assert.True(shardConnections.Count == passedLocations.Count, "Not every ShardLocation had its corresponding event handler invoked.");
         }
 
         /// <summary>
         /// Test the command Cancel()
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestShardCommandCancellation()
         {
             // Create connections to a few shards
@@ -179,11 +183,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
                         cmd.ExecuteReader();
                         executeTask.Wait();
-                        Assert.Fail("We should always be throwing an exception.");
+                        AssertExtensions.Fail("We should always be throwing an exception.");
                     }
                     catch (Exception ex)
                     {
-                        Assert.IsTrue(ex is OperationCanceledException, "OperationCanceledException expected. Found {0}!", ex.ToString());
+                        Assert.True(ex is OperationCanceledException, String.Format("OperationCanceledException expected. Found {0}!", ex.ToString()));
                     }
                 }
             }
@@ -192,7 +196,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Test the command Cancel()
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestShardCommandCancellationHandler()
         {
             // Create connections to a few shards
@@ -222,7 +226,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                 {
                     cmd.ShardExecutionCanceled += new EventHandler<ShardExecutionEventArgs>((obj, eventArgs) =>
                     {
-                        Assert.IsTrue(shardConnections.Select(x => x.Item1).Contains(eventArgs.ShardLocation),
+                        Assert.True(shardConnections.Select(x => x.Item1).Contains(eventArgs.ShardLocation),
                             "The ShardLocation passed to the event handler does not exist in the set of passed in ShardLocations");
                         passedLocations[eventArgs.ShardLocation] = true;
                     });
@@ -237,22 +241,21 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
                         cmd.ExecuteReader();
                         executeTask.Wait();
-                        Assert.Fail("We should always be throwing an exception.");
+                        AssertExtensions.Fail("We should always be throwing an exception.");
                     }
                     catch (Exception ex)
                     {
-                        Assert.IsTrue(ex is OperationCanceledException, "OperationCanceledException expected. Found {0}!", ex.ToString());
+                        Assert.True(ex is OperationCanceledException, String.Format("OperationCanceledException expected. Found {0}!", ex.ToString()));
                     }
                 }
             }
-            Assert.AreEqual(shardConnections.Count, passedLocations.Count, "Not every ShardLocation had its corresponding event handler invoked.");
+            Assert.True(shardConnections.Count == passedLocations.Count, "Not every ShardLocation had its corresponding event handler invoked.");
         }
 
         /// <summary>
         /// Test the command behavior validation
         /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [Fact]
         [DeploymentItem("Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests.dll.config")]
         public void TestShardCommandBehavior()
         {
@@ -261,9 +264,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             {
                 using (var cmd = conn.CreateCommand())
                 {
-                    CommandBehavior behavior = CommandBehavior.SingleResult;
-                    behavior &= CommandBehavior.SingleRow;
-                    cmd.ExecuteReader(behavior);
+                    Assert.Throws<InvalidOperationException>(() => {
+                        CommandBehavior behavior = CommandBehavior.SingleResult;
+                        behavior &= CommandBehavior.SingleRow;
+                        cmd.ExecuteReader(behavior);
+                    });
                 }
             }
         }
@@ -271,7 +276,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Test the event handler for OnShardBegin, ensuring that every shard in a successful execution has begin called at least once.
         /// </summary>
-        [TestMethod]
+        [Fact]
         [DeploymentItem("Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests.dll.config")]
         public void TestShardCommandBeginHandler()
         {
@@ -292,7 +297,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                 {
                     cmd.ShardExecutionBegan += new EventHandler<ShardExecutionEventArgs>((obj, eventArgs) =>
                     {
-                        Assert.IsTrue(shardConnections.Select(x => x.Item1).Contains(eventArgs.ShardLocation),
+                        Assert.True(shardConnections.Select(x => x.Item1).Contains(eventArgs.ShardLocation),
                             "The ShardLocation passed to the event handler does not exist in the set of passed in ShardLocations");
                         passedLocations[eventArgs.ShardLocation] = true;
                     });
@@ -301,13 +306,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                 }
             }
 
-            Assert.AreEqual(shardConnections.Count, passedLocations.Count, "Not every ShardLocation had its corresponding event handler invoked.");
+            Assert.True(shardConnections.Count == passedLocations.Count, "Not every ShardLocation had its corresponding event handler invoked.");
         }
 
         /// <summary>
         /// Test the event handler for OnShardBegin, ensuring that every shard in a successful execution has begin called at least once.
         /// </summary>
-        [TestMethod]
+        [Fact]
         [DeploymentItem("Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests.dll.config")]
         public void TestShardCommandSucceedHandler()
         {
@@ -328,7 +333,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                 {
                     cmd.ShardExecutionSucceeded += new EventHandler<ShardExecutionEventArgs>((obj, eventArgs) =>
                     {
-                        Assert.IsTrue(shardConnections.Select(x => x.Item1).Contains(eventArgs.ShardLocation), "The ShardLocation passed to the event handler does not exist in the set of passed in ShardLocations");
+                        Assert.True(shardConnections.Select(x => x.Item1).Contains(eventArgs.ShardLocation), "The ShardLocation passed to the event handler does not exist in the set of passed in ShardLocations");
                         passedLocations[eventArgs.ShardLocation] = true;
                     });
                     CommandBehavior behavior = CommandBehavior.Default;
@@ -336,7 +341,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                 }
             }
 
-            Assert.AreEqual(shardConnections.Count, passedLocations.Count, "Not every ShardLocation had its corresponding event handler invoked.");
+            Assert.True(shardConnections.Count == passedLocations.Count, "Not every ShardLocation had its corresponding event handler invoked.");
         }
 
         /// <summary>
@@ -347,7 +352,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// - Validate that the MultiShardCommand indeed retries upto (n-1) times for each
         /// shard and succeeds on the nth retry.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestShardCommandRetryBasic()
         {
             var retryPolicy = new RetryPolicy(4, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
@@ -392,7 +397,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
             for (int i = 0; i < openRetryCounts.Length; i++)
             {
-                Assert.AreEqual(retryPolicy.RetryCount - 1, openRetryCounts[i]);
+                Assert.Equal(retryPolicy.RetryCount - 1, openRetryCounts[i]);
             }
         }
 
@@ -401,7 +406,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// is caught correctly. 
         /// - Also validate that any open connections are closed.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestShardCommandRetryExhaustion()
         {
             var retryPolicy = new RetryPolicy(2, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
@@ -438,16 +443,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                     MultiShardDataReader rdr = cmd.ExecuteReader(CommandBehavior.Default);
 
                     // Validate the right exception is re-thrown
-                    Assert.IsTrue(rdr.MultiShardExceptions.Count == 5, "Expected MultiShardExceptions!");
+                    Assert.True(rdr.MultiShardExceptions.Count == 5, "Expected MultiShardExceptions!");
                     foreach (MultiShardException ex in rdr.MultiShardExceptions)
                     {
-                        Assert.IsTrue(ex.InnerException is TimeoutException, "Expected TimeoutException!");
+                        Assert.True(ex.InnerException is TimeoutException, "Expected TimeoutException!");
                     }
 
                     // Validate that the connections for the faulted readers are closed
                     for (int i = 0; i < 5; i++)
                     {
-                        Assert.IsTrue(shardConnections[i].Item2.State == ConnectionState.Closed,
+                        Assert.True(shardConnections[i].Item2.State == ConnectionState.Closed,
                             "Expected Connection to be Closed!");
                     }
                 }
@@ -459,7 +464,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// - Validate that the command is re-tried and 
         /// that the connection is re-opened
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestShardCommandRetryConnectionReopen()
         {
             var retryPolicy = new RetryPolicy(4, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
@@ -546,7 +551,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                         {
                             readerCount++;
                         }
-                        Assert.AreEqual(10, readerCount, "Expected 10 readers!");
+                        Assert.True(10 == readerCount, "Expected 10 readers!");
                     }
                 }
             }
@@ -555,7 +560,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Test the custom serializion logic for exceptions
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestExceptionSerialization()
         {
             ShardLocation sl1 = new ShardLocation("dataSource1", "database1");
@@ -579,7 +584,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// Validates that the MultiShardDataReader
         /// handles an exception during Read() properly
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestDataReaderReadException()
         {
             // Setup two data readers from shards
@@ -640,19 +645,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             }
             catch (Exception ex)
             {
-                Assert.IsTrue(ex is InvalidOperationException, "Expected InvalidOperationException!");
+                Assert.True(ex is InvalidOperationException, "Expected InvalidOperationException!");
             }
 
             // Validate that we didn't automatically move on to the next reader when we
             // hit an exception whilst reading the column and that 
             // an exception from a second Read() call is stored and the reader is closed
             multiShardDataReader.Read();
-            Assert.AreEqual(multiShardDataReader.MultiShardExceptions.Count, 1, "Expected exception to be recorded");
-            Assert.IsTrue(mockReader1.IsClosed, "Expected reader to be closed!");
+            Assert.True(multiShardDataReader.MultiShardExceptions.Count == 1, "Expected exception to be recorded");
+            Assert.True(mockReader1.IsClosed, "Expected reader to be closed!");
 
             // Validate we immediately moved on to the next reader
             multiShardDataReader.Read();
-            Assert.IsTrue(movedOnToNextReader, "Should've moved on to next reader");
+            Assert.True(movedOnToNextReader, "Should've moved on to next reader");
         }
 
         /// <summary>
@@ -664,7 +669,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// - Case #3: The first half of readers have a non-null schema and the rest are null.
         ///   Verify that a MultiShardDataReaderInternalException is thrown.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestAddDataReaderWithNullSchema()
         {
             // Creates a MultiShardDataReader and verifies that the right exception is thrown
@@ -698,7 +703,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
             // Case #1
             bool hitException = createMultiShardReader(labeledDataReaders);
-            Assert.IsFalse(hitException, "Unexpected exception! All readers have a null schema.");
+            Assert.False(hitException, "Unexpected exception! All readers have a null schema.");
 
             // Case #2
             for (int i = 0; i < labeledDataReaders.Length; i++)
@@ -713,7 +718,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             }
 
             hitException = createMultiShardReader(labeledDataReaders);
-            Assert.IsTrue(hitException, "Exception not hit! Second half of readers don't have a null schema!");
+            Assert.True(hitException, "Exception not hit! Second half of readers don't have a null schema!");
 
             // Case #3
             for (int i = 0; i < labeledDataReaders.Length; i++)
@@ -732,7 +737,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             }
 
             hitException = createMultiShardReader(labeledDataReaders);
-            Assert.IsTrue(hitException, "Exception not hit! First half of readers don't have a null schema!");
+            Assert.True(hitException, "Exception not hit! First half of readers don't have a null schema!");
         }
 
         #endregion
@@ -753,7 +758,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
         private void CompareForEquality(Exception first, Exception second)
         {
-            Assert.AreEqual(first.GetType(), second.GetType());
+            Assert.Equal(first.GetType(), second.GetType());
 
             if (first is MultiShardException)
             {
@@ -765,18 +770,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                 DoExceptionComparison((MultiShardAggregateException)first, (MultiShardAggregateException)second);
                 return;
             }
-            Assert.Fail(string.Format("Unknown exception type: {0}", first.GetType()));
+            AssertExtensions.Fail(string.Format("Unknown exception type: {0}", first.GetType()));
         }
 
         private void DoExceptionComparison(MultiShardException first, MultiShardException second)
         {
-            Assert.AreEqual(first.ShardLocation.Database, first.ShardLocation.Database);
-            Assert.AreEqual(second.ShardLocation.DataSource, second.ShardLocation.DataSource);
+            Assert.Equal(first.ShardLocation.Database, first.ShardLocation.Database);
+            Assert.Equal(second.ShardLocation.DataSource, second.ShardLocation.DataSource);
         }
 
         private void DoExceptionComparison(MultiShardAggregateException first, MultiShardAggregateException second)
         {
-            Assert.AreEqual(first.InnerExceptions.Count, second.InnerExceptions.Count);
+            Assert.Equal(first.InnerExceptions.Count, second.InnerExceptions.Count);
             for (int i = 0; i < first.InnerExceptions.Count; i++)
             {
                 CompareForEquality((MultiShardException)(first.InnerExceptions[i]), (MultiShardException)(second.InnerExceptions[i]));
@@ -811,41 +816,5 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                 return EvaluateException(ex);
             }
         }
-
-        #region Boilerplate
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext { get; set; }
-
-        [ClassInitialize()]
-        public static void MyClassInitialize(TestContext testContext)
-        {
-        }
-
-        [ClassCleanup()]
-        public static void MyClassCleanup()
-        {
-        }
-
-        /// <summary>
-        /// Open up a clean connection to each test database prior to each test.
-        /// </summary>
-        [TestInitialize()]
-        public void MyTestInitialize()
-        {
-        }
-
-        /// <summary>
-        /// Close our connections to each test database after each test.
-        /// </summary>
-        [TestCleanup()]
-        public void MyTestCleanup()
-        {
-        }
-
-        #endregion
     }
 }
