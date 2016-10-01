@@ -1,8 +1,5 @@
-﻿// Decompiled with JetBrains decompiler
-// Type: Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Fakes.StubFindMappingByKeyGlobalOperation
-// Assembly: Microsoft.Azure.SqlDatabase.ElasticScale.Client.Fakes, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 4B4C742C-94FD-4E0A-8D2B-C003E4ADC4B7
-// Assembly location: C:\git\elastic-db-tools\Test\ElasticScale.ShardManagement.UnitTests\FakesAssemblies\Microsoft.Azure.SqlDatabase.ElasticScale.Client.Fakes.dll
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 using Microsoft.QualityTools.Testing.Fakes;
