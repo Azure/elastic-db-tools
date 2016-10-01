@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
-using Microsoft.QualityTools.Testing.Fakes;
-using Microsoft.QualityTools.Testing.Fakes.Stubs;
 using System;
 using System.Diagnostics;
 
@@ -12,106 +9,104 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
     /// <summary>
     /// Stub type of Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.AddMappingOperation
     /// </summary>
-    [StubClass(typeof(AddMappingOperation))]
     [DebuggerDisplay("Stub of AddMappingOperation")]
     [DebuggerNonUserCode]
-    internal class StubAddMappingOperation : AddMappingOperation, IStub<AddMappingOperation>, IStub, IStubObservable, IPartialStub
+    internal class StubAddMappingOperation : AddMappingOperation
     {
         /// <summary>
         /// Sets the stub of StoreOperation.Dispose(Boolean disposing)
         /// </summary>
-        public FakesDelegates.Action<bool> DisposeBoolean;
+        public Action<bool> DisposeBoolean;
         /// <summary>
         /// Sets the stub of AddMappingOperation.DoGlobalPostLocalExecute(IStoreTransactionScope ts)
         /// </summary>
-        internal FakesDelegates.Func<IStoreTransactionScope, IStoreResults> DoGlobalPostLocalExecuteIStoreTransactionScope;
+        internal Func<IStoreTransactionScope, IStoreResults> DoGlobalPostLocalExecuteIStoreTransactionScope;
         /// <summary>
         /// Sets the stub of AddMappingOperation.DoGlobalPostLocalUpdateCache(IStoreResults result)
         /// </summary>
-        internal FakesDelegates.Action<IStoreResults> DoGlobalPostLocalUpdateCacheIStoreResults;
+        internal Action<IStoreResults> DoGlobalPostLocalUpdateCacheIStoreResults;
         /// <summary>
         /// Sets the stub of AddMappingOperation.DoGlobalPreLocalExecute(IStoreTransactionScope ts)
         /// </summary>
-        internal FakesDelegates.Func<IStoreTransactionScope, IStoreResults> DoGlobalPreLocalExecuteIStoreTransactionScope;
+        internal Func<IStoreTransactionScope, IStoreResults> DoGlobalPreLocalExecuteIStoreTransactionScope;
         /// <summary>
         /// Sets the stub of AddMappingOperation.DoLocalSourceExecute(IStoreTransactionScope ts)
         /// </summary>
-        internal FakesDelegates.Func<IStoreTransactionScope, IStoreResults> DoLocalSourceExecuteIStoreTransactionScope;
+        internal Func<IStoreTransactionScope, IStoreResults> DoLocalSourceExecuteIStoreTransactionScope;
         /// <summary>
         /// Sets the stub of StoreOperation.DoLocalTargetExecute(IStoreTransactionScope ts)
         /// </summary>
-        internal FakesDelegates.Func<IStoreTransactionScope, IStoreResults> DoLocalTargetExecuteIStoreTransactionScope;
+        internal Func<IStoreTransactionScope, IStoreResults> DoLocalTargetExecuteIStoreTransactionScope;
         /// <summary>
         /// Sets the stub of AddMappingOperation.get_ErrorCategory()
         /// </summary>
-        public FakesDelegates.Func<ShardManagementErrorCategory> ErrorCategoryGet;
+        public Func<ShardManagementErrorCategory> ErrorCategoryGet;
         /// <summary>
         /// Sets the stub of AddMappingOperation.get_ErrorSourceLocation()
         /// </summary>
-        public FakesDelegates.Func<ShardLocation> ErrorSourceLocationGet;
+        public Func<ShardLocation> ErrorSourceLocationGet;
         /// <summary>
         /// Sets the stub of AddMappingOperation.get_ErrorTargetLocation()
         /// </summary>
-        public FakesDelegates.Func<ShardLocation> ErrorTargetLocationGet;
+        public Func<ShardLocation> ErrorTargetLocationGet;
         /// <summary>
         /// Sets the stub of AddMappingOperation.GetStoreConnectionInfo()
         /// </summary>
-        internal FakesDelegates.Func<StoreConnectionInfo> GetStoreConnectionInfo01;
+        internal Func<StoreConnectionInfo> GetStoreConnectionInfo01;
         /// <summary>
         /// Sets the stub of AddMappingOperation.HandleDoGlobalPostLocalExecuteError(IStoreResults result)
         /// </summary>
-        internal FakesDelegates.Action<IStoreResults> HandleDoGlobalPostLocalExecuteErrorIStoreResults;
+        internal Action<IStoreResults> HandleDoGlobalPostLocalExecuteErrorIStoreResults;
         /// <summary>
         /// Sets the stub of AddMappingOperation.HandleDoGlobalPreLocalExecuteError(IStoreResults result)
         /// </summary>
-        internal FakesDelegates.Action<IStoreResults> HandleDoGlobalPreLocalExecuteErrorIStoreResults;
+        internal Action<IStoreResults> HandleDoGlobalPreLocalExecuteErrorIStoreResults;
         /// <summary>
         /// Sets the stub of AddMappingOperation.HandleDoLocalSourceExecuteError(IStoreResults result)
         /// </summary>
-        internal FakesDelegates.Action<IStoreResults> HandleDoLocalSourceExecuteErrorIStoreResults;
+        internal Action<IStoreResults> HandleDoLocalSourceExecuteErrorIStoreResults;
         /// <summary>
         /// Sets the stub of StoreOperation.HandleDoLocalTargetExecuteError(IStoreResults result)
         /// </summary>
-        internal FakesDelegates.Action<IStoreResults> HandleDoLocalTargetExecuteErrorIStoreResults;
+        internal Action<IStoreResults> HandleDoLocalTargetExecuteErrorIStoreResults;
         /// <summary>
         /// Sets the stub of AddMappingOperation.HandleUndoGlobalPostLocalExecuteError(IStoreResults result)
         /// </summary>
-        internal FakesDelegates.Action<IStoreResults> HandleUndoGlobalPostLocalExecuteErrorIStoreResults;
+        internal Action<IStoreResults> HandleUndoGlobalPostLocalExecuteErrorIStoreResults;
         /// <summary>
         /// Sets the stub of StoreOperation.HandleUndoGlobalPreLocalExecuteError(IStoreResults result)
         /// </summary>
-        internal FakesDelegates.Action<IStoreResults> HandleUndoGlobalPreLocalExecuteErrorIStoreResults;
+        internal Action<IStoreResults> HandleUndoGlobalPreLocalExecuteErrorIStoreResults;
         /// <summary>
         /// Sets the stub of AddMappingOperation.HandleUndoLocalSourceExecuteError(IStoreResults result)
         /// </summary>
-        internal FakesDelegates.Action<IStoreResults> HandleUndoLocalSourceExecuteErrorIStoreResults;
+        internal Action<IStoreResults> HandleUndoLocalSourceExecuteErrorIStoreResults;
         /// <summary>
         /// Sets the stub of StoreOperation.HandleUndoLocalTargetExecuteError(IStoreResults result)
         /// </summary>
-        internal FakesDelegates.Action<IStoreResults> HandleUndoLocalTargetExecuteErrorIStoreResults;
+        internal Action<IStoreResults> HandleUndoLocalTargetExecuteErrorIStoreResults;
         /// <summary>
         /// Sets the stub of StoreOperation.OnStoreException(StoreException se, StoreOperationState state)
         /// </summary>
-        internal FakesDelegates.Func<StoreException, StoreOperationState, ShardManagementException> OnStoreExceptionStoreExceptionStoreOperationState;
+        internal Func<StoreException, StoreOperationState, ShardManagementException> OnStoreExceptionStoreExceptionStoreOperationState;
         /// <summary>
         /// Sets the stub of AddMappingOperation.UndoGlobalPostLocalExecute(IStoreTransactionScope ts)
         /// </summary>
-        internal FakesDelegates.Func<IStoreTransactionScope, IStoreResults> UndoGlobalPostLocalExecuteIStoreTransactionScope;
+        internal Func<IStoreTransactionScope, IStoreResults> UndoGlobalPostLocalExecuteIStoreTransactionScope;
         /// <summary>
         /// Sets the stub of StoreOperation.UndoGlobalPreLocalExecute(IStoreTransactionScope ts)
         /// </summary>
-        internal FakesDelegates.Func<IStoreTransactionScope, IStoreResults> UndoGlobalPreLocalExecuteIStoreTransactionScope;
+        internal Func<IStoreTransactionScope, IStoreResults> UndoGlobalPreLocalExecuteIStoreTransactionScope;
         /// <summary>
         /// Sets the stub of AddMappingOperation.UndoLocalSourceExecute(IStoreTransactionScope ts)
         /// </summary>
-        internal FakesDelegates.Func<IStoreTransactionScope, IStoreResults> UndoLocalSourceExecuteIStoreTransactionScope;
+        internal Func<IStoreTransactionScope, IStoreResults> UndoLocalSourceExecuteIStoreTransactionScope;
         /// <summary>
         /// Sets the stub of StoreOperation.UndoLocalTargetExecute(IStoreTransactionScope ts)
         /// </summary>
-        internal FakesDelegates.Func<IStoreTransactionScope, IStoreResults> UndoLocalTargetExecuteIStoreTransactionScope;
+        internal Func<IStoreTransactionScope, IStoreResults> UndoLocalTargetExecuteIStoreTransactionScope;
         private bool ___callBase;
         private IStubBehavior ___instanceBehavior;
-        private IStubObserver ___instanceObserver;
 
         /// <summary>
         /// Gets or sets a value that indicates if the base method should be called instead of the fallback behavior
@@ -135,13 +130,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         {
             get
             {
-                IStubObserver instanceObserver = this.InstanceObserver;
-                if (instanceObserver != null)
-                {
-                    FakesDelegates.Func<ShardManagementErrorCategory> func = (FakesDelegates.Func<ShardManagementErrorCategory>)StubRuntime.BindProperty(typeof(FakesDelegates.Func<ShardManagementErrorCategory>), (object)this, typeof(AddMappingOperation), "ErrorCategory", true, typeof(ShardManagementErrorCategory));
-                    instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)func);
-                }
-                FakesDelegates.Func<ShardManagementErrorCategory> func1 = this.ErrorCategoryGet;
+                Func<ShardManagementErrorCategory> func1 = this.ErrorCategoryGet;
                 if (func1 != null)
                     return func1();
                 if (this.___callBase)
@@ -157,13 +146,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         {
             get
             {
-                IStubObserver instanceObserver = this.InstanceObserver;
-                if (instanceObserver != null)
-                {
-                    FakesDelegates.Func<ShardLocation> func = (FakesDelegates.Func<ShardLocation>)StubRuntime.BindProperty(typeof(FakesDelegates.Func<ShardLocation>), (object)this, typeof(AddMappingOperation), "ErrorSourceLocation", true, typeof(ShardLocation));
-                    instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)func);
-                }
-                FakesDelegates.Func<ShardLocation> func1 = this.ErrorSourceLocationGet;
+                Func<ShardLocation> func1 = this.ErrorSourceLocationGet;
                 if (func1 != null)
                     return func1();
                 if (this.___callBase)
@@ -179,13 +162,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         {
             get
             {
-                IStubObserver instanceObserver = this.InstanceObserver;
-                if (instanceObserver != null)
-                {
-                    FakesDelegates.Func<ShardLocation> func = (FakesDelegates.Func<ShardLocation>)StubRuntime.BindProperty(typeof(FakesDelegates.Func<ShardLocation>), (object)this, typeof(AddMappingOperation), "ErrorTargetLocation", true, typeof(ShardLocation));
-                    instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)func);
-                }
-                FakesDelegates.Func<ShardLocation> func1 = this.ErrorTargetLocationGet;
+                Func<ShardLocation> func1 = this.ErrorTargetLocationGet;
                 if (func1 != null)
                     return func1();
                 if (this.___callBase)
@@ -210,21 +187,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         }
 
         /// <summary>
-        /// Gets or sets the instance observer.
-        /// </summary>
-        public IStubObserver InstanceObserver
-        {
-            get
-            {
-                return StubObservers.GetValueOrCurrent(this.___instanceObserver);
-            }
-            set
-            {
-                this.___instanceObserver = value;
-            }
-        }
-
-        /// <summary>
         /// Initializes a new instance
         /// </summary>
         public StubAddMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mapping)
@@ -238,13 +200,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         protected override void Dispose(bool disposing)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Action<bool> action = new FakesDelegates.Action<bool>(base.Dispose);
-                instanceObserver.Enter(typeof(StoreOperation), (Delegate)action, (object)disposing);
-            }
-            FakesDelegates.Action<bool> action1 = this.DisposeBoolean;
+            Action<bool> action1 = this.DisposeBoolean;
             if (action1 != null)
                 action1(disposing);
             else if (this.___callBase)
@@ -258,13 +214,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override IStoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func = new FakesDelegates.Func<IStoreTransactionScope, IStoreResults>(((StoreOperation)this).DoGlobalPostLocalExecute);
-                instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)func, (object)ts);
-            }
-            FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func1 = this.DoGlobalPostLocalExecuteIStoreTransactionScope;
+            Func<IStoreTransactionScope, IStoreResults> func1 = this.DoGlobalPostLocalExecuteIStoreTransactionScope;
             if (func1 != null)
                 return func1(ts);
             if (this.___callBase)
@@ -277,13 +227,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override void DoGlobalPostLocalUpdateCache(IStoreResults result)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Action<IStoreResults> action = new FakesDelegates.Action<IStoreResults>(((StoreOperation)this).DoGlobalPostLocalUpdateCache);
-                instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)action, (object)result);
-            }
-            FakesDelegates.Action<IStoreResults> action1 = this.DoGlobalPostLocalUpdateCacheIStoreResults;
+            Action<IStoreResults> action1 = this.DoGlobalPostLocalUpdateCacheIStoreResults;
             if (action1 != null)
                 action1(result);
             else if (this.___callBase)
@@ -297,13 +241,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override IStoreResults DoGlobalPreLocalExecute(IStoreTransactionScope ts)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func = new FakesDelegates.Func<IStoreTransactionScope, IStoreResults>(((StoreOperation)this).DoGlobalPreLocalExecute);
-                instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)func, (object)ts);
-            }
-            FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func1 = this.DoGlobalPreLocalExecuteIStoreTransactionScope;
+            Func<IStoreTransactionScope, IStoreResults> func1 = this.DoGlobalPreLocalExecuteIStoreTransactionScope;
             if (func1 != null)
                 return func1(ts);
             if (this.___callBase)
@@ -316,13 +254,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override IStoreResults DoLocalSourceExecute(IStoreTransactionScope ts)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func = new FakesDelegates.Func<IStoreTransactionScope, IStoreResults>(((StoreOperation)this).DoLocalSourceExecute);
-                instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)func, (object)ts);
-            }
-            FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func1 = this.DoLocalSourceExecuteIStoreTransactionScope;
+            Func<IStoreTransactionScope, IStoreResults> func1 = this.DoLocalSourceExecuteIStoreTransactionScope;
             if (func1 != null)
                 return func1(ts);
             if (this.___callBase)
@@ -335,13 +267,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override IStoreResults DoLocalTargetExecute(IStoreTransactionScope ts)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func = new FakesDelegates.Func<IStoreTransactionScope, IStoreResults>(((StoreOperation)this).DoLocalTargetExecute);
-                instanceObserver.Enter(typeof(StoreOperation), (Delegate)func, (object)ts);
-            }
-            FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func1 = this.DoLocalTargetExecuteIStoreTransactionScope;
+            Func<IStoreTransactionScope, IStoreResults> func1 = this.DoLocalTargetExecuteIStoreTransactionScope;
             if (func1 != null)
                 return func1(ts);
             if (this.___callBase)
@@ -354,13 +280,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override StoreConnectionInfo GetStoreConnectionInfo()
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Func<StoreConnectionInfo> func = new FakesDelegates.Func<StoreConnectionInfo>(((StoreOperation)this).GetStoreConnectionInfo);
-                instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)func);
-            }
-            FakesDelegates.Func<StoreConnectionInfo> func1 = this.GetStoreConnectionInfo01;
+            Func<StoreConnectionInfo> func1 = this.GetStoreConnectionInfo01;
             if (func1 != null)
                 return func1();
             if (this.___callBase)
@@ -373,13 +293,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override void HandleDoGlobalPostLocalExecuteError(IStoreResults result)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Action<IStoreResults> action = new FakesDelegates.Action<IStoreResults>(((StoreOperation)this).HandleDoGlobalPostLocalExecuteError);
-                instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)action, (object)result);
-            }
-            FakesDelegates.Action<IStoreResults> action1 = this.HandleDoGlobalPostLocalExecuteErrorIStoreResults;
+            Action<IStoreResults> action1 = this.HandleDoGlobalPostLocalExecuteErrorIStoreResults;
             if (action1 != null)
                 action1(result);
             else if (this.___callBase)
@@ -393,13 +307,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override void HandleDoGlobalPreLocalExecuteError(IStoreResults result)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Action<IStoreResults> action = new FakesDelegates.Action<IStoreResults>(((StoreOperation)this).HandleDoGlobalPreLocalExecuteError);
-                instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)action, (object)result);
-            }
-            FakesDelegates.Action<IStoreResults> action1 = this.HandleDoGlobalPreLocalExecuteErrorIStoreResults;
+            Action<IStoreResults> action1 = this.HandleDoGlobalPreLocalExecuteErrorIStoreResults;
             if (action1 != null)
                 action1(result);
             else if (this.___callBase)
@@ -413,13 +321,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override void HandleDoLocalSourceExecuteError(IStoreResults result)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Action<IStoreResults> action = new FakesDelegates.Action<IStoreResults>(((StoreOperation)this).HandleDoLocalSourceExecuteError);
-                instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)action, (object)result);
-            }
-            FakesDelegates.Action<IStoreResults> action1 = this.HandleDoLocalSourceExecuteErrorIStoreResults;
+            Action<IStoreResults> action1 = this.HandleDoLocalSourceExecuteErrorIStoreResults;
             if (action1 != null)
                 action1(result);
             else if (this.___callBase)
@@ -433,13 +335,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override void HandleDoLocalTargetExecuteError(IStoreResults result)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Action<IStoreResults> action = new FakesDelegates.Action<IStoreResults>(((StoreOperation)this).HandleDoLocalTargetExecuteError);
-                instanceObserver.Enter(typeof(StoreOperation), (Delegate)action, (object)result);
-            }
-            FakesDelegates.Action<IStoreResults> action1 = this.HandleDoLocalTargetExecuteErrorIStoreResults;
+            Action<IStoreResults> action1 = this.HandleDoLocalTargetExecuteErrorIStoreResults;
             if (action1 != null)
                 action1(result);
             else if (this.___callBase)
@@ -453,13 +349,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override void HandleUndoGlobalPostLocalExecuteError(IStoreResults result)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Action<IStoreResults> action = new FakesDelegates.Action<IStoreResults>(((StoreOperation)this).HandleUndoGlobalPostLocalExecuteError);
-                instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)action, (object)result);
-            }
-            FakesDelegates.Action<IStoreResults> action1 = this.HandleUndoGlobalPostLocalExecuteErrorIStoreResults;
+            Action<IStoreResults> action1 = this.HandleUndoGlobalPostLocalExecuteErrorIStoreResults;
             if (action1 != null)
                 action1(result);
             else if (this.___callBase)
@@ -473,13 +363,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override void HandleUndoGlobalPreLocalExecuteError(IStoreResults result)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Action<IStoreResults> action = new FakesDelegates.Action<IStoreResults>(((StoreOperation)this).HandleUndoGlobalPreLocalExecuteError);
-                instanceObserver.Enter(typeof(StoreOperation), (Delegate)action, (object)result);
-            }
-            FakesDelegates.Action<IStoreResults> action1 = this.HandleUndoGlobalPreLocalExecuteErrorIStoreResults;
+            Action<IStoreResults> action1 = this.HandleUndoGlobalPreLocalExecuteErrorIStoreResults;
             if (action1 != null)
                 action1(result);
             else if (this.___callBase)
@@ -493,13 +377,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override void HandleUndoLocalSourceExecuteError(IStoreResults result)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Action<IStoreResults> action = new FakesDelegates.Action<IStoreResults>(((StoreOperation)this).HandleUndoLocalSourceExecuteError);
-                instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)action, (object)result);
-            }
-            FakesDelegates.Action<IStoreResults> action1 = this.HandleUndoLocalSourceExecuteErrorIStoreResults;
+            Action<IStoreResults> action1 = this.HandleUndoLocalSourceExecuteErrorIStoreResults;
             if (action1 != null)
                 action1(result);
             else if (this.___callBase)
@@ -513,13 +391,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override void HandleUndoLocalTargetExecuteError(IStoreResults result)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Action<IStoreResults> action = new FakesDelegates.Action<IStoreResults>(((StoreOperation)this).HandleUndoLocalTargetExecuteError);
-                instanceObserver.Enter(typeof(StoreOperation), (Delegate)action, (object)result);
-            }
-            FakesDelegates.Action<IStoreResults> action1 = this.HandleUndoLocalTargetExecuteErrorIStoreResults;
+            Action<IStoreResults> action1 = this.HandleUndoLocalTargetExecuteErrorIStoreResults;
             if (action1 != null)
                 action1(result);
             else if (this.___callBase)
@@ -540,13 +412,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override ShardManagementException OnStoreException(StoreException se, StoreOperationState state)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Func<StoreException, StoreOperationState, ShardManagementException> func = new FakesDelegates.Func<StoreException, StoreOperationState, ShardManagementException>(((StoreOperation)this).OnStoreException);
-                instanceObserver.Enter(typeof(StoreOperation), (Delegate)func, (object)se, (object)state);
-            }
-            FakesDelegates.Func<StoreException, StoreOperationState, ShardManagementException> func1 = this.OnStoreExceptionStoreExceptionStoreOperationState;
+            Func<StoreException, StoreOperationState, ShardManagementException> func1 = this.OnStoreExceptionStoreExceptionStoreOperationState;
             if (func1 != null)
                 return func1(se, state);
             if (this.___callBase)
@@ -559,13 +425,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override IStoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func = new FakesDelegates.Func<IStoreTransactionScope, IStoreResults>(((StoreOperation)this).UndoGlobalPostLocalExecute);
-                instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)func, (object)ts);
-            }
-            FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func1 = this.UndoGlobalPostLocalExecuteIStoreTransactionScope;
+            Func<IStoreTransactionScope, IStoreResults> func1 = this.UndoGlobalPostLocalExecuteIStoreTransactionScope;
             if (func1 != null)
                 return func1(ts);
             if (this.___callBase)
@@ -578,13 +438,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override IStoreResults UndoGlobalPreLocalExecute(IStoreTransactionScope ts)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func = new FakesDelegates.Func<IStoreTransactionScope, IStoreResults>(((StoreOperation)this).UndoGlobalPreLocalExecute);
-                instanceObserver.Enter(typeof(StoreOperation), (Delegate)func, (object)ts);
-            }
-            FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func1 = this.UndoGlobalPreLocalExecuteIStoreTransactionScope;
+            Func<IStoreTransactionScope, IStoreResults> func1 = this.UndoGlobalPreLocalExecuteIStoreTransactionScope;
             if (func1 != null)
                 return func1(ts);
             if (this.___callBase)
@@ -597,13 +451,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override IStoreResults UndoLocalSourceExecute(IStoreTransactionScope ts)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func = new FakesDelegates.Func<IStoreTransactionScope, IStoreResults>(((StoreOperation)this).UndoLocalSourceExecute);
-                instanceObserver.Enter(typeof(AddMappingOperation), (Delegate)func, (object)ts);
-            }
-            FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func1 = this.UndoLocalSourceExecuteIStoreTransactionScope;
+            Func<IStoreTransactionScope, IStoreResults> func1 = this.UndoLocalSourceExecuteIStoreTransactionScope;
             if (func1 != null)
                 return func1(ts);
             if (this.___callBase)
@@ -616,13 +464,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override IStoreResults UndoLocalTargetExecute(IStoreTransactionScope ts)
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func = new FakesDelegates.Func<IStoreTransactionScope, IStoreResults>(((StoreOperation)this).UndoLocalTargetExecute);
-                instanceObserver.Enter(typeof(StoreOperation), (Delegate)func, (object)ts);
-            }
-            FakesDelegates.Func<IStoreTransactionScope, IStoreResults> func1 = this.UndoLocalTargetExecuteIStoreTransactionScope;
+            Func<IStoreTransactionScope, IStoreResults> func1 = this.UndoLocalTargetExecuteIStoreTransactionScope;
             if (func1 != null)
                 return func1(ts);
             if (this.___callBase)

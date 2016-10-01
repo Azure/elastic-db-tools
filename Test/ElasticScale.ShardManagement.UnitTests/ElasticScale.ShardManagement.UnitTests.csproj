@@ -43,9 +43,6 @@
     <Reference Include="$(NugetPack)\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\net45\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data.dll">
       <Name>Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data</Name>
     </Reference>
-    <Reference Include="Microsoft.QualityTools.Testing.Fakes, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization" />
@@ -69,8 +66,10 @@
     <Compile Include="Decorators\CacheStoreDecorator.cs" />
     <Compile Include="Decorators\CountingCacheStore.cs" />
     <Compile Include="Decorators\StoreOperationDecorator.cs" />
+    <Compile Include="Stubs\IStubBehavior.cs" />
     <Compile Include="Stubs\StubAddMappingOperation.cs" />
     <Compile Include="Stubs\StubAddShardOperation.cs" />
+    <Compile Include="Stubs\StubBehaviors.cs" />
     <Compile Include="Stubs\StubCacheStore.cs" />
     <Compile Include="Stubs\StubFindMappingByKeyGlobalOperation.cs" />
     <Compile Include="Stubs\StubICacheStoreMapping.cs" />

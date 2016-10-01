@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
-using Microsoft.QualityTools.Testing.Fakes;
-using Microsoft.QualityTools.Testing.Fakes.Stubs;
 using System;
 using System.Diagnostics;
 
@@ -12,43 +9,53 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
     /// <summary>
     /// Stub type of Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ICacheStoreMapping
     /// </summary>
-    [StubClass(typeof(ICacheStoreMapping))]
     [DebuggerDisplay("Stub of ICacheStoreMapping")]
     [DebuggerNonUserCode]
-    internal class StubICacheStoreMapping : StubBase<ICacheStoreMapping>, ICacheStoreMapping
+    internal class StubICacheStoreMapping : ICacheStoreMapping
     {
         /// <summary>
         /// Sets the stub of ICacheStoreMapping.get_CreationTime()
         /// </summary>
-        public FakesDelegates.Func<long> CreationTimeGet;
+        public Func<long> CreationTimeGet;
         /// <summary>
         /// Sets the stub of ICacheStoreMapping.HasTimeToLiveExpired()
         /// </summary>
-        public FakesDelegates.Func<bool> HasTimeToLiveExpired;
+        public Func<bool> HasTimeToLiveExpired;
         /// <summary>
         /// Sets the stub of ICacheStoreMapping.get_Mapping()
         /// </summary>
-        internal FakesDelegates.Func<IStoreMapping> MappingGet;
+        internal Func<IStoreMapping> MappingGet;
         /// <summary>
         /// Sets the stub of ICacheStoreMapping.ResetTimeToLive()
         /// </summary>
-        public FakesDelegates.Action ResetTimeToLive;
+        public Action ResetTimeToLive;
         /// <summary>
         /// Sets the stub of ICacheStoreMapping.get_TimeToLiveMilliseconds()
         /// </summary>
-        public FakesDelegates.Func<long> TimeToLiveMillisecondsGet;
+        public Func<long> TimeToLiveMillisecondsGet;
+
+        private IStubBehavior ___instanceBehavior;
+
+        /// <summary>
+        /// Gets or sets the instance behavior.
+        /// </summary>
+        public IStubBehavior InstanceBehavior
+        {
+            get
+            {
+                return StubBehaviors.GetValueOrCurrent(this.___instanceBehavior);
+            }
+            set
+            {
+                this.___instanceBehavior = value;
+            }
+        }
 
         long ICacheStoreMapping.CreationTime
         {
             get
           {
-                IStubObserver instanceObserver = this.InstanceObserver;
-                if (instanceObserver != null)
-                {
-                    FakesDelegates.Func<long> func = (FakesDelegates.Func<long>)StubRuntime.BindProperty(typeof(FakesDelegates.Func<long>), (object)this, typeof(ICacheStoreMapping), "CreationTime", true, typeof(long));
-                    instanceObserver.Enter(typeof(ICacheStoreMapping), (Delegate)func);
-                }
-                FakesDelegates.Func<long> func1 = this.CreationTimeGet;
+                Func<long> func1 = this.CreationTimeGet;
                 if (func1 != null)
                     return func1();
                 return this.InstanceBehavior.Result<StubICacheStoreMapping, long>(this, "Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ICacheStoreMapping.get_CreationTime");
@@ -59,13 +66,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         {
             get
           {
-                IStubObserver instanceObserver = this.InstanceObserver;
-                if (instanceObserver != null)
-                {
-                    FakesDelegates.Func<IStoreMapping> func = (FakesDelegates.Func<IStoreMapping>)StubRuntime.BindProperty(typeof(FakesDelegates.Func<IStoreMapping>), (object)this, typeof(ICacheStoreMapping), "Mapping", true, typeof(IStoreMapping));
-                    instanceObserver.Enter(typeof(ICacheStoreMapping), (Delegate)func);
-                }
-                FakesDelegates.Func<IStoreMapping> func1 = this.MappingGet;
+                Func<IStoreMapping> func1 = this.MappingGet;
                 if (func1 != null)
                     return func1();
                 return this.InstanceBehavior.Result<StubICacheStoreMapping, IStoreMapping>(this, "Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ICacheStoreMapping.get_Mapping");
@@ -76,13 +77,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         {
             get
           {
-                IStubObserver instanceObserver = this.InstanceObserver;
-                if (instanceObserver != null)
-                {
-                    FakesDelegates.Func<long> func = (FakesDelegates.Func<long>)StubRuntime.BindProperty(typeof(FakesDelegates.Func<long>), (object)this, typeof(ICacheStoreMapping), "TimeToLiveMilliseconds", true, typeof(long));
-                    instanceObserver.Enter(typeof(ICacheStoreMapping), (Delegate)func);
-                }
-                FakesDelegates.Func<long> func1 = this.TimeToLiveMillisecondsGet;
+                Func<long> func1 = this.TimeToLiveMillisecondsGet;
                 if (func1 != null)
                     return func1();
                 return this.InstanceBehavior.Result<StubICacheStoreMapping, long>(this, "Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ICacheStoreMapping.get_TimeToLiveMilliseconds");
@@ -91,13 +86,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
 
         bool ICacheStoreMapping.HasTimeToLiveExpired()
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Func<bool> func = new FakesDelegates.Func<bool>(((ICacheStoreMapping)this).HasTimeToLiveExpired);
-                instanceObserver.Enter(typeof(ICacheStoreMapping), (Delegate)func);
-            }
-            FakesDelegates.Func<bool> func1 = this.HasTimeToLiveExpired;
+            Func<bool> func1 = this.HasTimeToLiveExpired;
             if (func1 != null)
                 return func1();
             return this.InstanceBehavior.Result<StubICacheStoreMapping, bool>(this, "Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ICacheStoreMapping.HasTimeToLiveExpired");
@@ -105,13 +94,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
 
         void ICacheStoreMapping.ResetTimeToLive()
         {
-            IStubObserver instanceObserver = this.InstanceObserver;
-            if (instanceObserver != null)
-            {
-                FakesDelegates.Action action = new FakesDelegates.Action(((ICacheStoreMapping)this).ResetTimeToLive);
-                instanceObserver.Enter(typeof(ICacheStoreMapping), (Delegate)action);
-            }
-            FakesDelegates.Action action1 = this.ResetTimeToLive;
+            Action action1 = this.ResetTimeToLive;
             if (action1 != null)
                 action1();
             else
