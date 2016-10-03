@@ -5,7 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Fakes;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stubs;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Xunit;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests

@@ -5,13 +5,18 @@ SETLOCAL
 SET CACHED_NUGET=%LocalAppData%\NuGet\NuGet.exe
 SET SOLUTION_PATH="%~dp0ElasticDatabaseTools.sln"
 SET MSBUILD12_TOOLS_PATH="%ProgramFiles(x86)%\MSBuild\12.0\bin\MSBuild.exe"
+SET MSBUILD14_TOOLS_PATH="%ProgramFiles(x86)%\MSBuild\14.0\bin\MSBuild.exe"
 SET BUILD_TOOLS_PATH=%MSBUILD14_TOOLS_PATH%
 
-IF NOT EXIST %MSBUILD12_TOOLS_PATH% (
-  echo Could not find MSBuild 12.  Please install build tools ^(See above^)
-  exit /b 1
+IF EXIST %MSBUILD14_TOOLS_PATH% (
+  SET BUILD_TOOLS_PATH=%MSBUILD14_TOOLS_PATH%
+) else if exist %MSBUILD12_TOOLS_PATH% (
+  SET BUILD_TOOLS_PATH=%MSBUILD12_TOOLS_PATH%
 ) else (
-  set BUILD_TOOLS_PATH=%MSBUILD12_TOOLS_PATH%
+  echo Could not find MSBuild in any of the following locations:
+  echo   %MSBUILD14_TOOLS_PATH%
+  echo   %MSBUILD12_TOOLS_PATH%
+  exit /b 1
 )
 
 IF EXIST %CACHED_NUGET% goto restore

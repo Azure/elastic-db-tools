@@ -12,6 +12,9 @@ Src/Microsoft.Azure.SqlDatabase.ElasticScale.Client.xml
 # Test output
 TestResults
 
+# Tools files
+*.sln.DotSettings.user
+
 # Temporary tools files
 *.GhostDoc.xml
 *.suo
