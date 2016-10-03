@@ -14,7 +14,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
     /// <summary>
     /// Tests cover shard range tests
     /// </summary>
-    [TestClass]
     public class ShardRangeTests
     {
         public const Int32 max32 = 0x7FFFFFFF;

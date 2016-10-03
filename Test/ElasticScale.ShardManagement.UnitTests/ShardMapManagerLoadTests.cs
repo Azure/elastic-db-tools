@@ -10,16 +10,17 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Microsoft.Practices.EnterpriseLibrary.WindowsAzure.TransientFaultHandling.SqlAzure;
+using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Fixtures;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
-    [TestClass]
-    public class ShardMapManagerLoadTests
+    public class ShardMapManagerLoadTests : IDisposable, IClassFixture<ShardMapManagerLoadTestsFixture>
     {
         /// <summary>
         /// Sharded databases to create for the test.
         /// </summary>
-        private static string[] s_shardedDBs = new[]
+        internal static string[] s_shardedDBs = new[]
         {
             "shard1" + Globals.TestDatabasePostfix,
             "shard2" + Globals.TestDatabasePostfix,
@@ -36,12 +37,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// List shard map name.
         /// </summary>
-        private static string s_listShardMapName = "Customers_list";
+        internal static string s_listShardMapName = "Customers_list";
 
         /// <summary>
         /// Range shard map name.
         /// </summary>
-        private static string s_rangeShardMapName = "Customers_range";
+        internal static string s_rangeShardMapName = "Customers_range";
 
         /// <summary>
         /// Query to kill connections for a particular database
@@ -58,7 +59,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// Queries to cleanup objects used for deadlock detection.
         /// These will not work against Azure SQL DB, code just catches and ignores SqlException for these queries.
         /// </summary>
-        private static string[] s_deadlockDetectionCleanupQueries = new[]
+        internal static string[] s_deadlockDetectionCleanupQueries = new[]
         {
             "use msdb",
             "drop event notification CaptureDeadlocks on server",
@@ -71,7 +72,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// Queries to create objects for deadlock detection.
         /// These will not work against Azure SQL DB, code just catches and ignores SqlException for these queries.
         /// </summary>
-        private static string[] s_deadlockDetectionSetupQueries = new[]
+        internal static string[] s_deadlockDetectionSetupQueries = new[]
         {
             "use msdb",
             "create queue DeadlockQueue",
@@ -84,12 +85,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// Query to collect deadlock graphs
         /// This will not work against Azure SQL DB, code just catches and ignores SqlException.
         /// </summary>
-        private static string s_deadlockDetectionQuery = "select CAST(message_body AS XML) from msdb..DeadlockQueue";
+        internal static string s_deadlockDetectionQuery = "select CAST(message_body AS XML) from msdb..DeadlockQueue";
 
         /// <summary>
         /// Number of shards added to both list and range shard maps.
         /// </summary>
-        private const int InitialShardCount = 6;
+        internal const int InitialShardCount = 6;
 
         /// <summary>
         /// Lowest point on Integer range that can be mapped by unit tests.
@@ -114,216 +115,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Retry policy used for DDR in unit tests.
         /// </summary>
-        private static RetryPolicy<SqlAzureTransientErrorDetectionStrategy> s_retryPolicy;
+        internal static RetryPolicy<SqlDatabaseTransientErrorDetectionStrategy> s_retryPolicy;
 
         #region CommonMethods
 
-        /// <summary>
-        /// Initializes common state for tests in this class.
-        /// </summary>
-        /// <param name="testContext">The TestContext we are running in.</param>
-        [ClassInitialize()]
-        public static void ShardMapManagerLoadTestsInitialize(TestContext testContext)
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
+        public ShardMapManagerLoadTests() {
 
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-
-                // Create ShardMapManager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.CreateDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-
-                // Create shard databases
-                for (int i = 0; i < ShardMapManagerLoadTests.s_shardedDBs.Length; i++)
-                {
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.CreateDatabaseQuery, ShardMapManagerLoadTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-
-                // cleanup for deadlock monitoring
-                foreach (string q in s_deadlockDetectionCleanupQueries)
-                {
-                    using (SqlCommand cmd = new SqlCommand(q, conn))
-                    {
-                        try
-                        {
-                            cmd.ExecuteNonQuery();
-                        }
-                        catch (SqlException)
-                        {
-                        }
-                    }
-                }
-
-                // setup for deadlock monitoring
-                foreach (string q in s_deadlockDetectionSetupQueries)
-                {
-                    using (SqlCommand cmd = new SqlCommand(q, conn))
-                    {
-                        try
-                        {
-                            cmd.ExecuteNonQuery();
-                        }
-                        catch (SqlException)
-                        {
-                        }
-                    }
-                }
-            }
-
-            // Create shard map manager.
-            ShardMapManagerFactory.CreateSqlShardMapManager(
-                Globals.ShardMapManagerConnectionString,
-                ShardMapManagerCreateMode.ReplaceExisting);
-
-            // Create list shard map.
-            ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
-                        Globals.ShardMapManagerConnectionString,
-                        ShardMapManagerLoadPolicy.Lazy);
-
-            ListShardMap<int> lsm = smm.CreateListShardMap<int>(ShardMapManagerLoadTests.s_listShardMapName);
-            Assert.NotNull(lsm);
-
-            // Create range shard map.
-            RangeShardMap<int> rsm = smm.CreateRangeShardMap<int>(ShardMapManagerLoadTests.s_rangeShardMapName);
-            Assert.NotNull(rsm);
-
-            // Add 'InitialShardCount' shards to list and range shard map.
-
-            for (int i = 0; i < ShardMapManagerLoadTests.InitialShardCount; i++)
-            {
-                ShardCreationInfo si = new ShardCreationInfo(
-                    new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapManagerLoadTests.s_shardedDBs[i]),
-                    ShardStatus.Online);
-
-                Shard sList = lsm.CreateShard(si);
-                Assert.NotNull(sList);
-
-                Shard sRange = rsm.CreateShard(si);
-                Assert.NotNull(sRange);
-            }
-
-            // Initialize retry policy
-            s_retryPolicy = new RetryPolicy<SqlAzureTransientErrorDetectionStrategy>(
-                new ExponentialBackoff(5, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(5), TimeSpan.FromMilliseconds(100)));
         }
 
-        /// <summary>
-        /// Cleans up common state for the all tests in this class.
-        /// </summary>
-        [ClassCleanup()]
-        public static void ShardMapManagerLoadTestsCleanup()
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
+        public void Dispose() {
 
-            // Detect inconsistencies for all shard locations in a shard map.
-            ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
-                Globals.ShardMapManagerConnectionString,
-                ShardMapManagerLoadPolicy.Lazy);
-
-            RecoveryManager rm = new RecoveryManager(smm);
-
-            bool inconsistencyDetected = false;
-
-            foreach (ShardLocation sl in smm.GetDistinctShardLocations())
-            {
-                IEnumerable<RecoveryToken> gs = rm.DetectMappingDifferences(sl);
-
-                foreach (RecoveryToken g in gs)
-                {
-                    var kvps = rm.GetMappingDifferences(g);
-                    if (kvps.Keys.Count > 0)
-                    {
-                        inconsistencyDetected = true;
-                        Debug.WriteLine("LSM at location {0} is not consistent with GSM", sl);
-                    }
-                }
-            }
-
-            bool deadlocksDetected = false;
-
-            // Check for deadlocks during the run and cleanup database and deadlock objects on successful run
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-
-                // check for any deadlocks occured during the run and cleanup deadlock monitoring objects
-                using (SqlCommand cmd = conn.CreateCommand())
-                {
-                    cmd.CommandText = s_deadlockDetectionQuery;
-                    cmd.CommandType = System.Data.CommandType.Text;
-
-                    try
-                    {
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.HasRows)
-                            {
-                                // some deadlocks occured during the test, collect xml plan for these deadlocks
-                                deadlocksDetected = true;
-
-                                while (reader.Read())
-                                {
-                                    Debug.WriteLine("Deadlock information");
-                                    Debug.WriteLine(reader.GetSqlXml(0).Value);
-                                }
-                            }
-                        }
-                    }
-                    catch (SqlException)
-                    {
-                    }
-                }
-
-                // cleanup only if there are no inconsistencies and deadlocks during the run.
-                if (!deadlocksDetected && !inconsistencyDetected)
-                {
-                    foreach (string q in s_deadlockDetectionCleanupQueries)
-                    {
-                        using (SqlCommand cmd = new SqlCommand(q, conn))
-                        {
-                            try
-                            {
-                                cmd.ExecuteNonQuery();
-                            }
-                            catch (SqlException)
-                            {
-                            }
-                        }
-                    }
-
-                    // Drop shard databases
-                    for (int i = 0; i < ShardMapManagerLoadTests.s_shardedDBs.Length; i++)
-                    {
-                        using (SqlCommand cmd = new SqlCommand(
-                            string.Format(Globals.DropDatabaseQuery, ShardMapManagerLoadTests.s_shardedDBs[i]),
-                            conn))
-                        {
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-
-                    // Drop shard map manager database
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.DropDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -851,12 +652,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     foreach (RangeMapping<int> r2 in rList)
                     {
                         Assert.NotNull(r2);
-                        Assert.Equal(mappingLockToken, rsm.GetMappingLockOwner(r2),
+                        AssertExtensions.EqualMsg(mappingLockToken, rsm.GetMappingLockOwner(r2),
                             String.Format("LockOwnerId of mapping: {0} does not match id in store!", r2));
 
                         // Unlock each mapping and verify
                         rsm.UnlockMapping(r2, mappingLockToken);
-                        Assert.Equal(MappingLockToken.NoLock, rsm.GetMappingLockOwner(r2),
+                        AssertExtensions.EqualMsg(MappingLockToken.NoLock, rsm.GetMappingLockOwner(r2),
                             String.Format("Mapping: {0} not unlocked as expected!", r2));
                     }
                 }
@@ -946,11 +747,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     Assert.NotNull(rMerged);
 
                     MappingLockToken storeMappingLockToken = rsm.GetMappingLockOwner(rMerged);
-                    Assert.Equal(storeMappingLockToken, mappingLockTokenLeft, "Expected merged mapping lock id to equal left mapping id!");
+                    AssertExtensions.EqualMsg(storeMappingLockToken, mappingLockTokenLeft, "Expected merged mapping lock id to equal left mapping id!");
                     rsm.UnlockMapping(rMerged, storeMappingLockToken);
 
                     storeMappingLockToken = rsm.GetMappingLockOwner(rMerged);
-                    Assert.Equal(storeMappingLockToken, MappingLockToken.NoLock, "Expected merged mapping lock id to equal default mapping id after unlock!");
+                    AssertExtensions.EqualMsg(storeMappingLockToken, MappingLockToken.NoLock, "Expected merged mapping lock id to equal default mapping id after unlock!");
                 }
             }
             catch (ShardManagementException sme)

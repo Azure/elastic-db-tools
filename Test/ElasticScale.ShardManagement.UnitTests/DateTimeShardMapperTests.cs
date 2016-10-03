@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
 using Xunit;
 using System;
@@ -11,19 +10,19 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Fixtures;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
     /// <summary>
     /// Test related to ShardMapper class and it's methods.
     /// </summary>
-    [TestClass]
-    public class DateTimeShardMapperTests
+    public class DateTimeShardMapperTests : IDisposable, IClassFixture<DateTimeShardMapperTestsFixture>
     {
         /// <summary>
         /// Sharded databases to create for the test.
         /// </summary>
-        private static string[] s_shardedDBs = new[]
+        internal static string[] s_shardedDBs = new[]
         {
             "shard1" + Globals.TestDatabasePostfix, "shard2" + Globals.TestDatabasePostfix
         };
@@ -31,12 +30,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// List shard map name.
         /// </summary>
-        private static string s_listShardMapName = "Customers_list";
+        internal static string s_listShardMapName = "Customers_list";
 
         /// <summary>
         /// Range shard map name.
         /// </summary>
-        private static string s_rangeShardMapName = "Customers_range";
+        internal static string s_rangeShardMapName = "Customers_range";
 
         #region Common Methods
 
@@ -93,108 +92,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         }
 
         /// <summary>
-        /// Initializes common state for tests in this class.
-        /// </summary>
-        /// <param name="testContext">The TestContext we are running in.</param>
-        [ClassInitialize()]
-        public static void ShardMapperTestsInitialize(TestContext testContext)
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-
-                // Create ShardMapManager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.CreateDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-
-                // Create shard databases
-                for (int i = 0; i < DateTimeShardMapperTests.s_shardedDBs.Length; i++)
-                {
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.DropDatabaseQuery, DateTimeShardMapperTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.CreateDatabaseQuery, DateTimeShardMapperTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-
-            // Create shard map manager.
-            ShardMapManagerFactory.CreateSqlShardMapManager(
-                Globals.ShardMapManagerConnectionString,
-                ShardMapManagerCreateMode.ReplaceExisting);
-
-            // Create list shard map.
-            ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
-                        Globals.ShardMapManagerConnectionString,
-                        ShardMapManagerLoadPolicy.Lazy);
-
-            ListShardMap<DateTime> lsm = smm.CreateListShardMap<DateTime>(DateTimeShardMapperTests.s_listShardMapName);
-
-            Assert.NotNull(lsm);
-
-            Assert.Equal(DateTimeShardMapperTests.s_listShardMapName, lsm.Name);
-
-            // Create range shard map.
-            RangeShardMap<DateTime> rsm = smm.CreateRangeShardMap<DateTime>(DateTimeShardMapperTests.s_rangeShardMapName);
-
-            Assert.NotNull(rsm);
-
-            Assert.Equal(DateTimeShardMapperTests.s_rangeShardMapName, rsm.Name);
-        }
-
-        /// <summary>
-        /// Cleans up common state for the all tests in this class.
-        /// </summary>
-        [ClassCleanup()]
-        public static void ShardMapperTestsCleanup()
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-                // Drop shard databases
-                for (int i = 0; i < DateTimeShardMapperTests.s_shardedDBs.Length; i++)
-                {
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.DropDatabaseQuery, DateTimeShardMapperTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-
-                // Drop shard map manager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.DropDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        /// <summary>
         /// Initializes common state per-test.
         /// </summary>
-        [TestInitialize()]
-        public void ShardMapperTestInitialize()
+        public DateTimeShardMapperTests()
         {
             DateTimeShardMapperTests.CleanShardMapsHelper();
         }
@@ -202,8 +102,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Cleans up common state per-test.
         /// </summary>
-        [TestCleanup()]
-        public void ShardMapperTestCleanup()
+        public void Dispose()
         {
             DateTimeShardMapperTests.CleanShardMapsHelper();
         }

@@ -7,11 +7,11 @@ using System;
 using System.Data.SqlClient;
 using System.Linq;
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
+using Xunit.Sdk;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
-    [TestClass]
-    public class ShardMapManagerUpgradeTests
+    public class ShardMapManagerUpgradeTests : IDisposable
     {
         /// <summary>
         /// Sharded databases to create for the tests.
@@ -43,27 +43,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         #region Common Methods
 
         /// <summary>
-        /// Initializes common state for tests in this class.
-        /// </summary>
-        /// <param name="testContext">The TestContext we are running in.</param>
-        [ClassInitialize()]
-        public static void ShardMapManagerUpgradeTestsInitialize(TestContext testContext)
-        {
-        }
-
-        /// <summary>
-        /// Cleans up common state for the all tests in this class.
-        /// </summary>
-        [ClassCleanup()]
-        public static void ShardMapManagerUpgradeTestsCleanup()
-        {
-        }
-
-        /// <summary>
         /// Initializes common state per-test.
         /// </summary>
-        [TestInitialize()]
-        public void ShardMapManagerUpgradeTestInitialize()
+        public ShardMapManagerUpgradeTests()
         {
             // Clear all connection pools.
             SqlConnection.ClearAllPools();
@@ -109,8 +91,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Cleans up common state per-test.
         /// </summary>
-        [TestCleanup()]
-        public void ShardMapManagerUpgradeTestCleanup()
+        public void Dispose()
         {
             // Clear all connection pools.
             SqlConnection.ClearAllPools();
@@ -376,7 +357,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     }
                     else
                     {
-                        throw new AssertFailedException(String.Format("Unexpected FieldCount: {0}", reader.FieldCount));
+                        throw new TrueException(String.Format("Unexpected FieldCount: {0}", reader.FieldCount), false);
                     }
                 }
             }

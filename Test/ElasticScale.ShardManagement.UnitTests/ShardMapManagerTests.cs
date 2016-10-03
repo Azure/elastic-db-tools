@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Fixtures;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stubs;
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
 using Xunit;
@@ -15,8 +16,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
     /// <summary>
     /// Test related to ShardMapManager class and it's methods.
     /// </summary>
-    [TestClass]
-    public class ShardMapManagerTests
+    public class ShardMapManagerTests : IDisposable, IClassFixture<ShardMapManagerTestsFixture>
     {
         /// <summary>
         /// Shard map name used in the tests.
@@ -26,60 +26,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         #region Common Methods
 
         /// <summary>
-        /// Initializes common state for tests in this class.
-        /// </summary>
-        /// <param name="testContext">The TestContext we are running in.</param>
-        [ClassInitialize()]
-        public static void ShardMapManagerTestsInitialize(TestContext testContext)
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-
-                // Create ShardMapManager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.CreateDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-
-            // Create the shard map manager.
-            ShardMapManagerFactory.CreateSqlShardMapManager(
-                Globals.ShardMapManagerConnectionString,
-                ShardMapManagerCreateMode.ReplaceExisting);
-        }
-
-        /// <summary>
-        /// Cleans up common state for the all tests in this class.
-        /// </summary>
-        [ClassCleanup()]
-        public static void ShardMapManagerTestsCleanup()
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.DropDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        /// <summary>
         /// Initializes common state per-test.
         /// </summary>
-        [TestInitialize()]
-        public void ShardMapManagerTestInitialize()
+        public ShardMapManagerTests()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
                                     Globals.ShardMapManagerConnectionString,
@@ -98,8 +47,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Cleans up common state per-test.
         /// </summary>
-        [TestCleanup()]
-        public void ShardMapManagerTestCleanup()
+        public void Dispose()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
                         Globals.ShardMapManagerConnectionString,
@@ -379,9 +327,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
 
             // Validate
-            Assert.Equal(ex.ErrorCode, errorCode, "ErrorCode");
-            Assert.Equal(ex.ErrorCategory, errorCategory, "ErrorCategory");
-            Assert.Equal(exceptionToString, ex.ToString(), "ToString()");
+            AssertExtensions.EqualMsg(ex.ErrorCode, errorCode, "ErrorCode");
+            AssertExtensions.EqualMsg(ex.ErrorCategory, errorCategory, "ErrorCategory");
+            AssertExtensions.EqualMsg(exceptionToString, ex.ToString(), "ToString()");
         }
 
         #region GsmAbortTests

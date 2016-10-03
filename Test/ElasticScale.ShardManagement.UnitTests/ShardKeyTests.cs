@@ -272,7 +272,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             Assert.Equal(k1, k2);
 
             ShardKey k3 = ShardKey.MinDateTimeOffset;
-            Assert.AreNotEqual(k1, k3);
+            Assert.NotEqual(k1, k3);
         }
 
         private void TestShardKeyGeneric<TKey>(ShardKeyType keyType, TKey inputValue, Type realType)

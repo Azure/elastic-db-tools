@@ -11,19 +11,19 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Fixtures;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
     /// <summary>
     /// Test related to ShardMapper class and it's methods.
     /// </summary>
-    [TestClass]
-    public class ShardMapperTests
+    public class ShardMapperTests : IDisposable, IClassFixture<ShardMapperTestsFixture>
     {
         /// <summary>
         /// Sharded databases to create for the test.
         /// </summary>
-        private static string[] s_shardedDBs = new[]
+        internal static string[] s_shardedDBs = new[]
         {
             "shard1" + Globals.TestDatabasePostfix, "shard2" + Globals.TestDatabasePostfix
         };
@@ -31,12 +31,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// List shard map name.
         /// </summary>
-        private static string s_listShardMapName = "Customers_list";
+        internal static string s_listShardMapName = "Customers_list";
 
         /// <summary>
         /// Range shard map name.
         /// </summary>
-        private static string s_rangeShardMapName = "Customers_range";
+        internal static string s_rangeShardMapName = "Customers_range";
 
         #region Common Methods
 
@@ -91,110 +91,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 }
             }
         }
-
-        /// <summary>
-        /// Initializes common state for tests in this class.
-        /// </summary>
-        /// <param name="testContext">The TestContext we are running in.</param>
-        [ClassInitialize()]
-        public static void ShardMapperTestsInitialize(TestContext testContext)
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-
-                // Create ShardMapManager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.CreateDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-
-                // Create shard databases
-                for (int i = 0; i < ShardMapperTests.s_shardedDBs.Length; i++)
-                {
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.DropDatabaseQuery, ShardMapperTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.CreateDatabaseQuery, ShardMapperTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-
-            // Create shard map manager.
-            ShardMapManagerFactory.CreateSqlShardMapManager(
-                Globals.ShardMapManagerConnectionString,
-                ShardMapManagerCreateMode.ReplaceExisting);
-
-            // Create list shard map.
-            ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
-                        Globals.ShardMapManagerConnectionString,
-                        ShardMapManagerLoadPolicy.Lazy);
-
-            ListShardMap<int> lsm = smm.CreateListShardMap<int>(ShardMapperTests.s_listShardMapName);
-
-            Assert.NotNull(lsm);
-
-            Assert.Equal(ShardMapperTests.s_listShardMapName, lsm.Name);
-
-            // Create range shard map.
-            RangeShardMap<int> rsm = smm.CreateRangeShardMap<int>(ShardMapperTests.s_rangeShardMapName);
-
-            Assert.NotNull(rsm);
-
-            Assert.Equal(ShardMapperTests.s_rangeShardMapName, rsm.Name);
-        }
-
-        /// <summary>
-        /// Cleans up common state for the all tests in this class.
-        /// </summary>
-        [ClassCleanup()]
-        public static void ShardMapperTestsCleanup()
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-                // Drop shard databases
-                for (int i = 0; i < ShardMapperTests.s_shardedDBs.Length; i++)
-                {
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.DropDatabaseQuery, ShardMapperTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-
-                // Drop shard map manager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.DropDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
+        
         /// <summary>
         /// Initializes common state per-test.
         /// </summary>
-        [TestInitialize()]
-        public void ShardMapperTestInitialize()
+        public ShardMapperTests()
         {
             ShardMapperTests.CleanShardMapsHelper();
         }
@@ -202,8 +103,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Cleans up common state per-test.
         /// </summary>
-        [TestCleanup()]
-        public void ShardMapperTestCleanup()
+        public void Dispose()
         {
             ShardMapperTests.CleanShardMapsHelper();
         }
@@ -1432,7 +1332,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             Assert.NotNull(rNew);
 
             MappingLockToken storeMappingLockToken = rsm.GetMappingLockOwner(rNew);
-            Assert.Equal(storeMappingLockToken, mappingLockToken, "LockownerId does not match that in store!");
+            AssertExtensions.EqualMsg(storeMappingLockToken, mappingLockToken, "LockownerId does not match that in store!");
 
             rsm.UnlockMapping(rNew, mappingLockToken);
             RangeMapping<int> r2 = rsm.GetMappingForKey(1);
@@ -1838,12 +1738,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RangeMapping<int> r in rList)
             {
                 Assert.NotNull(r);
-                Assert.Equal(mappingLockToken, rsm.GetMappingLockOwner(r),
+                AssertExtensions.EqualMsg(mappingLockToken, rsm.GetMappingLockOwner(r),
                     "LockOwnerId of mapping: {0} does not match id in store!");
 
                 // Unlock each mapping and verify
                 rsm.UnlockMapping(r, mappingLockToken);
-                Assert.Equal(MappingLockToken.NoLock, rsm.GetMappingLockOwner(r),
+                AssertExtensions.EqualMsg(MappingLockToken.NoLock, rsm.GetMappingLockOwner(r),
                     "Mapping: {0} not unlocked as expected!");
             }
         }
@@ -1954,10 +1854,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             Assert.NotNull(rMerged);
 
             MappingLockToken storeMappingLockToken = rsm.GetMappingLockOwner(rMerged);
-            Assert.Equal(storeMappingLockToken, mappingLockTokenLeft, "Expected merged mapping lock id to equal left mapping id!");
+            AssertExtensions.EqualMsg(storeMappingLockToken, mappingLockTokenLeft, "Expected merged mapping lock id to equal left mapping id!");
             rsm.UnlockMapping(rMerged, storeMappingLockToken);
             storeMappingLockToken = rsm.GetMappingLockOwner(rMerged);
-            Assert.Equal(storeMappingLockToken, MappingLockToken.NoLock, "Expected merged mapping lock id to equal default mapping id after unlock!");
+            AssertExtensions.EqualMsg(storeMappingLockToken, MappingLockToken.NoLock, "Expected merged mapping lock id to equal default mapping id after unlock!");
         }
 
         /// <summary>
@@ -2055,15 +1955,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             // Lookup should work without a lockownerId
             RangeMapping<int> r1LookUp = rsm.GetMappingForKey(5);
-            Assert.Equal(r1, r1LookUp, "Expected range mappings to be equal!");
+            AssertExtensions.EqualMsg(r1, r1LookUp, "Expected range mappings to be equal!");
 
             // Try to unlock the mapping with the wrong lock owner id
             exception = AssertExtensions.AssertThrows<ShardManagementException>
                 (() => rsm.UnlockMapping(r1, MappingLockToken.NoLock));
             Assert.True(exception.ErrorCode == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch &&
                 exception.ErrorCategory == ShardManagementErrorCategory.RangeShardMap,
-                "Expected MappingLockOwnerIdDoesNotMatch error. Found: ErrorCode: {0} ErrorCategory: {1}!",
-                exception.ErrorCode, ShardManagementErrorCategory.RangeShardMap);
+                String.Format("Expected MappingLockOwnerIdDoesNotMatch error. Found: ErrorCode: {0} ErrorCategory: {1}!",
+                exception.ErrorCode, ShardManagementErrorCategory.RangeShardMap));
 
             rsm.UnlockMapping(r1, mappingLockToken);
         }
@@ -2108,15 +2008,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             // Lookup should work without a lockownerId
             PointMapping<int> r1LookUp = rsm.GetMappingForKey(1);
-            Assert.Equal(r1, r1LookUp, "Expected range mappings to be equal!");
+            AssertExtensions.EqualMsg(r1, r1LookUp, "Expected range mappings to be equal!");
 
             // Try to unlock the mapping with the wrong lock owner id
             exception = AssertExtensions.AssertThrows<ShardManagementException>
                 (() => rsm.UnlockMapping(r1, MappingLockToken.NoLock));
             Assert.True(exception.ErrorCode == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch &&
                 exception.ErrorCategory == ShardManagementErrorCategory.ListShardMap,
-                "Expected MappingLockOwnerIdDoesNotMatch error. Found: ErrorCode: {0} ErrorCategory: {1}!",
-                exception.ErrorCode, ShardManagementErrorCategory.ListShardMap);
+                String.Format("Expected MappingLockOwnerIdDoesNotMatch error. Found: ErrorCode: {0} ErrorCategory: {1}!",
+                exception.ErrorCode, ShardManagementErrorCategory.ListShardMap));
 
             rsm.UnlockMapping(r1, mappingLockToken);
         }
@@ -2160,7 +2060,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             foreach (var mapping in mappings)
             {
-                Assert.Equal(MappingLockToken.NoLock, rsm.GetMappingLockOwner(mapping),
+                AssertExtensions.EqualMsg(MappingLockToken.NoLock, rsm.GetMappingLockOwner(mapping),
                     "Expected all mappings to be unlocked!");
             }
         }
@@ -2204,7 +2104,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             foreach (var mapping in mappings)
             {
-                Assert.Equal(MappingLockToken.NoLock, rsm.GetMappingLockOwner(mapping),
+                AssertExtensions.EqualMsg(MappingLockToken.NoLock, rsm.GetMappingLockOwner(mapping),
                     "Expected all mappings to be unlocked!");
             }
         }
@@ -2236,12 +2136,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             PointMapping<int> pNew = lsm.MarkMappingOffline(p1);
 
             Assert.NotNull(pNew);
-            Assert.Equal(MappingStatus.Offline, pNew.Status, "The point mapping was not successfully marked offline.");
+            AssertExtensions.EqualMsg(MappingStatus.Offline, pNew.Status, "The point mapping was not successfully marked offline.");
 
             pNew = lsm.MarkMappingOnline(pNew);
 
             Assert.NotNull(pNew);
-            Assert.Equal(MappingStatus.Online, pNew.Status, "The point mapping was not successfully marked online.");
+            AssertExtensions.EqualMsg(MappingStatus.Online, pNew.Status, "The point mapping was not successfully marked online.");
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapperTests.s_rangeShardMapName);
 
@@ -2255,12 +2155,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             RangeMapping<int> rNew = rsm.MarkMappingOffline(r1);
 
             Assert.NotNull(rNew);
-            Assert.Equal(MappingStatus.Offline, rNew.Status, "The range mapping was not successfully marked offline.");
+            AssertExtensions.EqualMsg(MappingStatus.Offline, rNew.Status, "The range mapping was not successfully marked offline.");
 
             rNew = rsm.MarkMappingOnline(rNew);
 
             Assert.NotNull(rNew);
-            Assert.Equal(MappingStatus.Online, rNew.Status, "The range mapping was not successfully marked online.");
+            AssertExtensions.EqualMsg(MappingStatus.Online, rNew.Status, "The range mapping was not successfully marked online.");
         }
 
         #region Unavailable Server

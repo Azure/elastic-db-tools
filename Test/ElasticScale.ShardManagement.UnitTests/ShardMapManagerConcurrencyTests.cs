@@ -5,74 +5,24 @@ using System.Data.SqlClient;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 using Xunit;
 using System.Collections.Generic;
+using System;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Fixtures;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
-    [TestClass]
-    public class ShardMapManagerConcurrencyTests
+    public class ShardMapManagerConcurrencyTests : IDisposable, IClassFixture<ShardMapManagerConcurrencyTestsFixture>
     {
         /// <summary>
         /// Shard map name used in the tests.
         /// </summary>
-        private static string s_shardMapName = "Customer";
+        internal static string s_shardMapName = "Customer";
 
         #region Common Methods
 
         /// <summary>
-        /// Initializes common state for tests in this class.
-        /// </summary>
-        /// <param name="testContext">The TestContext we are running in.</param>
-        [ClassInitialize()]
-        public static void ShardMapManagerConcurrencyTestsInitialize(TestContext testContext)
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-
-                // Create ShardMapManager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.CreateDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-
-            // Create the shard map manager.
-            ShardMapManagerFactory.CreateSqlShardMapManager(
-                Globals.ShardMapManagerConnectionString,
-                ShardMapManagerCreateMode.ReplaceExisting);
-        }
-
-        /// <summary>
-        /// Cleans up common state for the all tests in this class.
-        /// </summary>
-        [ClassCleanup()]
-        public static void ShardMapManagerConcurrencyTestsCleanup()
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.DropDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        /// <summary>
         /// Initializes common state per-test.
         /// </summary>
-        [TestInitialize()]
-        public void ShardMapManagerConcurrencyTestInitialize()
+        public ShardMapManagerConcurrencyTests()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
                                     Globals.ShardMapManagerConnectionString,
@@ -91,8 +41,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Cleans up common state per-test.
         /// </summary>
-        [TestCleanup()]
-        public void ShardMapManagerConcurrencyTestCleanup()
+        public void Dispose()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
                         Globals.ShardMapManagerConnectionString,
