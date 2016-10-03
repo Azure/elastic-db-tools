@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Recovery;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -193,11 +193,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                         ShardMapManagerLoadPolicy.Lazy);
 
             ListShardMap<int> lsm = smm.CreateListShardMap<int>(ShardMapManagerLoadTests.s_listShardMapName);
-            Assert.IsNotNull(lsm);
+            Assert.NotNull(lsm);
 
             // Create range shard map.
             RangeShardMap<int> rsm = smm.CreateRangeShardMap<int>(ShardMapManagerLoadTests.s_rangeShardMapName);
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             // Add 'InitialShardCount' shards to list and range shard map.
 
@@ -208,10 +208,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     ShardStatus.Online);
 
                 Shard sList = lsm.CreateShard(si);
-                Assert.IsNotNull(sList);
+                Assert.NotNull(sList);
 
                 Shard sRange = rsm.CreateShard(si);
-                Assert.IsNotNull(sRange);
+                Assert.NotNull(sRange);
             }
 
             // Initialize retry policy
@@ -447,8 +447,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Add point mapping
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestAddPointMapping()
         {
             try
@@ -459,7 +459,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 ListShardMap<int> lsm = smm.GetListShardMap<int>(ShardMapManagerLoadTests.s_listShardMapName);
 
-                Assert.IsNotNull(lsm);
+                Assert.NotNull(lsm);
                 do
                 {
                     // Chose a random shard to add mapping.
@@ -479,7 +479,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                     PointMapping<int> p1 = lsm.CreatePointMapping(key, s);
 
-                    Assert.IsNotNull(p1);
+                    Assert.NotNull(p1);
 
                     // Validate mapping by trying to connect
                     s_retryPolicy.ExecuteAction(
@@ -498,8 +498,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Delete point mapping
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestDeletePointMapping()
         {
             try
@@ -509,7 +509,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     ShardMapManagerLoadPolicy.Lazy);
 
                 ListShardMap<int> lsm = smm.GetListShardMap<int>(ShardMapManagerLoadTests.s_listShardMapName);
-                Assert.IsNotNull(lsm);
+                Assert.NotNull(lsm);
 
                 PointMapping<int> p1 = this.GetRandomPointMapping(lsm);
 
@@ -534,8 +534,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// DDR for a list shard map.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestPointMappingDDR()
         {
             try
@@ -544,7 +544,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     Globals.ShardMapManagerConnectionString, ShardMapManagerLoadPolicy.Lazy);
 
                 ListShardMap<int> lsm = smm.GetListShardMap<int>(ShardMapManagerLoadTests.s_listShardMapName);
-                Assert.IsNotNull(lsm);
+                Assert.NotNull(lsm);
 
                 PointMapping<int> p1 = this.GetRandomPointMapping(lsm);
 
@@ -568,8 +568,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Add a shard to list shard map
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestAddShardToListShardMap()
         {
             try
@@ -579,7 +579,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     ShardMapManagerLoadPolicy.Lazy);
 
                 ListShardMap<int> lsm = smm.GetListShardMap<int>(ShardMapManagerLoadTests.s_listShardMapName);
-                Assert.IsNotNull(lsm);
+                Assert.NotNull(lsm);
 
                 AddShardToShardMap((ShardMap)lsm);
             }
@@ -593,8 +593,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// Mark all shards as online in list shard map.
         /// <remarks>If remove shard operation fails, it will leave shards in offline state, this function will mark all such shards as online.</remarks>
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestMarkAllShardsAsOnlineInListShardMap()
         {
             try
@@ -604,7 +604,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     ShardMapManagerLoadPolicy.Lazy);
 
                 ListShardMap<int> lsm = smm.GetListShardMap<int>(ShardMapManagerLoadTests.s_listShardMapName);
-                Assert.IsNotNull(lsm);
+                Assert.NotNull(lsm);
 
                 foreach (Shard s in lsm.GetShards())
                 {
@@ -627,8 +627,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Remove a random shard from list shard map.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestRemoveShardFromListShardMap()
         {
             try
@@ -638,7 +638,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     ShardMapManagerLoadPolicy.Lazy);
 
                 ListShardMap<int> lsm = smm.GetListShardMap<int>(ShardMapManagerLoadTests.s_listShardMapName);
-                Assert.IsNotNull(lsm);
+                Assert.NotNull(lsm);
 
                 List<Shard> existingShards = lsm.GetShards().ToList();
 
@@ -694,8 +694,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Add range mapping
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestAddRangeMapping()
         {
             try
@@ -706,7 +706,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapManagerLoadTests.s_rangeShardMapName);
 
-                Assert.IsNotNull(rsm);
+                Assert.NotNull(rsm);
                 do
                 {
                     // Chose a random shard to add mapping.
@@ -727,7 +727,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                     RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(minKey, maxKey), s);
 
-                    Assert.IsNotNull(r1);
+                    Assert.NotNull(r1);
 
                     // Validate mapping by trying to connect
                     s_retryPolicy.ExecuteAction(
@@ -746,8 +746,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Delete range mapping
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestDeleteRangeMapping()
         {
             try
@@ -757,7 +757,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                                 ShardMapManagerLoadPolicy.Lazy);
 
                 RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapManagerLoadTests.s_rangeShardMapName);
-                Assert.IsNotNull(rsm);
+                Assert.NotNull(rsm);
 
                 RangeMapping<int> r1 = this.GetRandomRangeMapping(rsm);
 
@@ -782,8 +782,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// DDR for a range shard map.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestRangeMappingDDR()
         {
             try
@@ -793,7 +793,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     ShardMapManagerLoadPolicy.Lazy);
 
                 RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapManagerLoadTests.s_rangeShardMapName);
-                Assert.IsNotNull(rsm);
+                Assert.NotNull(rsm);
 
                 RangeMapping<int> r1 = this.GetRandomRangeMapping(rsm);
 
@@ -819,8 +819,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Split range with locking
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestSplitRangeWithLock()
         {
             try
@@ -830,7 +830,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     ShardMapManagerLoadPolicy.Lazy);
 
                 RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapManagerLoadTests.s_rangeShardMapName);
-                Assert.IsNotNull(rsm);
+                Assert.NotNull(rsm);
 
                 RangeMapping<int> r1 = this.GetRandomRangeMapping(rsm, 2);
 
@@ -846,17 +846,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                     IReadOnlyList<RangeMapping<int>> rList = rsm.SplitMapping(r1, splitPoint, mappingLockToken);
 
-                    Assert.AreEqual(2, rList.Count);
+                    Assert.True(2 == rList.Count);
 
                     foreach (RangeMapping<int> r2 in rList)
                     {
-                        Assert.IsNotNull(r2);
-                        Assert.AreEqual(mappingLockToken, rsm.GetMappingLockOwner(r2),
+                        Assert.NotNull(r2);
+                        Assert.Equal(mappingLockToken, rsm.GetMappingLockOwner(r2),
                             String.Format("LockOwnerId of mapping: {0} does not match id in store!", r2));
 
                         // Unlock each mapping and verify
                         rsm.UnlockMapping(r2, mappingLockToken);
-                        Assert.AreEqual(MappingLockToken.NoLock, rsm.GetMappingLockOwner(r2),
+                        Assert.Equal(MappingLockToken.NoLock, rsm.GetMappingLockOwner(r2),
                             String.Format("Mapping: {0} not unlocked as expected!", r2));
                     }
                 }
@@ -870,8 +870,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Split range without locking
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestSplitRangeNoLock()
         {
             try
@@ -881,7 +881,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             ShardMapManagerLoadPolicy.Lazy);
 
                 RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapManagerLoadTests.s_rangeShardMapName);
-                Assert.IsNotNull(rsm);
+                Assert.NotNull(rsm);
 
                 RangeMapping<int> r1 = this.GetRandomRangeMapping(rsm, 2);
 
@@ -892,7 +892,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     Debug.WriteLine("Trying to split range mapping for key range ({0} - {1}) at {2}", r1.Range.Low.Value, r1.Range.High.Value, splitPoint);
 
                     IReadOnlyList<RangeMapping<int>> rList = rsm.SplitMapping(r1, splitPoint);
-                    Assert.AreEqual(2, rList.Count);
+                    Assert.True(2 == rList.Count);
                 }
             }
             catch (ShardManagementException sme)
@@ -904,8 +904,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Merge ranges with locking
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestMergeRangesWithLock()
         {
             try
@@ -915,7 +915,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             ShardMapManagerLoadPolicy.Lazy);
 
                 RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapManagerLoadTests.s_rangeShardMapName);
-                Assert.IsNotNull(rsm);
+                Assert.NotNull(rsm);
 
                 IEnumerable<RangeMapping<int>> existingMappings = rsm.GetMappings(new Range<int>(MinMappingPoint, MaxMappingPoint));
 
@@ -943,14 +943,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                     RangeMapping<int> rMerged = rsm.MergeMappings(t.a, t.b, mappingLockTokenLeft, mappingLockTokenRight);
 
-                    Assert.IsNotNull(rMerged);
+                    Assert.NotNull(rMerged);
 
                     MappingLockToken storeMappingLockToken = rsm.GetMappingLockOwner(rMerged);
-                    Assert.AreEqual(storeMappingLockToken, mappingLockTokenLeft, "Expected merged mapping lock id to equal left mapping id!");
+                    Assert.Equal(storeMappingLockToken, mappingLockTokenLeft, "Expected merged mapping lock id to equal left mapping id!");
                     rsm.UnlockMapping(rMerged, storeMappingLockToken);
 
                     storeMappingLockToken = rsm.GetMappingLockOwner(rMerged);
-                    Assert.AreEqual(storeMappingLockToken, MappingLockToken.NoLock, "Expected merged mapping lock id to equal default mapping id after unlock!");
+                    Assert.Equal(storeMappingLockToken, MappingLockToken.NoLock, "Expected merged mapping lock id to equal default mapping id after unlock!");
                 }
             }
             catch (ShardManagementException sme)
@@ -962,8 +962,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Merge ranges without locking
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestMergeRangesNoLock()
         {
             try
@@ -973,7 +973,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     ShardMapManagerLoadPolicy.Lazy);
 
                 RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapManagerLoadTests.s_rangeShardMapName);
-                Assert.IsNotNull(rsm);
+                Assert.NotNull(rsm);
 
                 IEnumerable<RangeMapping<int>> existingMappings = rsm.GetMappings(new Range<int>(MinMappingPoint, MaxMappingPoint));
 
@@ -993,7 +993,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     Debug.WriteLine("Trying to merge range mapping for key range ({0} - {1}) and ({2} - {3})", t.a.Range.Low.Value, t.a.Range.High.Value, t.b.Range.Low.Value, t.b.Range.High.Value);
 
                     RangeMapping<int> rMerged = rsm.MergeMappings(t.a, t.b);
-                    Assert.IsNotNull(rMerged);
+                    Assert.NotNull(rMerged);
                 }
             }
             catch (ShardManagementException sme)
@@ -1005,8 +1005,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Add a shard to range shard map
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestAddShardToRangeShardMap()
         {
             try
@@ -1016,7 +1016,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     ShardMapManagerLoadPolicy.Lazy);
 
                 RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapManagerLoadTests.s_rangeShardMapName);
-                Assert.IsNotNull(rsm);
+                Assert.NotNull(rsm);
 
                 AddShardToShardMap((ShardMap)rsm);
             }
@@ -1030,8 +1030,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// Mark all shards as online in range shard map.
         /// <remarks>If remove shard operation fails, it will leave shards in offline state, this function will mark all such shards as online.</remarks>
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestMarkAllShardsAsOnlineInRangeShardMap()
         {
             try
@@ -1041,7 +1041,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     ShardMapManagerLoadPolicy.Lazy);
 
                 RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapManagerLoadTests.s_rangeShardMapName);
-                Assert.IsNotNull(rsm);
+                Assert.NotNull(rsm);
 
                 foreach (Shard s in rsm.GetShards())
                 {
@@ -1064,8 +1064,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Remove a random shard from range shard map.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestRemoveShardFromRangeShardMap()
         {
             try
@@ -1075,7 +1075,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     ShardMapManagerLoadPolicy.Lazy);
 
                 RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapManagerLoadTests.s_rangeShardMapName);
-                Assert.IsNotNull(rsm);
+                Assert.NotNull(rsm);
 
                 List<Shard> existingShards = rsm.GetShards().ToList();
 
@@ -1130,8 +1130,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Kill all connections for a random shard
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestKillLSMConnections()
         {
             String databaseName = null;
@@ -1179,7 +1179,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                         // 6107: Only user processes can be killed
                         if ((e.Number != 233) && (e.Number != 6106) && (e.Number != 6107))
                         {
-                            Assert.Fail("error number {0} with message {1}", e.Number, e.Message);
+                            AssertExtensions.Fail("error number {0} with message {1}", e.Number, e.Message);
                         }
                     }
                 }
@@ -1189,8 +1189,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Kill all connections to Shard Map Manager database
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void LoadTestKillGSMConnections()
         {
             using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
@@ -1214,7 +1214,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     // 6107: Only user processes can be killed
                     if ((e.Number != 233) && (e.Number != 6106) && (e.Number != 6107))
                     {
-                        Assert.Fail("error number {0} with message {1}", e.Number, e.Message);
+                        AssertExtensions.Fail("error number {0} with message {1}", e.Number, e.Message);
                     }
                 }
             }

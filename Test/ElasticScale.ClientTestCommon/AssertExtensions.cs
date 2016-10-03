@@ -13,6 +13,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
     public static class AssertExtensions
     {
 
+        public static void Inconclusive(TestOutputHelper thelper, string message) {
+
+            thelper.WriteLine("TEST INCONCLUSIVE: " + message);
+
+        }
+
         public static void Fail(string userMessage) {
             Assert.True(false, userMessage);
         }

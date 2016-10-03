@@ -91,6 +91,8 @@
     <Compile Include="Decorators\CacheStoreDecorator.cs" />
     <Compile Include="Decorators\CountingCacheStore.cs" />
     <Compile Include="Decorators\StoreOperationDecorator.cs" />
+    <Compile Include="Fixtures\RecoveryManagerTestsFixture.cs" />
+    <Compile Include="Fixtures\ScenarioTestsFixture.cs" />
     <Compile Include="RecoveryManagerTests.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="ScenarioTests.cs" />

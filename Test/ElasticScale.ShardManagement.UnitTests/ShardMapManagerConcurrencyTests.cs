@@ -3,7 +3,7 @@
 
 using System.Data.SqlClient;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System.Collections.Generic;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException smme)
             {
-                Assert.IsTrue(smme.ErrorCode == ShardManagementErrorCode.ShardMapLookupFailure);
+                Assert.True(smme.ErrorCode == ShardManagementErrorCode.ShardMapLookupFailure);
             }
         }
 
@@ -104,14 +104,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException smme)
             {
-                Assert.IsTrue(smme.ErrorCode == ShardManagementErrorCode.ShardMapLookupFailure);
+                Assert.True(smme.ErrorCode == ShardManagementErrorCode.ShardMapLookupFailure);
             }
         }
 
         #endregion Common Methods
 
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void ConcurrencyScenarioListShardMap()
         {
             bool operationFailed; // variable to track status of negative test scenarios
@@ -130,23 +130,23 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // Add a shard map from management SMM.
             ShardMap smMgmt = smmMgmt.CreateListShardMap<int>(ShardMapManagerConcurrencyTests.s_shardMapName);
 
-            Assert.AreEqual(ShardMapManagerConcurrencyTests.s_shardMapName, smMgmt.Name);
+            Assert.Equal(ShardMapManagerConcurrencyTests.s_shardMapName, smMgmt.Name);
 
             // Lookup shard map from client SMM.
             ShardMap smClient = smmClient.GetShardMap(ShardMapManagerConcurrencyTests.s_shardMapName);
 
-            Assert.IsNotNull(smClient);
+            Assert.NotNull(smClient);
 
             #endregion CreateShardMap
 
             #region ConvertToListShardMap
 
             ListShardMap<int> lsmMgmt = smmMgmt.GetListShardMap<int>(ShardMapManagerConcurrencyTests.s_shardMapName);
-            Assert.IsNotNull(lsmMgmt);
+            Assert.NotNull(lsmMgmt);
 
             // look up shard map again, it will 
             ListShardMap<int> lsmClient = smmClient.GetListShardMap<int>(ShardMapManagerConcurrencyTests.s_shardMapName);
-            Assert.IsNotNull(lsmClient);
+            Assert.NotNull(lsmClient);
 
             #endregion ConvertToListShardMap
 
@@ -167,12 +167,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException sme)
             {
-                Assert.AreEqual(ShardManagementErrorCategory.ShardMap, sme.ErrorCategory);
-                Assert.AreEqual(ShardManagementErrorCode.ShardMapDoesNotExist, sme.ErrorCode);
+                Assert.Equal(ShardManagementErrorCategory.ShardMap, sme.ErrorCategory);
+                Assert.Equal(ShardManagementErrorCode.ShardMapDoesNotExist, sme.ErrorCode);
                 operationFailed = true;
             }
 
-            Assert.IsTrue(operationFailed);
+            Assert.True(operationFailed);
 
             #endregion DeleteShardMap
         }

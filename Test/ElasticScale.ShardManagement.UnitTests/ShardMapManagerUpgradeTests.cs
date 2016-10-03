@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Recovery;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System;
 using System.Data.SqlClient;
 using System.Linq;
@@ -145,8 +145,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Get distinct location from shard map manager.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void GetDistinctLocations()
         {
             // Get shard map manager and 2 shard maps.
@@ -161,14 +161,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (string name in ShardMapManagerUpgradeTests.s_shardMapNames)
             {
                 ShardMap sm = smm.CreateListShardMap<int>(name);
-                Assert.IsNotNull(sm);
+                Assert.NotNull(sm);
             }
 
             ShardMap sm1 = smm.GetShardMap(ShardMapManagerUpgradeTests.s_shardMapNames[0]);
-            Assert.IsNotNull(sm1);
+            Assert.NotNull(sm1);
 
             ShardMap sm2 = smm.GetShardMap(ShardMapManagerUpgradeTests.s_shardMapNames[1]);
-            Assert.IsNotNull(sm2);
+            Assert.NotNull(sm2);
 
             // Add shards to the shard maps.
 
@@ -189,14 +189,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 count++;
             }
 
-            Assert.AreEqual(3, count);
+            Assert.True(3 == count);
         }
 
         /// <summary>
         /// Upgrade GSM.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void UpgradeGsm()
         {
             // Get shard map manager
@@ -227,8 +227,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Upgrade LSM.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void UpgradeLsm()
         {
             // Get shard map manager
@@ -265,8 +265,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test locking issue with version 1.1 and its fix in version 1.2
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestLockingFixInVersion1_2()
         {
             // Get shard map manager
@@ -279,10 +279,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             // Create a range shard map and add few mappings
             RangeShardMap<int> rsm = smm.CreateRangeShardMap<int>(ShardMapManagerUpgradeTests.s_shardMapNames[1]);
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             Shard s = rsm.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapManagerUpgradeTests.s_shardedDBs[0]));
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             RangeMapping<int> m1 = rsm.CreateRangeMapping(new Range<int>(1, 10), s);
             RangeMapping<int> m2 = rsm.CreateRangeMapping(new Range<int>(10, 20), s);
@@ -302,7 +302,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             foreach (RangeMapping<int> m in rsm.GetMappings())
             {
-                Assert.AreEqual(MappingLockToken.NoLock, rsm.GetMappingLockOwner(m));
+                Assert.Equal(MappingLockToken.NoLock, rsm.GetMappingLockOwner(m));
             }
 
             // Now upgrade to version 1.2 and try same scenario above.
@@ -315,9 +315,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // Unlock using token t1. It should just unlock 2 mappings and leave last one locked.
             rsm.UnlockMapping(t1);
 
-            Assert.AreEqual(MappingLockToken.NoLock, rsm.GetMappingLockOwner(rsm.GetMappingForKey(5)));
-            Assert.AreEqual(MappingLockToken.NoLock, rsm.GetMappingLockOwner(rsm.GetMappingForKey(15)));
-            Assert.AreEqual(t2, rsm.GetMappingLockOwner(rsm.GetMappingForKey(25)));
+            Assert.Equal(MappingLockToken.NoLock, rsm.GetMappingLockOwner(rsm.GetMappingForKey(5)));
+            Assert.Equal(MappingLockToken.NoLock, rsm.GetMappingLockOwner(rsm.GetMappingForKey(15)));
+            Assert.Equal(t2, rsm.GetMappingLockOwner(rsm.GetMappingForKey(25)));
 
             // Cleanup - Delete all mappings. shard will be removed in test cleanup.
             rsm.UnlockMapping(t2);
@@ -333,7 +333,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         private void VerifyGlobalStore(ShardMapManager smm, Version targetVersion)
         {
             // Verify upgrade
-            Assert.AreEqual(
+            Assert.Equal(
                 targetVersion,
                 GetGlobalStoreVersion());
 
@@ -342,13 +342,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             {
                 ShardManagementException sme = AssertExtensions.AssertThrows<ShardManagementException>(
                     () => smm.CreateListShardMap<int>(shardMapName));
-                Assert.AreEqual(ShardManagementErrorCode.GlobalStoreVersionMismatch, sme.ErrorCode);
+                Assert.Equal(ShardManagementErrorCode.GlobalStoreVersionMismatch, sme.ErrorCode);
             }
             else
             {
                 // Below call should succeed as latest supported major version of library matches major version of deployed store.
                 ShardMap sm = smm.CreateListShardMap<int>(shardMapName);
-                Assert.IsNotNull(sm);
+                Assert.NotNull(sm);
             }
         }
 
@@ -365,7 +365,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 SqlCommand cmd = new SqlCommand(getVersionScript, conn);
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    Assert.IsTrue(reader.Read());
+                    Assert.True(reader.Read());
                     if (reader.FieldCount == 2)
                     {
                         return new Version(reader.GetInt32(1), 0);

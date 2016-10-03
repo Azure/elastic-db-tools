@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
     /// <summary>
     /// Test related to ShardKey class and date/time input values.
     /// </summary>
-    [TestClass]
     public class ShardKeyTests
     {
         /// <summary>
@@ -32,7 +31,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Verifies that new ShardKey(keyType, value) returns the correct ShardKey.Value
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestShardKeyValue()
         {
             foreach (ShardKeyInfo shardKeyInfo in ShardKeyInfo.AllTestShardKeyInfos)
@@ -46,7 +45,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 }
                 else
                 {
-                    Assert.AreEqual(
+                    Assert.Equal(
                         shardKeyInfo.Value,
                         shardKeyInfo.ShardKeyFromValue.Value);
                 }
@@ -56,7 +55,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Verifies that new ShardKey(keyType, value) returns the correct RawValue
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestShardKeySerialization()
         {
             foreach (ShardKeyInfo shardKeyInfo in ShardKeyInfo.AllTestShardKeyInfos)
@@ -68,7 +67,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 if (expectedSerializedValue == null)
                 {
-                    Assert.AreEqual(expectedSerializedValue, actualSerializedValue);
+                    Assert.Equal(expectedSerializedValue, actualSerializedValue);
                 }
                 else
                 {
@@ -80,7 +79,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Verifies that ShardKey.FromRawValue(keyType, rawValue) returns the correct ShardKey and ShardKey.Value
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestShardKeyDeserialization()
         {
             foreach (ShardKeyInfo shardKeyInfo in ShardKeyInfo.AllTestShardKeyInfos)
@@ -91,7 +90,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 ShardKey actualDeserializedShardKey = shardKeyInfo.ShardKeyFromRawValue;
 
                 // Verify ShardKey with ShardKey.Equals
-                Assert.AreEqual(
+                Assert.Equal(
                     expectedDeserializedShardKey,
                     actualDeserializedShardKey);
 
@@ -104,7 +103,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// Verifies that ShardKey.FromRawValue(keyType, rawValue) returns the correct ShardKey and ShardKey.Value
         /// if extra zeroes are added to the end of rawValue
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestShardKeyDeserializationAddTrailingZeroes()
         {
             foreach (ShardKeyInfo shardKeyInfo in ShardKeyInfo.AllTestShardKeyInfos)
@@ -124,7 +123,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                     // Bug? Below fails when there are trailing zeroes even though the value is Equal
                     //// Verify ShardKey with ShardKey.Equals
-                    //Assert.AreEqual(
+                    //Assert.Equal(
                     //    expectedDeserializedShardKey,
                     //    actualDeserializedShardKey);
 
@@ -141,7 +140,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Tests that ShardKey.Min* and ShardKey.Max* have the correct KeyType, Value, and RawValue
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestShardKeyTypeInfo()
         {
             foreach (var shardKeyTypeInfo in ShardKeyTypeInfo.ShardKeyTypeInfos.Values)
@@ -152,15 +151,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 // Skip for DateTime & DateTimeOffset due to https://github.com/Azure/elastic-db-tools/issues/116
                 if (shardKeyTypeInfo.KeyType != ShardKeyType.DateTime && shardKeyTypeInfo.KeyType != ShardKeyType.DateTimeOffset) 
                 {
-                    Assert.AreEqual(shardKeyTypeInfo.KeyType, shardKeyTypeInfo.MinShardKey.KeyType);
+                    Assert.Equal(shardKeyTypeInfo.KeyType, shardKeyTypeInfo.MinShardKey.KeyType);
                     AssertExtensions.AssertScalarOrSequenceEqual(shardKeyTypeInfo.MinValue, shardKeyTypeInfo.MinShardKey.Value, null);
                     AssertExtensions.AssertSequenceEqual(new byte[0], shardKeyTypeInfo.MinShardKey.RawValue);
                 }
 
                 // Max value
-                Assert.AreEqual(shardKeyTypeInfo.KeyType, shardKeyTypeInfo.MaxShardKey.KeyType);
+                Assert.Equal(shardKeyTypeInfo.KeyType, shardKeyTypeInfo.MaxShardKey.KeyType);
                 AssertExtensions.AssertScalarOrSequenceEqual(null, shardKeyTypeInfo.MaxShardKey.Value, null);
-                Assert.AreEqual(null, shardKeyTypeInfo.MaxShardKey.RawValue);
+                Assert.Equal(null, shardKeyTypeInfo.MaxShardKey.RawValue);
             }
         }
 
@@ -190,23 +189,24 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Verifies that ShardKey correct orders Guids according to SQL Server ordering.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestGuidOrdering()
         {
             for (int i = 0; i < _orderedGuidsDescending.Length - 1; i++)
             {
-                Assert.IsTrue(
+                Assert.True(
                     _orderedGuidsDescending[0] > _orderedGuidsDescending[1],
-                    "Expected {0} to be great than {1}",
-                    _orderedGuidsDescending[0],
-                    _orderedGuidsDescending[1]);
+                    String.Format("Expected {0} to be great than {1}",
+                        _orderedGuidsDescending[0],
+                        _orderedGuidsDescending[1])
+                    );
             }
         }
 
         /// <summary>
         /// Verifies that ShardKey correct orders DateTimeOffset according to SQL Server ordering.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestDateTimeOffsetOrdering()
         {
             ShardKeyInfo[] dateTimeOffsetShardKeyInfos = 
@@ -225,7 +225,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 // According to SQL (and our normalization format), they should be unequal, although according to .NET they should be equal.
                 if (high.Value != null && ((DateTimeOffset)low.Value).UtcDateTime == ((DateTimeOffset)high.Value).UtcDateTime)
                 {
-                    Assert.AreEqual(low.ShardKeyFromValue, high.ShardKeyFromValue);
+                    Assert.Equal(low.ShardKeyFromValue, high.ShardKeyFromValue);
                 }
                 else
                 {
@@ -237,8 +237,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test using ShardKey with DateTime value.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestShardKeyWithDateTime()
         {
             DateTime testValue = DateTime.Now;
@@ -248,8 +248,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test using ShardKey with TimeSpan value.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestShardKeyWithTimeSpan()
         {
             TimeSpan testValue = TimeSpan.FromMinutes(6.2);
@@ -259,8 +259,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test using ShardKey with DateTimeOffset value.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestShardKeyWithDateTimeOffset()
         {
             DateTimeOffset testValue = DateTimeOffset.Now;
@@ -269,7 +269,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             DateTime d1 = DateTime.Now;
             ShardKey k1 = new ShardKey(new DateTimeOffset(d1, DateTimeOffset.Now.Offset));
             ShardKey k2 = new ShardKey(new DateTimeOffset(d1.ToUniversalTime(), TimeSpan.FromHours(0)));
-            Assert.AreEqual(k1, k2);
+            Assert.Equal(k1, k2);
 
             ShardKey k3 = ShardKey.MinDateTimeOffset;
             Assert.AreNotEqual(k1, k3);
@@ -280,24 +280,24 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // Excercise DetectType
             //
             ShardKey k1 = new ShardKey(inputValue);
-            Assert.AreEqual(realType, k1.DataType);
+            Assert.Equal(realType, k1.DataType);
 
             // Go to/from raw value
             ShardKey k2 = new ShardKey(keyType, inputValue);
             byte[] k2raw = k2.RawValue;
 
             ShardKey k3 = ShardKey.FromRawValue(keyType, k2raw);
-            Assert.AreEqual(inputValue, k2.Value);
-            Assert.AreEqual(inputValue, k3.Value);
-            Assert.AreEqual(k2, k3);
+            Assert.Equal(inputValue, k2.Value);
+            Assert.Equal(inputValue, k3.Value);
+            Assert.Equal(k2, k3);
 
             // verify comparisons
-            Assert.AreEqual(0, k2.CompareTo(k3));
+            Assert.True(0 == k2.CompareTo(k3));
 
             try
             {
                 k3 = k2.GetNextKey();
-                Assert.IsTrue(k3 > k2);
+                Assert.True(k3 > k2);
             }
             catch (InvalidOperationException)
             {

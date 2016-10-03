@@ -6,20 +6,30 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Recovery;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Fixtures;
+using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
+using Xunit;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
     /// <summary>
     /// Test related to Recovery manager.
     /// </summary>
-    [TestClass]
-    public class RecoveryManagerTests
+    public class RecoveryManagerTests : IDisposable, IClassFixture<RecoveryManagerTestsFixture>
     {
+
+        public RecoveryManagerTests() {
+            ShardMapperTestInitialize();
+        }
+
+        public void Dispose() {
+            CleanTablesHelper();
+        }
+
         /// <summary>
         /// Sharded databases to create for the test.
         /// </summary>
-        private static string[] s_shardedDBs = new[]
+        internal static string[] s_shardedDBs = new[]
         {
             "shard1" + Globals.TestDatabasePostfix,
             "shard2" + Globals.TestDatabasePostfix
@@ -71,16 +81,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ListShardMap<int> lsm = smm.CreateListShardMap<int>(RecoveryManagerTests.s_listShardMapName);
 
-            Assert.IsNotNull(lsm);
+            Assert.NotNull(lsm);
 
-            Assert.AreEqual(RecoveryManagerTests.s_listShardMapName, lsm.Name);
+            Assert.Equal(RecoveryManagerTests.s_listShardMapName, lsm.Name);
 
             // Create range shard map.
             RangeShardMap<int> rsm = smm.CreateRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
-            Assert.AreEqual(RecoveryManagerTests.s_rangeShardMapName, rsm.Name);
+            Assert.Equal(RecoveryManagerTests.s_rangeShardMapName, rsm.Name);
         }
 
         /// <summary>
@@ -120,89 +130,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         }
 
         /// <summary>
-        /// Initializes common state for tests in this class.
-        /// </summary>
-        /// <param name="testContext">The TestContext we are running in.</param>
-        [ClassInitialize()]
-        public static void RecoveryManagerTestsInitialize(TestContext testContext)
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-
-                // Create ShardMapManager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.CreateDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-
-                // Create shard databases
-                for (int i = 0; i < RecoveryManagerTests.s_shardedDBs.Length; i++)
-                {
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.DropDatabaseQuery, RecoveryManagerTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.CreateDatabaseQuery, RecoveryManagerTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-
-            // Create shard map manager.
-            ShardMapManagerFactory.CreateSqlShardMapManager(
-                Globals.ShardMapManagerConnectionString,
-                ShardMapManagerCreateMode.ReplaceExisting);
-        }
-
-        /// <summary>
-        /// Cleans up common state for the all tests in this class.
-        /// </summary>
-        [ClassCleanup()]
-        public static void RecoveryManagerTestsCleanup()
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-                // Drop shard databases
-                for (int i = 0; i < RecoveryManagerTests.s_shardedDBs.Length; i++)
-                {
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.DropDatabaseQuery, RecoveryManagerTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-
-                // Drop shard map manager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.DropDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        /// <summary>
         /// Initializes common state per-test.
         /// </summary>
-        [TestInitialize()]
         public void ShardMapperTestInitialize()
         {
             CreateShardMapsHelper();
@@ -211,7 +140,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Cleans up common state per-test.
         /// </summary>
-        [TestCleanup()]
         public void ShardMapperTestCleanup()
         {
             CleanTablesHelper();
@@ -224,8 +152,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test Detach and Attach Shard Scenario. (This is just a stub for now.)
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestDetachAttachShard()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -234,13 +162,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
 
             Shard s = rsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             // I am still not fully clear on the use case for AttachShard and DetachShard, but here's a simple test validating that 
             // they don't throw exceptions if they get called against themselves.
@@ -252,8 +180,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test that consistency detection works when there are no conflicts.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestConsistencyDetectionAndViewingWithNoConflicts()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -262,35 +190,35 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
 
             Shard s = rsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(1, 10), s);
 
-            Assert.IsNotNull(r1);
+            Assert.NotNull(r1);
 
             RecoveryManager rm = new RecoveryManager(smm);
 
             IEnumerable<RecoveryToken> gs = rm.DetectMappingDifferences(sl);
 
-            Assert.AreEqual(1, gs.Count(), "The test environment was not expecting more than one local shardmap.");
+            Assert.True(1 == gs.Count(), "The test environment was not expecting more than one local shardmap.");
 
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(0, kvps.Keys.Count, "An unexpected conflict was detected");
+                Assert.True(0 == kvps.Keys.Count, "An unexpected conflict was detected");
 
                 foreach (var kvp in kvps)
                 {
                     ShardRange range = kvp.Key;
                     MappingLocation mappingLocation = kvp.Value;
 
-                    Assert.AreEqual(MappingLocation.MappingInShardMapAndShard, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                    AssertExtensions.EqualMsg(MappingLocation.MappingInShardMapAndShard, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                 }
             }
         }
@@ -298,8 +226,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test that consistency detection works when there are only version conflicts.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestConsistencyDetectionAndViewingWithVersionOnlyConflict()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -308,7 +236,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             // Make sure no other rangemappings are floating around here.
             var rangeMappings = rsm.GetMappings();
@@ -321,11 +249,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             Shard s = rsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(1, 10), s);
 
-            Assert.IsNotNull(r1);
+            Assert.NotNull(r1);
 
             // Corrupt the mapping id number on the global shardmap.
 
@@ -343,19 +271,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             IEnumerable<RecoveryToken> gs = rm.DetectMappingDifferences(sl);
 
-            Assert.AreEqual(1, gs.Count(), "The test environment was not expecting more than one local shardmap.");
+            Assert.True(1 == gs.Count(), "The test environment was not expecting more than one local shardmap.");
 
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(1, kvps.Keys.Count, "An unexpected conflict was detected");
+                Assert.True(1 == kvps.Keys.Count, "An unexpected conflict was detected");
 
                 foreach (var kvp in kvps)
                 {
                     ShardRange range = kvp.Key;
                     MappingLocation mappingLocation = kvp.Value;
 
-                    Assert.AreEqual(MappingLocation.MappingInShardMapAndShard, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                    AssertExtensions.EqualMsg(MappingLocation.MappingInShardMapAndShard, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                 }
             }
         }
@@ -363,8 +291,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test that consistency detection works when the range in GSM is expanded while the LSM is left untouched.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestConsistencyDetectionAndViewingWithWiderRangeInLSM()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -373,17 +301,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
 
             Shard s = rsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(1, 10), s);
 
-            Assert.IsNotNull(r1);
+            Assert.NotNull(r1);
 
             // Corrupt the lsm by increasing the max range and decreasing min range. We should see two ranges show up in the list of differences. The shared range
             // in the middle artificially has the same version number, so it should not register as a conflicting range.
@@ -402,19 +330,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             IEnumerable<RecoveryToken> gs = rm.DetectMappingDifferences(sl);
 
-            Assert.AreEqual(1, gs.Count(), "The test environment was not expecting more than one local shardmap.");
+            Assert.True(1 == gs.Count(), "The test environment was not expecting more than one local shardmap.");
 
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(2, kvps.Keys.Count, "The count of differences does not match the expected.");
+                Assert.True(2 == kvps.Keys.Count, "The count of differences does not match the expected.");
 
                 foreach (var kvp in kvps)
                 {
                     ShardRange range = kvp.Key;
                     MappingLocation mappingLocation = kvp.Value;
-                    Assert.AreEqual(1, (int)range.High.Value - (int)range.Low.Value, "The ranges reported differed from those expected.");
-                    Assert.AreEqual(MappingLocation.MappingInShardOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                    Assert.True(1 == (int)range.High.Value - (int)range.Low.Value, "The ranges reported differed from those expected.");
+                    AssertExtensions.EqualMsg(MappingLocation.MappingInShardOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                 }
             }
         }
@@ -422,8 +350,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test that consistency detection works when the range in GSM is expanded while the LSM is left untouched.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestConsistencyDetectionAndViewingWithWiderRangeInGSM()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -432,17 +360,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
 
             Shard s = rsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(1, 10), s);
 
-            Assert.IsNotNull(r1);
+            Assert.NotNull(r1);
 
             // Corrupt the gsm by increasing the max range and decreasing min range. We should see two ranges show up in the list of differences. The shared range
             // in the middle artificially has the same version number, so it should not register as a conflicting range.
@@ -461,19 +389,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             IEnumerable<RecoveryToken> gs = rm.DetectMappingDifferences(sl);
 
-            Assert.AreEqual(1, gs.Count(), "The test environment was not expecting more than one local shardmap.");
+            Assert.True(1 == gs.Count(), "The test environment was not expecting more than one local shardmap.");
 
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(2, kvps.Keys.Count, "The count of differences does not match the expected.");
+                Assert.True(2 == kvps.Keys.Count, "The count of differences does not match the expected.");
 
                 foreach (var kvp in kvps)
                 {
                     ShardRange range = kvp.Key;
                     MappingLocation mappingLocation = kvp.Value;
-                    Assert.AreEqual(1, (int)range.High.Value - (int)range.Low.Value, "The ranges reported differed from those expected.");
-                    Assert.AreEqual(MappingLocation.MappingInShardMapOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                    Assert.True(1 == (int)range.High.Value - (int)range.Low.Value, "The ranges reported differed from those expected.");
+                    AssertExtensions.EqualMsg(MappingLocation.MappingInShardMapOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                 }
             }
         }
@@ -481,8 +409,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test that consistency detection works the GSM is missing a range added to the LSM.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestConsistencyDetectionAndViewingWithAdditionalRangeInLSM()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -491,13 +419,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
 
             Shard s = rsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(1, 10), s);
 
@@ -505,7 +433,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             RangeMapping<int> r2 = rsm.CreateRangeMapping(new Range<int>(11, 20), s);
 
 
-            Assert.IsNotNull(r1);
+            Assert.NotNull(r1);
 
             // Now, delete the new range from the GSM
             using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
@@ -522,19 +450,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             IEnumerable<RecoveryToken> gs = rm.DetectMappingDifferences(sl);
 
-            Assert.AreEqual(1, gs.Count(), "The test environment was not expecting more than one local shardmap.");
+            Assert.True(1 == gs.Count(), "The test environment was not expecting more than one local shardmap.");
 
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(1, kvps.Keys.Count, "The count of differences does not match the expected.");
+                Assert.True(1 == kvps.Keys.Count, "The count of differences does not match the expected.");
 
                 foreach (var kvp in kvps)
                 {
                     ShardRange range = kvp.Key;
                     MappingLocation mappingLocation = kvp.Value;
-                    Assert.AreEqual(20, (int)range.High.Value, "The range reported differed from that expected.");
-                    Assert.AreEqual(MappingLocation.MappingInShardOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                    Assert.True(20 == (int)range.High.Value, "The range reported differed from that expected.");
+                    AssertExtensions.EqualMsg(MappingLocation.MappingInShardOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                 }
             }
         }
@@ -542,8 +470,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test that consistency detection works with some arbitrary point mappings.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestConsistencyDetectionOnListMapping()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -552,16 +480,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ListShardMap<int> rsm = smm.GetListShardMap<int>(RecoveryManagerTests.s_listShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
             Shard s = rsm.CreateShard(sl);
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             for (int i = 0; i < 5; i++)
             {
                 PointMapping<int> p = rsm.CreatePointMapping(2 * i, s);
-                Assert.IsNotNull(p);
+                Assert.NotNull(p);
             }
 
             // Now, delete some points from both, and change the version of a shared shard mapping in the middle.
@@ -589,23 +517,23 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             IEnumerable<RecoveryToken> gs = rm.DetectMappingDifferences(sl);
 
-            Assert.AreEqual(1, gs.Count(), "The test environment was not expecting more than one local shardmap.");
+            Assert.True(1 == gs.Count(), "The test environment was not expecting more than one local shardmap.");
 
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(4, kvps.Keys.Count, "The count of differences does not match the expected.");
-                Assert.AreEqual(1, kvps.Values.Where(l => l == MappingLocation.MappingInShardMapOnly).Count(), "The count of shardmap only differences does not match the expected.");
-                Assert.AreEqual(2, kvps.Values.Where(l => l == MappingLocation.MappingInShardOnly).Count(), "The count of shard only differences does not match the expected.");
-                Assert.AreEqual(1, kvps.Values.Where(l => l == MappingLocation.MappingInShardMapAndShard).Count(), "The count of shard only differences does not match the expected.");
+                Assert.True(4 == kvps.Keys.Count, "The count of differences does not match the expected.");
+                Assert.True(1 == kvps.Values.Where(l => l == MappingLocation.MappingInShardMapOnly).Count(), "The count of shardmap only differences does not match the expected.");
+                Assert.True(2 == kvps.Values.Where(l => l == MappingLocation.MappingInShardOnly).Count(), "The count of shard only differences does not match the expected.");
+                Assert.True(1 == kvps.Values.Where(l => l == MappingLocation.MappingInShardMapAndShard).Count(), "The count of shard only differences does not match the expected.");
             }
         }
 
         /// <summary>
         /// Test that consistency detection works when the ranges on the LSM and GSM are disjoint.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestConsistencyDetectionAndViewingWithDisjointRanges()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -614,7 +542,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             // Make sure no other rangemappings are floating around here.
             var rangeMappings = rsm.GetMappings();
@@ -627,14 +555,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             Shard s = rsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(1, 10), s);
 
             // Add a range to the gsm
             RangeMapping<int> r2 = rsm.CreateRangeMapping(new Range<int>(11, 20), s);
 
-            Assert.IsNotNull(r1);
+            Assert.NotNull(r1);
 
             // Delete the original range from the GSM.
             using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
@@ -662,12 +590,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             IEnumerable<RecoveryToken> gs = rm.DetectMappingDifferences(sl);
 
-            Assert.AreEqual(1, gs.Count(), "The test environment was not expecting more than one local shardmap.");
+            Assert.True(1 == gs.Count(), "The test environment was not expecting more than one local shardmap.");
 
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(2, kvps.Keys.Count, "The count of differences does not match the expected.");
+                Assert.True(2 == kvps.Keys.Count, "The count of differences does not match the expected.");
 
                 foreach (var kvp in kvps)
                 {
@@ -675,15 +603,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     MappingLocation mappingLocation = kvp.Value;
                     if ((int)range.High.Value == 10)
                     {
-                        Assert.AreEqual(MappingLocation.MappingInShardOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                        AssertExtensions.EqualMsg(MappingLocation.MappingInShardOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                         continue;
                     }
                     else if ((int)range.High.Value == 20)
                     {
-                        Assert.AreEqual(MappingLocation.MappingInShardMapOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                        AssertExtensions.EqualMsg(MappingLocation.MappingInShardMapOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                         continue;
                     }
-                    Assert.Fail("Unexpected range detected.");
+                    AssertExtensions.Fail("Unexpected range detected.");
                 }
             }
         }
@@ -693,8 +621,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// Test that consistency detection method produces usable LSMs when shards themselves disagree.
         /// In particular, make sure it reports on subintervals not tagged to the current LSM.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestConsistencyDetectionWithDivergence()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -703,7 +631,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             ShardLocation sl1 = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
             ShardLocation sl2 = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[1]);
@@ -732,7 +660,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             {
                 var kvps = rm.GetMappingDifferences(g);
 
-                Assert.AreEqual(2, kvps.Keys.Count, "The count of differences does not match the expected.");
+                Assert.True(2 == kvps.Keys.Count, "The count of differences does not match the expected.");
 
                 // We expect 6-10, and 10-11. If we did not detect intersected ranges, and only used tagged ranges, we would have only 6-11 as a single range, which would be insufficient for rebuild.
                 foreach (var kvp in kvps)
@@ -741,15 +669,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     MappingLocation mappingLocation = kvp.Value;
                     if ((int)range.High.Value == 10)
                     {
-                        Assert.AreEqual(MappingLocation.MappingInShardMapAndShard, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                        AssertExtensions.EqualMsg(MappingLocation.MappingInShardMapAndShard, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                         continue;
                     }
                     else if ((int)range.High.Value == 11)
                     {
-                        Assert.AreEqual(MappingLocation.MappingInShardOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                        AssertExtensions.EqualMsg(MappingLocation.MappingInShardOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                         continue;
                     }
-                    Assert.Fail("Unexpected range detected.");
+                    AssertExtensions.Fail("Unexpected range detected.");
                 }
             }
         }
@@ -757,8 +685,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test the "resolve using GSM" scenario.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestCopyGSMToLSM()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -767,13 +695,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
 
             Shard s = rsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             // Remove any garbage that might be floating around.
             var rangeMappings = rsm.GetMappings();
@@ -788,7 +716,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             RangeMapping<int> r2 = rsm.CreateRangeMapping(new Range<int>(11, 20), s);
 
 
-            Assert.IsNotNull(r1);
+            Assert.NotNull(r1);
 
             // Delete the new range from the LSM, so the LSM is missing all mappings from the GSM.
             using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
@@ -806,19 +734,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // Briefly validate that there are, in fact, the two ranges of inconsistency we are expecting.
             IEnumerable<RecoveryToken> gs = rm.DetectMappingDifferences(sl);
 
-            Assert.AreEqual(1, gs.Count(), "The test environment was not expecting more than one local shardmap.");
+            Assert.True(1 == gs.Count(), "The test environment was not expecting more than one local shardmap.");
 
             // Briefly validate that 
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(2, kvps.Keys.Count, "The count of differences does not match the expected.");
+                Assert.True(2 == kvps.Keys.Count, "The count of differences does not match the expected.");
 
                 foreach (var kvp in kvps)
                 {
                     ShardRange range = kvp.Key;
                     MappingLocation mappingLocation = kvp.Value;
-                    Assert.AreEqual(MappingLocation.MappingInShardMapOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                    AssertExtensions.EqualMsg(MappingLocation.MappingInShardMapOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                 }
                 // Recover the LSM from the GSM
                 rm.ResolveMappingDifferences(g, MappingDifferenceResolution.KeepShardMapMapping);
@@ -830,15 +758,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gsAfterFix)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(0, kvps.Keys.Count, "There were still differences after resolution.");
+                Assert.True(0 == kvps.Keys.Count, "There were still differences after resolution.");
             }
         }
 
         /// <summary>
         /// Test the "resolve using LSM" scenario.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestCopyLSMToGSM()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -847,13 +775,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
 
             Shard s = rsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(1, 10), s);
 
@@ -861,7 +789,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             RangeMapping<int> r2 = rsm.CreateRangeMapping(new Range<int>(11, 20), s);
 
 
-            Assert.IsNotNull(r1);
+            Assert.NotNull(r1);
 
             // Delete everything from GSM (yes, this is overkill.)
             using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
@@ -879,19 +807,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // Briefly validate that there are, in fact, the two ranges of inconsistency we are expecting.
             IEnumerable<RecoveryToken> gs = rm.DetectMappingDifferences(sl);
 
-            Assert.AreEqual(1, gs.Count(), "The test environment was not expecting more than one local shardmap.");
+            Assert.True(1 == gs.Count(), "The test environment was not expecting more than one local shardmap.");
 
             // Briefly validate that 
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(2, kvps.Keys.Count, "The count of differences does not match the expected.");
+                Assert.True(2 == kvps.Keys.Count, "The count of differences does not match the expected.");
 
                 foreach (var kvp in kvps)
                 {
                     ShardRange range = kvp.Key;
                     MappingLocation mappingLocation = kvp.Value;
-                    Assert.AreEqual(MappingLocation.MappingInShardOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                    AssertExtensions.EqualMsg(MappingLocation.MappingInShardOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                 }
                 // Recover the GSM from the LSM
                 rm.ResolveMappingDifferences(g, MappingDifferenceResolution.KeepShardMapping);
@@ -902,15 +830,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gsAfterFix)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(0, kvps.Keys.Count, "There were still differences after resolution.");
+                Assert.True(0 == kvps.Keys.Count, "There were still differences after resolution.");
             }
         }
 
         /// <summary>
         /// Test a restore of GSM from multiple different LSMs. (range)
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestRestoreGSMFromLSMsRange()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -919,7 +847,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
             IList<ShardLocation> sls = new List<ShardLocation>();
             int i = 0;
             List<RangeMapping<int>> ranges = new List<RangeMapping<int>>();
@@ -928,9 +856,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, dbName);
                 sls.Add(sl);
                 Shard s = rsm.CreateShard(sl);
-                Assert.IsNotNull(s);
+                Assert.NotNull(s);
                 var r = rsm.CreateRangeMapping(new Range<int>(1 + i * 10, 10 + i * 10), s);
-                Assert.IsNotNull(r);
+                Assert.NotNull(r);
                 ranges.Add(r);
                 i++;
             }
@@ -953,19 +881,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             {
                 IEnumerable<RecoveryToken> gs = rm.DetectMappingDifferences(sl);
 
-                Assert.AreEqual(1, gs.Count(), "The test environment was not expecting more than one local shardmap.");
+                Assert.True(1 == gs.Count(), "The test environment was not expecting more than one local shardmap.");
 
                 // Briefly validate that 
                 foreach (RecoveryToken g in gs)
                 {
                     var kvps = rm.GetMappingDifferences(g);
-                    Assert.AreEqual(1, kvps.Keys.Count, "The count of differences does not match the expected.");
+                    Assert.True(1 == kvps.Keys.Count, "The count of differences does not match the expected.");
 
                     foreach (var kvp in kvps)
                     {
                         ShardRange range = kvp.Key;
                         MappingLocation mappingLocation = kvp.Value;
-                        Assert.AreEqual(MappingLocation.MappingInShardOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                        AssertExtensions.EqualMsg(MappingLocation.MappingInShardOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                     }
                 }
             }
@@ -981,7 +909,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 foreach (RecoveryToken g in gs)
                 {
                     var kvps = rm.GetMappingDifferences(g);
-                    Assert.AreEqual(0, kvps.Keys.Count, "There were still differences after resolution.");
+                    Assert.True(0 == kvps.Keys.Count, "There were still differences after resolution.");
                 }
             }
         }
@@ -989,8 +917,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test a restore of GSM from multiple different LSMs. (range)
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestRestoreGSMFromLSMsRangeWithGarbageInGSM()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -999,7 +927,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
             IList<ShardLocation> sls = new List<ShardLocation>();
             int i = 0;
             List<RangeMapping<int>> ranges = new List<RangeMapping<int>>();
@@ -1008,9 +936,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, dbName);
                 sls.Add(sl);
                 Shard s = rsm.CreateShard(sl);
-                Assert.IsNotNull(s);
+                Assert.NotNull(s);
                 var r = rsm.CreateRangeMapping(new Range<int>(1 + i * 10, 10 + i * 10), s);
-                Assert.IsNotNull(r);
+                Assert.NotNull(r);
                 ranges.Add(r);
                 i++;
             }
@@ -1033,13 +961,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             {
                 IEnumerable<RecoveryToken> gs = rm.DetectMappingDifferences(sl);
 
-                Assert.AreEqual(1, gs.Count(), "The test environment was not expecting more than one local shardmap.");
+                Assert.True(1 == gs.Count(), "The test environment was not expecting more than one local shardmap.");
 
                 // Briefly validate that 
                 foreach (RecoveryToken g in gs)
                 {
                     var kvps = rm.GetMappingDifferences(g);
-                    Assert.AreEqual(2, kvps.Keys.Count, "The count of differences does not match the expected.");
+                    Assert.True(2 == kvps.Keys.Count, "The count of differences does not match the expected.");
                 }
             }
 
@@ -1054,7 +982,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 foreach (RecoveryToken g in gs)
                 {
                     var kvps = rm.GetMappingDifferences(g);
-                    Assert.AreEqual(0, kvps.Keys.Count, "There were still differences after resolution.");
+                    Assert.True(0 == kvps.Keys.Count, "There were still differences after resolution.");
                 }
             }
         }
@@ -1062,8 +990,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test a restore of GSM from multiple different LSMs.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestRestoreGSMFromLSMsList()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -1072,7 +1000,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             var lsm = smm.GetListShardMap<int>(RecoveryManagerTests.s_listShardMapName);
 
-            Assert.IsNotNull(lsm);
+            Assert.NotNull(lsm);
             IList<ShardLocation> sls = new List<ShardLocation>();
             int i = Int32.MaxValue;
             List<PointMapping<int>> points = new List<PointMapping<int>>();
@@ -1081,9 +1009,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, dbName);
                 sls.Add(sl);
                 Shard s = lsm.CreateShard(sl);
-                Assert.IsNotNull(s);
+                Assert.NotNull(s);
                 var p = lsm.CreatePointMapping(i, s);
-                Assert.IsNotNull(p);
+                Assert.NotNull(p);
                 points.Add(p);
                 i--;
             }
@@ -1106,19 +1034,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             {
                 IEnumerable<RecoveryToken> gs = rm.DetectMappingDifferences(sl);
 
-                Assert.AreEqual(1, gs.Count(), "The test environment was not expecting more than one local shardmap.");
+                Assert.True(1 == gs.Count(), "The test environment was not expecting more than one local shardmap.");
 
                 // Briefly validate that 
                 foreach (RecoveryToken g in gs)
                 {
                     var kvps = rm.GetMappingDifferences(g);
-                    Assert.AreEqual(1, kvps.Keys.Count, "The count of differences does not match the expected.");
+                    Assert.True(1 == kvps.Keys.Count, "The count of differences does not match the expected.");
 
                     foreach (var kvp in kvps)
                     {
                         ShardRange range = kvp.Key;
                         MappingLocation mappingLocation = kvp.Value;
-                        Assert.AreEqual(MappingLocation.MappingInShardOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                        AssertExtensions.EqualMsg(MappingLocation.MappingInShardOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                     }
                 }
             }
@@ -1134,7 +1062,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 foreach (RecoveryToken g in gs)
                 {
                     var kvps = rm.GetMappingDifferences(g);
-                    Assert.AreEqual(0, kvps.Keys.Count, "There were still differences after resolution.");
+                    Assert.True(0 == kvps.Keys.Count, "There were still differences after resolution.");
                 }
             }
         }
@@ -1142,8 +1070,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test a restore of GSM from multiple different LSMs.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestRestoreGSMFromLSMsListWithGarbageInGSM()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -1152,7 +1080,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             var lsm = smm.GetListShardMap<int>(RecoveryManagerTests.s_listShardMapName);
 
-            Assert.IsNotNull(lsm);
+            Assert.NotNull(lsm);
             IList<ShardLocation> sls = new List<ShardLocation>();
             int i = 0;
             List<PointMapping<int>> points = new List<PointMapping<int>>();
@@ -1161,9 +1089,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, dbName);
                 sls.Add(sl);
                 Shard s = lsm.CreateShard(sl);
-                Assert.IsNotNull(s);
+                Assert.NotNull(s);
                 var p = lsm.CreatePointMapping(i, s);
-                Assert.IsNotNull(p);
+                Assert.NotNull(p);
                 points.Add(p);
                 i++;
             }
@@ -1186,13 +1114,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             {
                 IEnumerable<RecoveryToken> gs = rm.DetectMappingDifferences(sl);
 
-                Assert.AreEqual(1, gs.Count(), "The test environment was not expecting more than one local shardmap.");
+                Assert.True(1 == gs.Count(), "The test environment was not expecting more than one local shardmap.");
 
                 // Briefly validate that 
                 foreach (RecoveryToken g in gs)
                 {
                     var kvps = rm.GetMappingDifferences(g);
-                    Assert.AreEqual(1, kvps.Keys.Count, "The count of differences does not match the expected.");
+                    Assert.True(1 == kvps.Keys.Count, "The count of differences does not match the expected.");
                 }
             }
 
@@ -1207,7 +1135,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 foreach (RecoveryToken g in gs)
                 {
                     var kvps = rm.GetMappingDifferences(g);
-                    Assert.AreEqual(0, kvps.Keys.Count, "There were still differences after resolution.");
+                    Assert.True(0 == kvps.Keys.Count, "There were still differences after resolution.");
                 }
             }
         }
@@ -1215,8 +1143,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Test that the RebuildShard method produces usable LSMs for subsequent recovery action (range)
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestRebuildShardFromGSMRange()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -1225,18 +1153,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
 
             Shard s = rsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             for (int i = 0; i < 5; i++)
             {
                 RangeMapping<int> r = rsm.CreateRangeMapping(new Range<int>(1 + i, 2 + i), s);
-                Assert.IsNotNull(r);
+                Assert.NotNull(r);
             }
 
             // Delete all the ranges and shardmaps from the shardlocation.
@@ -1257,13 +1185,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(5, kvps.Keys.Count, "The count of differences does not match the expected.");
+                Assert.True(5 == kvps.Keys.Count, "The count of differences does not match the expected.");
 
                 foreach (var kvp in kvps)
                 {
                     ShardRange range = kvp.Key;
                     MappingLocation mappingLocation = kvp.Value;
-                    Assert.AreEqual(MappingLocation.MappingInShardMapOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                    AssertExtensions.EqualMsg(MappingLocation.MappingInShardMapOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                 }
 
                 // Rebuild the range, leaving 2 inconsistencies (the last 2)
@@ -1275,7 +1203,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(2, kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
+                Assert.True(2 == kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
 
                 // We expect that the last two ranges only are missing from the shards.
                 var expectedLocations = new List<MappingLocation>()
@@ -1287,7 +1215,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     MappingLocation.MappingInShardMapOnly,
                 };
 
-                Assert.IsTrue(expectedLocations.Zip(kvps.Values, (x, y) => x == y).Aggregate((x, y) => x && y), "RebuildRangeShardMap rebuilt the shards out of order with respect to its keeplist.");
+                Assert.True(expectedLocations.Zip(kvps.Values, (x, y) => x == y).Aggregate((x, y) => x && y), "RebuildRangeShardMap rebuilt the shards out of order with respect to its keeplist.");
 
                 // Rebuild the range, leaving 1 inconsistency
                 rm.RebuildMappingsOnShard(g, kvps.Keys.Skip(1));
@@ -1298,7 +1226,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(1, kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
+                Assert.True(1 == kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
 
                 // Rebuild the range, leaving no inconsistencies
                 rm.RebuildMappingsOnShard(g, kvps.Keys);
@@ -1310,7 +1238,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(0, kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
+                Assert.True(0 == kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
                 rm.ResolveMappingDifferences(g, MappingDifferenceResolution.KeepShardMapping);
             }
 
@@ -1319,14 +1247,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(0, kvps.Keys.Count, "The GSM is not restorable from a rebuilt local shard.");
+                Assert.True(0 == kvps.Keys.Count, "The GSM is not restorable from a rebuilt local shard.");
             }
         }
 
         // Make sure that rebuildshard does not silently delete nonconflicting ranges.
         //
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestRebuildShardFromGSMRangeKeepNonconflicts()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -1335,7 +1263,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(RecoveryManagerTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             ShardLocation sl1 = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
 
@@ -1365,7 +1293,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             {
                 var kvps = rm.GetMappingDifferences(g);
 
-                Assert.AreEqual(2, kvps.Keys.Count, "The count of differences does not match the expected.");
+                Assert.True(2 == kvps.Keys.Count, "The count of differences does not match the expected.");
 
                 // Let's make sure that rebuild does not unintuitively delete ranges 1-6.
                 rm.RebuildMappingsOnShard(g, new List<ShardRange>());
@@ -1381,14 +1309,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             var resultingMappings = rsm.GetMappings(new Range<int>(1, 11), s1);
 
             // Make sure the mapping [1-6) is still around.
-            Assert.AreEqual(1, resultingMappings.Count(), "RebuildShard unexpectedly removed a non-conflicting range.");
+            Assert.True(1 == resultingMappings.Count(), "RebuildShard unexpectedly removed a non-conflicting range.");
         }
 
         /// <summary>
         /// Test that the RebuildShard method produces usable LSMs for subsequent recovery action (list)
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestRebuildShardFromGSMList()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -1397,18 +1325,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ListShardMap<int> lsm = smm.GetListShardMap<int>(RecoveryManagerTests.s_listShardMapName);
 
-            Assert.IsNotNull(lsm);
+            Assert.NotNull(lsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
 
             Shard s = lsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             for (int i = 0; i < 5; i++)
             {
                 PointMapping<int> r = lsm.CreatePointMapping(i, s);
-                Assert.IsNotNull(r);
+                Assert.NotNull(r);
             }
 
             // Delete all the ranges and shardmaps from the shardlocation.
@@ -1429,13 +1357,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(5, kvps.Keys.Count, "The count of differences does not match the expected.");
+                Assert.True(5 == kvps.Keys.Count, "The count of differences does not match the expected.");
 
                 foreach (var kvp in kvps)
                 {
                     ShardRange range = kvp.Key;
                     MappingLocation mappingLocation = kvp.Value;
-                    Assert.AreEqual(MappingLocation.MappingInShardMapOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                    AssertExtensions.EqualMsg(MappingLocation.MappingInShardMapOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                 }
 
                 // Rebuild the range, leaving 2 inconsistencies (the last 2)
@@ -1447,7 +1375,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(2, kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
+                Assert.True(2 == kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
 
                 // We expect that the last two ranges only are missing from the shards.
                 var expectedLocations = new List<MappingLocation>()
@@ -1459,7 +1387,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     MappingLocation.MappingInShardMapOnly,
                 };
 
-                Assert.IsTrue(expectedLocations.Zip(kvps.Values, (x, y) => x == y).Aggregate((x, y) => x && y), "RebuildRangeShardMap rebuilt the shards out of order with respect to its keeplist.");
+                Assert.True(expectedLocations.Zip(kvps.Values, (x, y) => x == y).Aggregate((x, y) => x && y), "RebuildRangeShardMap rebuilt the shards out of order with respect to its keeplist.");
 
                 // Rebuild the range, leaving 1 inconsistency
                 rm.RebuildMappingsOnShard(g, kvps.Keys.Skip(1));
@@ -1470,7 +1398,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(1, kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
+                Assert.True(1 == kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
 
                 // Rebuild the range, leaving no inconsistencies
                 rm.RebuildMappingsOnShard(g, kvps.Keys);
@@ -1482,7 +1410,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(0, kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
+                Assert.True(0 == kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
                 rm.ResolveMappingDifferences(g, MappingDifferenceResolution.KeepShardMapping);
             }
 
@@ -1491,15 +1419,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(0, kvps.Keys.Count, "The GSM is not restorable from a rebuilt local shard.");
+                Assert.True(0 == kvps.Keys.Count, "The GSM is not restorable from a rebuilt local shard.");
             }
         }
 
         /// <summary>
         /// Basic sanity checks confirming that pointmappings work the same way rangemappings do in a recover from rebuilt shard scenario.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestPointMappingRecoverFromLSM()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -1508,18 +1436,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ListShardMap<int> listsm = smm.GetListShardMap<int>(RecoveryManagerTests.s_listShardMapName);
 
-            Assert.IsNotNull(listsm);
+            Assert.NotNull(listsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
 
             Shard s = listsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             for (int i = 0; i < 5; i++)
             {
                 PointMapping<int> r = listsm.CreatePointMapping(creationInfo: new PointMappingCreationInfo<int>(i, s, MappingStatus.Online));
-                Assert.IsNotNull(r);
+                Assert.NotNull(r);
             }
 
             // Delete all the ranges and shardmaps from the shardlocation.
@@ -1540,13 +1468,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(5, kvps.Keys.Count, "The count of differences does not match the expected.");
+                Assert.True(5 == kvps.Keys.Count, "The count of differences does not match the expected.");
 
                 foreach (var kvp in kvps)
                 {
                     ShardRange range = kvp.Key;
                     MappingLocation mappingLocation = kvp.Value;
-                    Assert.AreEqual(MappingLocation.MappingInShardMapOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                    AssertExtensions.EqualMsg(MappingLocation.MappingInShardMapOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                 }
                 rm.RebuildMappingsOnShard(g, kvps.Keys.Take(3));
             }
@@ -1556,7 +1484,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(2, kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
+                Assert.True(2 == kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
 
                 // We expect that the last two ranges only are missing from the shards.
                 var expectedLocations = new List<MappingLocation>()
@@ -1568,7 +1496,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     MappingLocation.MappingInShardMapOnly,
                 };
 
-                Assert.IsTrue(expectedLocations.Zip(kvps.Values, (x, y) => x == y).Aggregate((x, y) => x && y), "RebuildRangeShardMap rebuilt the shards out of order with respect to its keeplist.");
+                Assert.True(expectedLocations.Zip(kvps.Values, (x, y) => x == y).Aggregate((x, y) => x && y), "RebuildRangeShardMap rebuilt the shards out of order with respect to its keeplist.");
 
                 // Rebuild the range, leaving 1 inconsistency
                 rm.RebuildMappingsOnShard(g, kvps.Keys.Skip(1));
@@ -1579,7 +1507,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(1, kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
+                Assert.True(1 == kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
 
                 // Rebuild the range, leaving no inconsistencies
                 rm.RebuildMappingsOnShard(g, kvps.Keys);
@@ -1591,7 +1519,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(0, kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
+                Assert.True(0 == kvps.Values.Where(loc => loc != MappingLocation.MappingInShardMapAndShard).Count(), "The count of differences does not match the expected.");
 
                 // As a sanity check, make sure the root is restorable from this LSM.
                 rm.ResolveMappingDifferences(g, MappingDifferenceResolution.KeepShardMapping);
@@ -1601,15 +1529,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(0, kvps.Keys.Count, "The GSM is not restorable from a rebuilt local shard.");
+                Assert.True(0 == kvps.Keys.Count, "The GSM is not restorable from a rebuilt local shard.");
             }
         }
 
         /// <summary>
         /// Basic sanity checks confirming that pointmappings work the same way rangemappings do in a recover-from-gsm scenario.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestPointMappingRecoverFromGSM()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -1618,18 +1546,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ListShardMap<int> listsm = smm.GetListShardMap<int>(RecoveryManagerTests.s_listShardMapName);
 
-            Assert.IsNotNull(listsm);
+            Assert.NotNull(listsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
 
             Shard s = listsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             for (int i = 0; i < 5; i++)
             {
                 PointMapping<int> r = listsm.CreatePointMapping(creationInfo: new PointMappingCreationInfo<int>(i, s, MappingStatus.Online));
-                Assert.IsNotNull(r);
+                Assert.NotNull(r);
             }
 
             // Delete all the ranges and shardmaps from the shardlocation.
@@ -1650,13 +1578,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(5, kvps.Keys.Count, "The count of differences does not match the expected.");
+                Assert.True(5 == kvps.Keys.Count, "The count of differences does not match the expected.");
 
                 foreach (var kvp in kvps)
                 {
                     ShardRange range = kvp.Key;
                     MappingLocation mappingLocation = kvp.Value;
-                    Assert.AreEqual(MappingLocation.MappingInShardMapOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
+                    AssertExtensions.EqualMsg(MappingLocation.MappingInShardMapOnly, mappingLocation, "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.");
                 }
 
                 // Recover the LSM from the GSM
@@ -1669,15 +1597,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(0, kvps.Values.Count(), "The count of differences does not match the expected.");
+                Assert.True(0 == kvps.Values.Count(), "The count of differences does not match the expected.");
             }
         }
 
         /// <summary>
         /// Test geo failover scenario: rename one of the shards and then test detach/attach and consistency
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestGeoFailoverAttach()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -1686,7 +1614,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ListShardMap<int> listsm = smm.GetListShardMap<int>(RecoveryManagerTests.s_listShardMapName);
 
-            Assert.IsNotNull(listsm);
+            Assert.NotNull(listsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0]);
             ShardLocation slNew = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, RecoveryManagerTests.s_shardedDBs[0] + "_new");
@@ -1696,12 +1624,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             Shard s = listsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             for (int i = 0; i < 5; i++)
             {
                 PointMapping<int> r = listsm.CreatePointMapping(creationInfo: new PointMappingCreationInfo<int>(i, s, MappingStatus.Online));
-                Assert.IsNotNull(r);
+                Assert.NotNull(r);
             }
 
             // rename shard1 as shard1_new
@@ -1743,7 +1671,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 result = op.Do();
             }
 
-            Assert.AreEqual("shard1_new", result.StoreShards.First().Location.Database);
+            Assert.Equal("shard1_new", result.StoreShards.First().Location.Database);
 
             // detect mapping differences and add local mappings to GSM
             var gs = rm.DetectMappingDifferences(slNew);
@@ -1751,7 +1679,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(5, kvps.Keys.Count, "Count of Mapping differences for shard1_new does not match expected value.");
+                Assert.True(5 == kvps.Keys.Count, "Count of Mapping differences for shard1_new does not match expected value.");
                 rm.ResolveMappingDifferences(g, MappingDifferenceResolution.KeepShardMapping);
             }
 
@@ -1760,7 +1688,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             foreach (RecoveryToken g in gs)
             {
                 var kvps = rm.GetMappingDifferences(g);
-                Assert.AreEqual(0, kvps.Keys.Count, "GSM and LSM at shard1_new do not have consistent mappings");
+                Assert.True(0 == kvps.Keys.Count, "GSM and LSM at shard1_new do not have consistent mappings");
             }
 
             // rename shard1_new back to shard1 so that test cleanup operations will succeed

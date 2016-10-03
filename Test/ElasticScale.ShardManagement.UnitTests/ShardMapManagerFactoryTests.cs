@@ -4,7 +4,7 @@
 using System;
 using System.Data.SqlClient;
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                         RetryBehavior.DefaultRetryBehavior,
                         out smm);
 
-                Assert.IsFalse(lookupSmm);
+                Assert.False(lookupSmm);
             }
         }
 
@@ -99,8 +99,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Create shard map manager.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void CreateShardMapManager_Overwrite()
         {
             ShardMapManagerFactory.CreateSqlShardMapManager(
@@ -111,8 +111,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Create shard map manager, disallowing over-write.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void CreateShardMapManager_NoOverwrite()
         {
             ShardMapManagerFactory.CreateSqlShardMapManager(
@@ -124,15 +124,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     Globals.ShardMapManagerConnectionString,
                     ShardMapManagerCreateMode.KeepExisting));
 
-            Assert.AreEqual(ShardManagementErrorCategory.ShardMapManagerFactory, smme.ErrorCategory);
-            Assert.AreEqual(ShardManagementErrorCode.ShardMapManagerStoreAlreadyExists, smme.ErrorCode);
+            Assert.Equal(ShardManagementErrorCategory.ShardMapManagerFactory, smme.ErrorCategory);
+            Assert.Equal(ShardManagementErrorCode.ShardMapManagerStoreAlreadyExists, smme.ErrorCode);
         }
 
         /// <summary>
         /// Get shard map manager, expects success.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void GetShardMapManager_Success()
         {
             ShardMapManagerFactory.CreateSqlShardMapManager(
@@ -144,21 +144,21 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 ShardMapManager smm1 = ShardMapManagerFactory.GetSqlShardMapManager(
                     Globals.ShardMapManagerConnectionString,
                     loadPolicy);
-                Assert.IsNotNull(smm1);
+                Assert.NotNull(smm1);
 
                 ShardMapManager smm2 = ShardMapManagerFactory.GetSqlShardMapManager(
                     Globals.ShardMapManagerConnectionString,
                     loadPolicy,
                     RetryBehavior.DefaultRetryBehavior);
-                Assert.IsNotNull(smm2);
+                Assert.NotNull(smm2);
             }
         }
 
         /// <summary>
         /// Tries to get shard map manager, expects success.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TryGetShardMapManager_Success()
         {
             ShardMapManagerFactory.CreateSqlShardMapManager(
@@ -174,24 +174,24 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     Globals.ShardMapManagerConnectionString,
                     loadPolicy,
                     out smm);
-                Assert.IsTrue(success);
-                Assert.IsNotNull(smm);
+                Assert.True(success);
+                Assert.NotNull(smm);
 
                 success = ShardMapManagerFactory.TryGetSqlShardMapManager(
                     Globals.ShardMapManagerConnectionString,
                     loadPolicy,
                     RetryBehavior.DefaultRetryBehavior,
                     out smm);
-                Assert.IsTrue(success);
-                Assert.IsNotNull(smm);
+                Assert.True(success);
+                Assert.NotNull(smm);
             }
         }
 
         /// <summary>
         /// Tries to get shard map manager, expects failure.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TryGetShardMapManager_Fail()
         {
             ShardMapManagerFactory.CreateSqlShardMapManager(
@@ -208,8 +208,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     ShardMapManagerLoadPolicy.Eager,
                     null,
                     out smm));
-            Assert.IsFalse(success);
-            Assert.IsNull(smm);
+            Assert.False(success);
+            Assert.Null(smm);
         }
     }
 }
