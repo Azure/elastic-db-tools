@@ -674,6 +674,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             return GetPropertyOrVariableWithStateCheck<IReadOnlyCollection<DbColumn>>(_finalSchemaTable);
         }
 
+        public bool CanGetColumnSchema() {
+            return _finalSchemaTable != null;
+        }
+
         /// <summary>
         /// Gets the value of the specified column as a SqlBinary.
         /// </summary>
