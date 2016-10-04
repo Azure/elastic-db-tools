@@ -668,9 +668,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <summary>
         /// Returns a <see cref="IReadOnlyCollection<DbColumn>"/> that describes the column metadata of the MultiShardDataReader.
         /// </summary>
-        /// <param name="NotExtensionMethod">set a value to indicate this method and not the extension method, value is ignored internally.</param>
         /// <returns>A <see cref="IReadOnlyCollection<DbColumn>"/> that describes the column metadata.</returns>
-        public IReadOnlyCollection<DbColumn> GetColumnSchema(bool NotExtensionMethod)
+        public IReadOnlyCollection<DbColumn> GetColumnSchema()
         {
             return GetPropertyOrVariableWithStateCheck<IReadOnlyCollection<DbColumn>>(_finalSchemaTable);
         }
