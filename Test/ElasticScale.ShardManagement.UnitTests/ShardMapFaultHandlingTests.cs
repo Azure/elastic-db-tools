@@ -6,8 +6,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Fakes;
-using Microsoft.QualityTools.Testing.Fakes.Stubs;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stubs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
@@ -1469,83 +1468,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 SqlResults results = new SqlResults();
 
                 return results;
-            }
-        }
-
-        private class ShardMapManagerTestStubObserver<T> : IStubObserver where T : IPartialStub
-        {
-            private T _observedStub;
-            private HashSet<string> _nonBaseCallMethods;
-
-            internal ShardMapManagerTestStubObserver(T observedStub, HashSet<string> nonBaseCallMethods)
-            {
-                _observedStub = observedStub;
-                _nonBaseCallMethods = nonBaseCallMethods;
-            }
-
-            public void Enter(Type stubbedType, Delegate stubCall, params object[] args)
-            {
-                this.CommonEnter(stubCall);
-            }
-
-            public void Enter(Type stubbedType, Delegate stubCall, object arg1, object arg2, object arg3)
-            {
-                this.CommonEnter(stubCall);
-            }
-
-            public void Enter(Type stubbedType, Delegate stubCall, object arg1, object arg2)
-            {
-                this.CommonEnter(stubCall);
-            }
-
-            public void Enter(Type stubbedType, Delegate stubCall, object arg1)
-            {
-                this.CommonEnter(stubCall);
-            }
-
-            public void Enter(Type stubbedType, Delegate stubCall)
-            {
-                this.CommonEnter(stubCall);
-            }
-
-            private void CommonEnter(Delegate stubCall)
-            {
-                if (_nonBaseCallMethods.Contains(stubCall.Method.Name))
-                {
-                    _observedStub.CallBase = false;
-                }
-                else
-                {
-                    _observedStub.CallBase = true;
-                }
-            }
-        }
-
-        private class SqlExceptionThrowingStubBehavior : IStubBehavior
-        {
-            public TResult Result<TStub, TResult>(TStub target, string name) where TStub : IStub
-            {
-                throw ShardMapFaultHandlingTests.TransientSqlException;
-            }
-
-            public bool TryGetValue<TValue>(object name, out TValue value)
-            {
-                throw ShardMapFaultHandlingTests.TransientSqlException;
-            }
-
-            public void ValueAtEnterAndReturn<TStub, TValue>(TStub target, string name, ref TValue value) where TStub : IStub
-            {
-                throw ShardMapFaultHandlingTests.TransientSqlException;
-            }
-
-            public void ValueAtReturn<TStub, TValue>(TStub target, string name, out TValue value) where TStub : IStub
-            {
-                throw ShardMapFaultHandlingTests.TransientSqlException;
-            }
-
-            public void VoidResult<TStub>(TStub target, string name) where TStub : IStub
-            {
-                throw ShardMapFaultHandlingTests.TransientSqlException;
             }
         }
 

@@ -29,11 +29,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <Choose>
-    <When Condition="'$(StandaloneBuild)' == 'true'">
-      <ItemGroup>
-        <Reference Include="FakesAssemblies\Microsoft.Azure.SqlDatabase.ElasticScale.Client.Fakes.dll" />
-      </ItemGroup>
-    </When>
+    <When Condition="'$(StandaloneBuild)' == 'true'" />
     <Otherwise>
       <ItemGroup>
         <Reference Include="Microsoft.Azure.SqlDatabase.ElasticScale.Client.Fakes, Version=$(VersionMajor).$(VersionMinor).0.0, Culture=neutral, PublicKeyToken=0ae41878053f6703, processorArchitecture=MSIL" />
@@ -47,13 +43,11 @@
     <Reference Include="$(NugetPack)\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\net45\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data.dll">
       <Name>Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data</Name>
     </Reference>
-    <Reference Include="Microsoft.QualityTools.Testing.Fakes, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -72,6 +66,18 @@
     <Compile Include="Decorators\CacheStoreDecorator.cs" />
     <Compile Include="Decorators\CountingCacheStore.cs" />
     <Compile Include="Decorators\StoreOperationDecorator.cs" />
+    <Compile Include="Stubs\IStubBehavior.cs" />
+    <Compile Include="Stubs\StubAddMappingOperation.cs" />
+    <Compile Include="Stubs\StubAddShardOperation.cs" />
+    <Compile Include="Stubs\StubBehaviors.cs" />
+    <Compile Include="Stubs\StubCacheStore.cs" />
+    <Compile Include="Stubs\StubFindMappingByKeyGlobalOperation.cs" />
+    <Compile Include="Stubs\StubICacheStoreMapping.cs" />
+    <Compile Include="Stubs\StubRemoveMappingOperation.cs" />
+    <Compile Include="Stubs\StubRemoveShardOperation.cs" />
+    <Compile Include="Stubs\StubReplaceMappingsOperation.cs" />
+    <Compile Include="Stubs\StubSqlStoreConnectionFactory.cs" />
+    <Compile Include="Stubs\StubStoreOperationFactory.cs" />
     <Compile Include="RecoveryManagerTests.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="ScenarioTests.cs" />
@@ -89,6 +95,8 @@
     <Compile Include="ShardMapManagerFactoryTests.cs" />
     <Compile Include="SchemaInfoCollectionTests.cs" />
     <Compile Include="ShardRangeTests.cs" />
+    <Compile Include="Stubs\StubUpdateMappingOperation.cs" />
+    <Compile Include="Stubs\StubUpdateShardOperation.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ElasticScale.ClientTestCommon\ElasticScale.ClientTestCommon.csproj">
@@ -104,9 +112,6 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <Fakes Include="Fakes\Microsoft.Azure.SqlDatabase.ElasticScale.Client.fakes">
-      <SubType>Designer</SubType>
-    </Fakes>
     <None Include="packages.config" />
   </ItemGroup>
   <Choose>
