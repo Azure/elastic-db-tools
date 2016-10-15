@@ -455,16 +455,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     connectionRetryPolicy,
                     executionPolicy).Result;
             }
-            catch (Exception ex)
+            catch (AggregateException aex)
             {
-                AggregateException aex = ex as AggregateException;
-
-                if (null != aex)
-                {
-                    throw aex.Flatten().InnerException;
-                }
-
-                throw;
+                throw aex.Flatten().InnerException;
             }
         }
 
@@ -594,10 +587,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             try
             {
                 this.ValidateCommand(behavior);
-
-                // Create a list of sql commands to run against each of the shards
-                List<Tuple<ShardLocation, DbCommand>> shardCommands = this.GetShardDbCommands();
-
+                
                 // Don't allow a new invocation if a Cancel() is already in progress
                 lock (_cancellationLock)
                 {
@@ -621,16 +611,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                             this.CommandText,
                             this.ExecutionPolicy);
 
-                        FanOutTask fanOutTask = this.ExecuteReaderAsyncInternal(
+                        ReaderExecutionTasks readerExecutionTasks = this.ExecuteReaderOnEachShardAsync(
                             behavior,
-                            shardCommands,
                             cmdCancellationMgr,
                             commandRetryPolicy,
                             connectionRetryPolicy,
                             executionPolicy);
 
-                        Task<MultiShardDataReader> commandTask = fanOutTask
-                            .OuterTask
+                        Task<MultiShardDataReader> commandTask = readerExecutionTasks
+                            .WhenAllTask
                             .ContinueWith<Task<MultiShardDataReader>>(
                             (t) =>
                             {
@@ -644,7 +633,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                                         // Close any active readers.
                                         if (this.ExecutionPolicy == MultiShardExecutionPolicy.CompleteResults)
                                         {
-                                            MultiShardCommand.TerminateActiveCommands(fanOutTask.InnerTasks);
+                                            MultiShardCommand.TerminateActiveCommands(readerExecutionTasks.PerShardTasks);
                                         }
 
                                         this.HandleCommandExecutionException(
@@ -657,7 +646,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                                         // Close any active readers.
                                         if (this.ExecutionPolicy == MultiShardExecutionPolicy.CompleteResults)
                                         {
-                                            MultiShardCommand.TerminateActiveCommands(fanOutTask.InnerTasks);
+                                            MultiShardCommand.TerminateActiveCommands(readerExecutionTasks.PerShardTasks);
                                         }
 
                                         this.HandleCommandExecutionCanceled(
@@ -772,14 +761,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        private FanOutTask ExecuteReaderAsyncInternal(
+        private ReaderExecutionTasks ExecuteReaderOnEachShardAsync(
             CommandBehavior behavior,
-            List<Tuple<ShardLocation, DbCommand>> commands,
             CommandCancellationManager cancellationToken,
             TransientFaultHandling.RetryPolicy commandRetryPolicy,
             TransientFaultHandling.RetryPolicy connectionRetryPolicy,
             MultiShardExecutionPolicy executionPolicy)
         {
+            // Create a list of sql commands to run against each of the shards
+            List<Tuple<ShardLocation, DbCommand>> commands = this.GetShardDbCommands();
+
             Task<LabeledDbDataReader>[] shardCommandTasks = new Task<LabeledDbDataReader>[commands.Count];
 
             for (int i = 0; i < shardCommandTasks.Length; i++)
@@ -795,11 +786,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     executionPolicy);
             }
 
-            return new FanOutTask
-            {
-                OuterTask = Task.WhenAll<LabeledDbDataReader>(shardCommandTasks),
-                InnerTasks = shardCommandTasks
-            };
+            return new ReaderExecutionTasks(shardCommandTasks);
         }
 
         // Suppression rationale: We are returning the LabeledDataReader via the task.  We don't want to dispose it.
@@ -1429,133 +1416,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             throw new NotSupportedException("ExecuteNonQuery is not supported");
         }
 
-        /// <summary>
-        /// ExecuteNonQueryAsync is currently not supported
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token</param>
-        /// <returns></returns>
-        public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
-        {
-            return base.ExecuteNonQueryAsync(cancellationToken);
-        }
-
-        // Suppression rationale: 
-        //   We do want to catch all exceptions and set them on the Task where they can be dealt with on the main thread.
-        //
-        /// <summary>
-        /// Test only for now
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <param name="executionPolicy"></param>
-        /// <returns></returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-        internal Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken, MultiShardExecutionPolicy executionPolicy)
-        {
-            var currentCompletion = new TaskCompletionSource<int>();
-            var behavior = CommandBehavior.Default;
-            var commandRetryPolicy = MultiShardUtils.GetSqlCommandRetryPolicy(this.RetryPolicy, this.RetryBehavior);
-            var connectionRetryPolicy = MultiShardUtils.GetSqlConnectionRetryPolicy(this.RetryPolicy, this.RetryBehavior);
-
-            // Check if cancellation has already been requested by the user
-            if (cancellationToken.IsCancellationRequested)
-            {
-                currentCompletion.SetCanceled();
-                return currentCompletion.Task;
-            }
-
-            try
-            {
-                ValidateCommand(behavior);
-
-                // Create a list of sql commands to run against each of the shards
-                List<Tuple<ShardLocation, DbCommand>> shardCommands = this.GetShardDbCommands();
-
-                // Don't allow a new invocation if a Cancel() is already in progress
-                lock (_cancellationLock)
-                {
-                    // Setup the Cancellation manager
-                    CommandCancellationManager cmdCancellationMgr = new CommandCancellationManager(
-                        _innerCts.Token,
-                        cancellationToken,
-                        executionPolicy,
-                        CommandTimeout);
-
-                    var commandTask = ExecuteReaderAsyncInternal(
-                        behavior,
-                        shardCommands,
-                        cmdCancellationMgr,
-                        commandRetryPolicy,
-                        connectionRetryPolicy,
-                        executionPolicy)
-                        .OuterTask
-                        .ContinueWith<Task<int>>(
-                        (t) =>
-                        {
-                            switch (t.Status)
-                            {
-                                case TaskStatus.Faulted:
-                                    HandleCommandExecutionException(
-                                        currentCompletion,
-                                        new MultiShardAggregateException(t.Exception.InnerExceptions));
-                                    break;
-
-                                case TaskStatus.Canceled:
-                                    HandleCommandExecutionCanceled(
-                                        currentCompletion,
-                                        cmdCancellationMgr);
-                                    break;
-
-                                case TaskStatus.RanToCompletion:
-                                    // Close all connections to shards
-                                    Connection.Close();
-
-                                    // Check for any exceptions if this is a partial results execution policy
-                                    bool success = true;
-
-                                    if (executionPolicy == MultiShardExecutionPolicy.PartialResults)
-                                    {
-                                        var exceptions = new List<Exception>();
-                                        foreach (var ldr in t.Result)
-                                        {
-                                            if (ldr.Exception != null)
-                                            {
-                                                exceptions.Add(ldr.Exception);
-                                            }
-                                        }
-
-                                        if (exceptions.Count != 0)
-                                        {
-                                            success = false;
-                                            HandleCommandExecutionException(currentCompletion,
-                                                new MultiShardAggregateException(exceptions));
-                                        }
-                                    }
-
-                                    if (success)
-                                    {
-                                        currentCompletion.SetResult(-1);
-                                    }
-                                    break;
-                                default:
-                                    currentCompletion.SetException(new InvalidOperationException("Unexpected task status."));
-                                    break;
-                            }
-
-                            return currentCompletion.Task;
-                        }, cancellationToken)
-                        .Unwrap();
-
-                    _currentCommandTask = commandTask;
-                    return commandTask;
-                }
-            }
-            catch (Exception ex)
-            {
-                currentCompletion.SetException(ex);
-                return currentCompletion.Task;
-            }
-        }
-
         #endregion
 
         #region ExecuteScalar Methods
@@ -1569,15 +1429,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             throw new NotSupportedException("ExecuteScalar is not supported");
         }
 
-        /// <summary>
-        /// ExecuteScalarAsync is currently not supported
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token</param>
-        /// <returns></returns>
-        public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
-        {
-            return base.ExecuteScalarAsync(cancellationToken);
-        }
         #endregion
 
         #endregion
@@ -1760,17 +1611,23 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <summary>
         /// Encapsulates data structures representing state of tasks executing across all the shards.
         /// </summary>
-        private class FanOutTask
+        private class ReaderExecutionTasks
         {
+            public ReaderExecutionTasks(Task<LabeledDbDataReader>[] tasks)
+            {
+                PerShardTasks = tasks;
+                WhenAllTask = Task.WhenAll(tasks);
+            }
+
             /// <summary>
-            /// Parent task of all per-shard tasks.
+            /// Task that completes when all PerShardTasks are completed.
             /// </summary>
-            internal Task<LabeledDbDataReader[]> OuterTask { get; set; }
+            internal Task<LabeledDbDataReader[]> WhenAllTask { get; private set; }
 
             /// <summary>
             /// Collection of inner tasks that run against each shard.
             /// </summary>
-            internal Task<LabeledDbDataReader>[] InnerTasks { get; set; }
+            internal Task<LabeledDbDataReader>[] PerShardTasks { get; private set; }
         }
 
         #endregion Inner Helper Classes

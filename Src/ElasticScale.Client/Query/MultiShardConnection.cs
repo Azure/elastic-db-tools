@@ -66,19 +66,27 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             {
                 throw new ArgumentNullException("connectionString");
             }
+            if (shards == null)
+            {
+                throw new ArgumentNullException("shards");
+            }
 
             // Enhance the ApplicationName with this library's name as a suffix
             // Devnote: If connection string specifies Active Directory authentication and runtime is not
             // .NET 4.6 or higher, then below call will throw.
             SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(
-                connectionString).WithApplicationNameSuffix(ApplicationNameSuffix); 
+                connectionString).WithApplicationNameSuffix(ApplicationNameSuffix);
+            ValidateConnectionString(connectionStringBuilder);
 
-            ValidateConnectionArguments(shards, "shards", connectionStringBuilder);
+            // Set Shards property
+            // Force evaluation of the input enumerable so that we don't evaluate it multiple times later
+            this.Shards = shards.ToList();
+            ValidateNotEmpty(this.Shards, "shards");
 
-            this.Shards = shards;
-            this.ShardConnections = shards.Select(
-                s => (CreateDbConnectionForLocation(s.Location, connectionStringBuilder))
-                ).ToList();
+            // Set ShardConnections property
+            string modifiedConnectionString = connectionStringBuilder.ToString();
+            this.ShardConnections = this.Shards.Select(
+                s => CreateDbConnectionForLocation(s.Location, modifiedConnectionString)).ToList();
         }
 
         /// <summary>
@@ -99,21 +107,31 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             {
                 throw new ArgumentNullException("connectionString");
             }
+            if (shardLocations == null)
+            {
+                throw new ArgumentNullException("shardLocations");
+            }
 
             // Enhance the ApplicationName with this library's name as a suffix
             // Devnote: If connection string specifies Active Directory authentication and runtime is not
             // .NET 4.6 or higher, then below call will throw.
             SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(
-                connectionString).WithApplicationNameSuffix(ApplicationNameSuffix); 
+                connectionString).WithApplicationNameSuffix(ApplicationNameSuffix);
+            ValidateConnectionString(connectionStringBuilder);
 
-            ValidateConnectionArguments(shardLocations, "shardLocations", connectionStringBuilder);
+            // Force evaluation of the input enumerable so that we don't evaluate it multiple times later
+            IList<ShardLocation> shardLocationsList = shardLocations.ToList();
+            ValidateNotEmpty(shardLocationsList, "shardLocations");
 
+            // Set Shards property
             this.Shards = null;
-            this.ShardConnections = shardLocations.Select(
-                s => (CreateDbConnectionForLocation(s, connectionStringBuilder))
-                ).ToList();
+
+            // Set ShardConnections property
+            string modifiedConnectionString = connectionStringBuilder.ToString();
+            this.ShardConnections = shardLocationsList.Select(
+                s => CreateDbConnectionForLocation(s, modifiedConnectionString)).ToList();
         }
-        
+
         /// <summary>
         /// Creates an instance of this class 
         /// /* TEST ONLY */
@@ -196,21 +214,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
         #region Helpers
 
-        private static void ValidateConnectionArguments<T>(
+        private static void ValidateNotEmpty<T>(
             IEnumerable<T> namedCollection,
-            string collectionName,
-            SqlConnectionStringBuilder connectionStringBuilder)
+            string collectionName)
         {
-            if (namedCollection == null)
-            {
-                throw new ArgumentNullException(collectionName);
-            }
-
-            if (0 == namedCollection.Count())
+            if (!namedCollection.Any())
             {
                 throw new ArgumentException(string.Format("No {0} provided.", collectionName));
             }
+        }
 
+        private static void ValidateConnectionString(
+            SqlConnectionStringBuilder connectionStringBuilder)
+        {
             // Datasource must not be set
             if (!string.IsNullOrEmpty(connectionStringBuilder.DataSource))
             {
@@ -228,14 +244,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         //
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         private static Tuple<ShardLocation, DbConnection> CreateDbConnectionForLocation(
-            ShardLocation shardLocation, 
-            SqlConnectionStringBuilder connectionStringBuilder)
+            ShardLocation shardLocation,
+            string connectionString)
         {
-            return new Tuple<ShardLocation, DbConnection>
-                    (
+            return new Tuple<ShardLocation, DbConnection>(
                     shardLocation,
                     new SqlConnection(
-                        new SqlConnectionStringBuilder(connectionStringBuilder.ConnectionString)
+                        new SqlConnectionStringBuilder(connectionString)
                         {
                             DataSource = shardLocation.DataSource,
                             InitialCatalog = shardLocation.Database
