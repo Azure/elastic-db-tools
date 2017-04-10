@@ -479,6 +479,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>An offline mapping.</returns>
         public PointMapping<TKey> MarkMappingOffline(PointMapping<TKey> mapping)
         {
+            return MarkMappingOffline(mapping, MappingOptions.Validate);
+
+        }
+        /// <summary>
+        /// Marks the specified mapping offline.
+        /// </summary>
+        /// <param name="mapping">Input point mapping.</param>
+        /// <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
+        /// <returns>An offline mapping.</returns>
+        public PointMapping<TKey> MarkMappingOffline(PointMapping<TKey> mapping, MappingOptions options)
+        {
             ExceptionUtils.DisallowNullArgument(mapping, "mapping");
 
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
@@ -489,7 +500,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
-                PointMapping<TKey> result = _lsm.MarkMappingOffline(mapping);
+                PointMapping<TKey> result = _lsm.MarkMappingOffline(mapping, options : options);
 
                 stopwatch.Stop();
 

@@ -78,8 +78,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="mapping">Input range mapping.</param>
         /// <param name="lockOwnerId">Lock owner id of this mapping</param>
+        /// <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
         /// <returns>An offline mapping.</returns>
-        public RangeMapping<TKey> MarkMappingOffline(RangeMapping<TKey> mapping, Guid lockOwnerId)
+        public RangeMapping<TKey> MarkMappingOffline(RangeMapping<TKey> mapping, Guid lockOwnerId, MappingOptions options)
         {
             return BaseShardMapper.SetStatus<RangeMapping<TKey>, RangeMappingUpdate, MappingStatus>(
                 mapping,
@@ -87,7 +88,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 s => MappingStatus.Offline,
                 s => new RangeMappingUpdate() { Status = s },
                 this.Update,
-                lockOwnerId);
+                lockOwnerId,
+                options);
         }
 
         /// <summary>
@@ -203,8 +205,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="currentMapping">Mapping being updated.</param>
         /// <param name="update">Updated properties of the Shard.</param>
         /// <param name="lockOwnerId">Lock owner id of this mapping</param>
+        /// <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
         /// <returns>New instance of mapping with updated information.</returns>
-        internal RangeMapping<TKey> Update(RangeMapping<TKey> currentMapping, RangeMappingUpdate update, Guid lockOwnerId)
+        internal RangeMapping<TKey> Update(RangeMapping<TKey> currentMapping, RangeMappingUpdate update, Guid lockOwnerId, MappingOptions options)
         {
             return this.Update<RangeMapping<TKey>, RangeMappingUpdate, MappingStatus>(
                 currentMapping,
@@ -212,7 +215,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 (smm, sm, ssm) => new RangeMapping<TKey>(smm, sm, ssm),
                 rms => (int)rms,
                 i => (MappingStatus)i,
-                lockOwnerId);
+                lockOwnerId,
+                options);
         }
 
         /// <summary>

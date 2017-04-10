@@ -28,6 +28,27 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
     }
 
     /// <summary>
+    /// Allows users to specify operations such as validation, to perform 
+    /// on the affected shard in the mapping.
+    /// </summary>
+    [Flags]
+    public enum MappingOptions
+    {
+        /// <summary>
+        /// No operation will be performed on the affected shard.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Validation operations will be performed on affected shard.
+        /// When a mapping is taken offline, connections to the affected
+        /// shard will be killed in order to prevent inconsistent or 
+        /// incomplete results for queries directed against mappings 
+        /// being changed.
+        /// </summary>
+        Validate
+    }
+    /// <summary>
     /// Container for a collection of keys to shards mappings.
     /// </summary>
     internal interface IShardMapper

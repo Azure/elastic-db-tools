@@ -720,6 +720,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="mappingTarget">Updated mapping.</param>
         /// <param name="patternForKill">Pattern for kill commands.</param>
         /// <param name="lockOwnerId">Id of lock owner.</param>
+        /// <param name="killConnection">Whether to kill open connections.</param>
         /// <returns>The store operation.</returns>
         public virtual IStoreOperation CreateUpdateMappingOperation(
             ShardMapManager shardMapManager,
@@ -728,7 +729,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             IStoreMapping mappingSource,
             IStoreMapping mappingTarget,
             string patternForKill,
-            Guid lockOwnerId)
+            Guid lockOwnerId,
+            bool killConnection)
         {
             return new UpdateMappingOperation(
                 shardMapManager,
@@ -737,7 +739,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 mappingSource,
                 mappingTarget,
                 patternForKill,
-                lockOwnerId);
+                lockOwnerId,
+                killConnection);
         }
 
         /// <summary>
@@ -1018,7 +1021,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 root.Element("PatternForKill").Value,
                 StoreObjectFormatterXml.ReadLock(root.Element("Steps").Element("Step").Element("Lock")),
                 originalShardVersionRemoves,
-                originalShardVersionAdds);
+                originalShardVersionAdds,
+                Boolean.Parse(root.Element("KillConnection").Value));
         }
 
         /// <summary>

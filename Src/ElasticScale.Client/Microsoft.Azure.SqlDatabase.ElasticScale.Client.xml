@@ -4747,7 +4747,7 @@
             <param name="lockOwnerId">Id of lock owner.</param>
             <returns>The store operation.</returns>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreOperationFactory.CreateUpdateMappingOperation(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationCode,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.String,System.Guid)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreOperationFactory.CreateUpdateMappingOperation(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationCode,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.String,System.Guid,System.Boolean)">
             <summary>
             Creates request to add shard to given shard map.
             </summary>
@@ -4758,6 +4758,7 @@
             <param name="mappingTarget">Updated mapping.</param>
             <param name="patternForKill">Pattern for kill commands.</param>
             <param name="lockOwnerId">Id of lock owner.</param>
+            <param name="killConnection">Whether to kill open connections.</param>
             <returns>The store operation.</returns>
         </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreOperationFactory.CreateReplaceMappingsOperation(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationCode,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreShardMap,System.Tuple{Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.Guid}[],System.Tuple{Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.Guid}[])">
@@ -6396,7 +6397,12 @@
             Pattern for kill commands.
             </summary>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UpdateMappingOperation.#ctor(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationCode,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.String,System.Guid)">
+        <member name="F:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UpdateMappingOperation._killConnection">
+            <summary>
+            Does operation kill connection.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UpdateMappingOperation.#ctor(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationCode,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.String,System.Guid,System.Boolean)">
             <summary>
             Creates request to add shard to given shard map.
             </summary>
@@ -6407,8 +6413,9 @@
             <param name="mappingTarget">Updated mapping.</param>
             <param name="patternForKill">Pattern for kill commands.</param>
             <param name="lockOwnerId">Id of lock owner.</param>
+            <param name="killConnection">Whether to kill open connections.</param>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UpdateMappingOperation.#ctor(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,System.Guid,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationState,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationCode,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.String,System.Guid,System.Guid,System.Guid)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UpdateMappingOperation.#ctor(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,System.Guid,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationState,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationCode,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.String,System.Guid,System.Guid,System.Guid,System.Boolean)">
             <summary>
             Creates request to add shard to given shard map.
             </summary>
@@ -6423,6 +6430,7 @@
             <param name="lockOwnerId">Id of lock owner.</param>
             <param name="originalShardVersionRemoves">Original shard version for removes.</param>
             <param name="originalShardVersionAdds">Original shard version for adds.</param>
+            <param name="killConnection">Whether to kill open connections.</param>
         </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UpdateMappingOperation.GetStoreConnectionInfo">
             <summary>
@@ -8514,7 +8522,7 @@
             <param name="lockOwnerId">Id of lock owner.</param>
             <returns>The store operation.</returns>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationFactory.CreateUpdateMappingOperation(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationCode,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.String,System.Guid)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationFactory.CreateUpdateMappingOperation(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationCode,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.String,System.Guid,System.Boolean)">
             <summary>
             Creates request to add shard to given shard map.
             </summary>
@@ -8525,6 +8533,7 @@
             <param name="mappingTarget">Updated mapping.</param>
             <param name="patternForKill">Pattern for kill commands.</param>
             <param name="lockOwnerId">Id of lock owner.</param>
+            <param name="killConnection">Whether to kill open connections.</param>
             <returns>The store operation.</returns>
         </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationFactory.CreateReplaceMappingsOperation(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationCode,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreShardMap,System.Tuple{Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.Guid}[],System.Tuple{Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.Guid}[])">
@@ -9283,7 +9292,7 @@
             <param name="lockOwnerId">Lock owner.</param>
             <returns>Xml formatted request.</returns>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationRequestBuilder.UpdateShardMappingGlobal(System.Guid,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationCode,System.Boolean,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.Guid)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationRequestBuilder.UpdateShardMappingGlobal(System.Guid,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationCode,System.Boolean,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.Guid,System.Boolean)">
             <summary>
             Request to update mapping in given shard map in GSM.
             </summary>
@@ -9295,6 +9304,7 @@
             <param name="mappingSource">Shard to update.</param>
             <param name="mappingTarget">Updated shard.</param>
             <param name="lockOwnerId">Lock owner.</param>
+            <param name="killConnection">Whether to kill open connections.</param>
             <returns>Xml formatted request.</returns>
         </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationRequestBuilder.ReplaceShardMappingsGlobal(System.Guid,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationCode,System.Boolean,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreShardMap,System.Tuple{Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.Guid}[],System.Tuple{Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,System.Guid}[])">
@@ -9713,7 +9723,7 @@
             The Tracer
             </summary>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.BaseShardMapper.SetStatus``3(``0,``2,System.Func{``2,``2},System.Func{``2,``1},System.Func{``0,``1,System.Guid,``0},System.Guid)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.BaseShardMapper.SetStatus``3(``0,``2,System.Func{``2,``2},System.Func{``2,``1},System.Func{``0,``1,System.Guid,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingOptions,``0},System.Guid,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingOptions)">
             <summary>
             Sets the status of a shardmapping
             </summary>
@@ -9729,6 +9739,7 @@
             <param name="runUpdate">Delegate to perform update from the <paramref name="mapping">input mapping</paramref> and 
             the update object returned by <paramref name="getStatus">createUpdate</paramref>.</param>
             <param name="lockOwnerId">Lock owner id of this mapping</param>
+            <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
             <returns></returns>
         </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.BaseShardMapper.OpenConnectionForKey``2(``1,System.Func{Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,``0},Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardManagementErrorCategory,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
@@ -9824,7 +9835,7 @@
             <param name="mappingType">Name of mapping type.</param>
             <returns>Read-only collection of mappings that overlap with given range.</returns>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.BaseShardMapper.Update``3(``0,``1,System.Func{Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,``0},System.Func{``2,System.Int32},System.Func{System.Int32,``2},System.Guid)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.BaseShardMapper.Update``3(``0,``1,System.Func{Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,``0},System.Func{``2,System.Int32},System.Func{System.Int32,``2},System.Guid,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingOptions)">
             <summary>
             Allows for update to a mapping with the updates provided in 
             the <paramref name="update"/> parameter.
@@ -9835,6 +9846,7 @@
             <param name="statusAsInt">Delegate to get the mapping status as an integer value.</param>
             <param name="intAsStatus">Delegate to get the mapping status from an integer value.</param>
             <param name="lockOwnerId">Lock owner id of this mapping</param>
+            <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
             <returns>New instance of mapping with updated information.</returns>
         </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.BaseShardMapper.GetLockOwnerForMapping``1(``0,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardManagementErrorCategory)">
@@ -9968,6 +9980,26 @@
             the mapping information was last cached at the client.
             </summary>
         </member>
+        <member name="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingOptions">
+            <summary>
+            Allows users to specify operations such as validation, to perform 
+            on the affected shard in the mapping.
+            </summary>
+        </member>
+        <member name="F:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingOptions.None">
+            <summary>
+            No operation will be performed on the affected shard.
+            </summary>
+        </member>
+        <member name="F:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingOptions.Validate">
+            <summary>
+            Validation operations will be performed on affected shard.
+            When a mapping is taken offline, connections to the affected
+            shard will be killed in order to prevent inconsistent or 
+            incomplete results for queries directed against mappings 
+            being changed.
+            </summary>
+        </member>
         <member name="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IShardMapper">
             <summary>
             Container for a collection of keys to shards mappings.
@@ -10084,12 +10116,13 @@
             <returns>A Task encapsulating an opened SqlConnection.</returns>
             <remarks>All non usage-error exceptions will be reported via the returned Task</remarks>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMapper`1.MarkMappingOffline(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.PointMapping{`0},System.Guid)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMapper`1.MarkMappingOffline(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.PointMapping{`0},System.Guid,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingOptions)">
             <summary>
             Marks the given mapping offline.
             </summary>
             <param name="mapping">Input point mapping.</param>
             <param name="lockOwnerId">Lock owner id of this mapping</param>
+            <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
             <returns>An offline mapping.</returns>
         </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMapper`1.MarkMappingOnline(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.PointMapping{`0},System.Guid)">
@@ -10139,7 +10172,7 @@
             <param name="shard">Optional shard parameter, if null, we cover all shards.</param>
             <returns>Read-only collection of mappings that overlap with given range.</returns>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMapper`1.Update(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.PointMapping{`0},Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.PointMappingUpdate,System.Guid)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMapper`1.Update(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.PointMapping{`0},Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.PointMappingUpdate,System.Guid,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingOptions)">
             <summary>
             Allows for update to a point mapping with the updates provided in 
             the <paramref name="update"/> parameter.
@@ -10147,6 +10180,7 @@
             <param name="currentMapping">Mapping being updated.</param>
             <param name="update">Updated properties of the Shard.</param>
             <param name="lockOwnerId">Lock owner id of this mapping</param>
+            <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
             <returns>New instance of mapping with updated information.</returns>
         </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMapper`1.GetLockOwnerForMapping(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.PointMapping{`0})">
@@ -10203,12 +10237,13 @@
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>A Task encapsulating an opened SqlConnection.</returns>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMapper`1.MarkMappingOffline(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMapping{`0},System.Guid)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMapper`1.MarkMappingOffline(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMapping{`0},System.Guid,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingOptions)">
             <summary>
             Marks the given mapping offline.
             </summary>
             <param name="mapping">Input range mapping.</param>
             <param name="lockOwnerId">Lock owner id of this mapping</param>
+            <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
             <returns>An offline mapping.</returns>
         </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMapper`1.MarkMappingOnline(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMapping{`0},System.Guid)">
@@ -10258,7 +10293,7 @@
             <param name="shard">Optional shard parameter, if null, we cover all shards.</param>
             <returns>Read-only collection of mappings that overlap with given range.</returns>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMapper`1.Update(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMapping{`0},Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMappingUpdate,System.Guid)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMapper`1.Update(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMapping{`0},Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMappingUpdate,System.Guid,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingOptions)">
             <summary>
             Allows for update to a range mapping with the updates provided in 
             the <paramref name="update"/> parameter.
@@ -10266,6 +10301,7 @@
             <param name="currentMapping">Mapping being updated.</param>
             <param name="update">Updated properties of the Shard.</param>
             <param name="lockOwnerId">Lock owner id of this mapping</param>
+            <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
             <returns>New instance of mapping with updated information.</returns>
         </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMapper`1.Split(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMapping{`0},`0,System.Guid)">
@@ -13113,6 +13149,14 @@
             <param name="mapping">Input point mapping.</param>
             <returns>An offline mapping.</returns>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMap`1.MarkMappingOffline(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.PointMapping{`0},Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingOptions)">
+            <summary>
+            Marks the specified mapping offline.
+            </summary>
+            <param name="mapping">Input point mapping.</param>
+            <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
+            <returns>An offline mapping.</returns>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMap`1.MarkMappingOnline(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.PointMapping{`0})">
             <summary>
             Marks the specified mapping online.
@@ -13375,6 +13419,15 @@
             </summary>
             <param name="mapping">Input range mapping.</param>
             <param name="mappingLockToken">An instance of <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingLockToken"/></param>
+            <returns>An offline mapping.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMap`1.MarkMappingOffline(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMapping{`0},Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingLockToken,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingOptions)">
+            <summary>
+            Marks the specified mapping offline.
+            </summary>
+            <param name="mapping">Input range mapping.</param>
+            <param name="mappingLockToken">An instance of <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingLockToken"/></param>
+            <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
             <returns>An offline mapping.</returns>
         </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMap`1.MarkMappingOnline(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMapping{`0})">

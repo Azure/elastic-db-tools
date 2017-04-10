@@ -3086,10 +3086,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             IStoreOperationFactory sof = new StubStoreOperationFactory()
             {
                 CallBase = true,
-                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) =>
+                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc) =>
                 {
-                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid);
+                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc);
                     op.CallBase = true;
                     op.DoGlobalPostLocalExecuteIStoreTransactionScope = (ts) =>
                     {
@@ -3158,10 +3158,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             IStoreOperationFactory sof = new StubStoreOperationFactory()
             {
                 CallBase = true,
-                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) =>
+                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc) =>
                 {
-                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid);
+                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc);
                     op.CallBase = true;
                     if (shouldThrow)
                     {
@@ -3394,10 +3394,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             IStoreOperationFactory sof = new StubStoreOperationFactory()
             {
                 CallBase = true,
-                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) =>
+                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc) =>
                 {
-                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid);
+                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc);
                     op.CallBase = true;
                     op.DoGlobalPostLocalExecuteIStoreTransactionScope = (ts) =>
                     {
@@ -3465,10 +3465,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             IStoreOperationFactory sof = new StubStoreOperationFactory()
             {
                 CallBase = true,
-                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) =>
+                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc) =>
                 {
-                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid);
+                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc);
                     op.CallBase = true;
                     if (shouldThrow)
                     {
@@ -3828,10 +3828,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             IStoreOperationFactory sof = new StubStoreOperationFactory()
             {
                 CallBase = true,
-                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) =>
+                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc) =>
                 {
-                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid);
+                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc);
                     op.CallBase = true;
                     op.DoLocalSourceExecuteIStoreTransactionScope = (ts) =>
                     {
@@ -3900,10 +3900,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             IStoreOperationFactory sof = new StubStoreOperationFactory()
             {
                 CallBase = true,
-                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) =>
+                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc) =>
                 {
-                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid);
+                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc);
                     op.CallBase = true;
                     if (shouldThrow)
                     {
@@ -4134,10 +4134,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             IStoreOperationFactory sof = new StubStoreOperationFactory()
             {
                 CallBase = true,
-                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) =>
+                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc) =>
                 {
-                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid);
+                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc);
                     op.CallBase = true;
                     op.DoLocalSourceExecuteIStoreTransactionScope = (ts) =>
                     {
@@ -4205,10 +4205,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             IStoreOperationFactory sof = new StubStoreOperationFactory()
             {
                 CallBase = true,
-                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) =>
+                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc) =>
                 {
-                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid);
+                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc);
                     op.CallBase = true;
                     if (shouldThrow)
                     {
@@ -4704,10 +4704,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             IStoreOperationFactory sof = new StubStoreOperationFactory()
             {
                 CallBase = true,
-                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) =>
+                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc) =>
                 {
-                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid);
+                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc);
                     op.CallBase = true;
                     op.DoGlobalPostLocalExecuteIStoreTransactionScope = (ts) =>
                     {
@@ -4822,10 +4822,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             IStoreOperationFactory sof = new StubStoreOperationFactory()
             {
                 CallBase = true,
-                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) =>
+                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc) =>
                 {
-                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid);
+                    StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms, _smt, _p, _loid, _kc);
                     op.CallBase = true;
                     op.DoGlobalPostLocalExecuteIStoreTransactionScope = (ts) =>
                     {

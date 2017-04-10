@@ -71,8 +71,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="mapping">Input point mapping.</param>
         /// <param name="lockOwnerId">Lock owner id of this mapping</param>
+        /// <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
         /// <returns>An offline mapping.</returns>
-        public PointMapping<TKey> MarkMappingOffline(PointMapping<TKey> mapping, Guid lockOwnerId = default(Guid))
+        public PointMapping<TKey> MarkMappingOffline(PointMapping<TKey> mapping, Guid lockOwnerId = default(Guid), MappingOptions options = MappingOptions.Validate)
         {
             return BaseShardMapper.SetStatus<PointMapping<TKey>, PointMappingUpdate, MappingStatus>(
                 mapping,
@@ -80,7 +81,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 s => MappingStatus.Offline,
                 s => new PointMappingUpdate() { Status = s },
                 this.Update,
-                lockOwnerId);
+                lockOwnerId,
+                options);
         }
 
         /// <summary>
@@ -196,8 +198,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="currentMapping">Mapping being updated.</param>
         /// <param name="update">Updated properties of the Shard.</param>
         /// <param name="lockOwnerId">Lock owner id of this mapping</param>
+        /// <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
         /// <returns>New instance of mapping with updated information.</returns>
-        internal PointMapping<TKey> Update(PointMapping<TKey> currentMapping, PointMappingUpdate update, Guid lockOwnerId = default(Guid))
+        internal PointMapping<TKey> Update(PointMapping<TKey> currentMapping, PointMappingUpdate update, Guid lockOwnerId = default(Guid), MappingOptions options = MappingOptions.Validate)
         {
             return this.Update<PointMapping<TKey>, PointMappingUpdate, MappingStatus>(
                 currentMapping,
@@ -205,7 +208,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 (smm, sm, ssm) => new PointMapping<TKey>(smm, sm, ssm),
                 pms => (int)pms,
                 i => (MappingStatus)i,
-                lockOwnerId);
+                lockOwnerId,
+                options);
         }
 
         /// <summary>

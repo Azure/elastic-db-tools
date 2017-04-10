@@ -189,8 +189,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// <summary>
         /// Initializes a new instance
         /// </summary>
-        public StubUpdateMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, string patternForKill, Guid lockOwnerId)
-          : base(shardMapManager, operationCode, shardMap, mappingSource, mappingTarget, patternForKill, lockOwnerId)
+        public StubUpdateMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, string patternForKill, Guid lockOwnerId, bool killConnection)
+          : base(shardMapManager, operationCode, shardMap, mappingSource, mappingTarget, patternForKill, lockOwnerId, killConnection)
         {
             this.InitializeStub();
         }

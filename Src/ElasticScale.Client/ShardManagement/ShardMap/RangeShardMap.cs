@@ -448,8 +448,21 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="mapping">Input range mapping.</param>
         /// <param name="mappingLockToken">An instance of <see cref="MappingLockToken"/></param>
         /// <returns>An offline mapping.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "1")]
         public RangeMapping<TKey> MarkMappingOffline(RangeMapping<TKey> mapping, MappingLockToken mappingLockToken)
+        {
+            return this.MarkMappingOffline(mapping, mappingLockToken, MappingOptions.Validate);
+        }
+
+
+        /// <summary>
+        /// Marks the specified mapping offline.
+        /// </summary>
+        /// <param name="mapping">Input range mapping.</param>
+        /// <param name="mappingLockToken">An instance of <see cref="MappingLockToken"/></param>
+        /// <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
+        /// <returns>An offline mapping.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "1")]
+        public RangeMapping<TKey> MarkMappingOffline(RangeMapping<TKey> mapping, MappingLockToken mappingLockToken, MappingOptions options)
         {
             ExceptionUtils.DisallowNullArgument(mapping, "mapping");
             ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
@@ -462,7 +475,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
-                RangeMapping<TKey> result = this.rsm.MarkMappingOffline(mapping, mappingLockToken.LockOwnerId);
+                RangeMapping<TKey> result = this.rsm.MarkMappingOffline(mapping, mappingLockToken.LockOwnerId, options);
 
                 stopwatch.Stop();
 
@@ -681,7 +694,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
-                RangeMapping<TKey> rangeMapping = this.rsm.Update(currentMapping, update, mappingLockToken.LockOwnerId);
+                RangeMapping<TKey> rangeMapping = this.rsm.Update(currentMapping, update, mappingLockToken.LockOwnerId, MappingOptions.Validate);
 
                 stopwatch.Stop();
 
