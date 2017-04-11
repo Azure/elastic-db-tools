@@ -480,8 +480,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         public PointMapping<TKey> MarkMappingOffline(PointMapping<TKey> mapping)
         {
             return MarkMappingOffline(mapping, MappingOptions.Validate);
-
         }
+
         /// <summary>
         /// Marks the specified mapping offline.
         /// </summary>

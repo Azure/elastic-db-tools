@@ -453,7 +453,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             return this.MarkMappingOffline(mapping, mappingLockToken, MappingOptions.Validate);
         }
 
-
         /// <summary>
         /// Marks the specified mapping offline.
         /// </summary>
