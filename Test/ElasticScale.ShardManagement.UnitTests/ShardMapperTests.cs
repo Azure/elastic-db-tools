@@ -775,6 +775,106 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         }
 
         /// <summary>
+        /// Take a mapping offline, verify that the existing connection is not killed using mapping options.
+        /// </summary>
+        [TestMethod()]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void DoNotKillConnectionOnOfflinePointMapping()
+        {
+            ShardMapManager smm = new ShardMapManager(
+                new SqlShardMapManagerCredentials(Globals.ShardMapManagerConnectionString),
+                new SqlStoreConnectionFactory(),
+                new StoreOperationFactory(),
+                new CacheStore(),
+                ShardMapManagerLoadPolicy.Lazy,
+                new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero),
+                RetryBehavior.DefaultRetryBehavior);
+
+            ListShardMap<int> lsm = smm.GetListShardMap<int>(ShardMapperTests.s_listShardMapName);
+
+            Assert.IsNotNull(lsm);
+
+            ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapperTests.s_shardedDBs[0]);
+
+            Shard s = lsm.CreateShard(sl);
+
+            Assert.IsNotNull(s);
+
+            PointMapping<int> p1 = lsm.CreatePointMapping(1, s);
+
+            using (SqlConnection conn = lsm.OpenConnectionForKeyAsync(1, Globals.ShardUserConnectionString).Result)
+            {
+                Assert.AreEqual(ConnectionState.Open, conn.State);
+
+                PointMapping<int> pNew = lsm.MarkMappingOffline(p1, MappingOptions.None);
+                Assert.IsNotNull(pNew);
+
+                bool failed = false;
+
+                try
+                {
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = "select 1";
+                        cmd.CommandType = CommandType.Text;
+
+                        using (SqlDataReader rdr = cmd.ExecuteReader())
+                        {
+                        }
+                    }
+                }
+                catch (SqlException)
+                {
+                    failed = true;
+                }
+
+                Assert.AreEqual(false, failed);
+                Assert.AreEqual(ConnectionState.Open, conn.State);
+
+                failed = false;
+
+                // Open 2nd connection.
+                try
+                {
+                    using (SqlConnection conn2 = lsm.OpenConnectionForKeyAsync(1, Globals.ShardUserConnectionString).Result)
+                    {
+                    }
+                }
+                catch (AggregateException ex)
+                {
+                    var sme = ex.InnerException as ShardManagementException;
+                    if (sme != null)
+                    {
+                        failed = true;
+                        Assert.AreEqual(ShardManagementErrorCode.MappingIsOffline, sme.ErrorCode);
+                    }
+                }
+
+                Assert.AreEqual(true, failed);
+
+                // Mark the mapping online again so that it will be cleaned up
+                PointMapping<int> pUpdated = lsm.MarkMappingOnline(pNew);
+                Assert.IsNotNull(pUpdated);
+
+                failed = false;
+
+                // Open 3rd connection. This should succeed.
+                try
+                {
+                    using (SqlConnection conn3 = lsm.OpenConnectionForKey(1, Globals.ShardUserConnectionString))
+                    {
+                    }
+                }
+                catch (ShardManagementException)
+                {
+                    failed = true;
+                }
+
+                Assert.AreEqual(false, failed);
+            }
+        }
+
+        /// <summary>
         /// Update location of existing point mapping in list shard map
         /// </summary>
         [TestMethod()]
@@ -1544,6 +1644,105 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
         }
 
+        /// <summary>
+        /// Take a mapping offline, verify that the existing connection is not killed using mapping options.
+        /// </summary>
+        [TestMethod()]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void DoNotKillConnectionOnOfflineRangeMapping()
+        {
+            ShardMapManager smm = new ShardMapManager(
+                new SqlShardMapManagerCredentials(Globals.ShardMapManagerConnectionString),
+                new SqlStoreConnectionFactory(),
+                new StoreOperationFactory(),
+                new CacheStore(),
+                ShardMapManagerLoadPolicy.Lazy,
+                new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero),
+                RetryBehavior.DefaultRetryBehavior);
+
+            RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapperTests.s_rangeShardMapName);
+
+            Assert.IsNotNull(rsm);
+
+            ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapperTests.s_shardedDBs[0]);
+
+            Shard s = rsm.CreateShard(sl);
+
+            Assert.IsNotNull(s);
+
+            RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(1, 20), s);
+
+            using (SqlConnection conn = rsm.OpenConnectionForKeyAsync(1, Globals.ShardUserConnectionString).Result)
+            {
+                Assert.AreEqual(ConnectionState.Open, conn.State);
+
+                RangeMapping<int> rNew = rsm.MarkMappingOffline(r1, MappingLockToken.NoLock, MappingOptions.None);
+                Assert.IsNotNull(rNew);
+
+                bool failed = false;
+
+                try
+                {
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = "select 1";
+                        cmd.CommandType = CommandType.Text;
+
+                        using (SqlDataReader rdr = cmd.ExecuteReader())
+                        {
+                        }
+                    }
+                }
+                catch (SqlException)
+                {
+                    failed = true;
+                }
+
+                Assert.AreEqual(false, failed);
+                Assert.AreEqual(ConnectionState.Open, conn.State);
+
+                failed = false;
+
+                // Open 2nd connection.
+                try
+                {
+                    using (SqlConnection conn2 = rsm.OpenConnectionForKeyAsync(1, Globals.ShardUserConnectionString).Result)
+                    {
+                    }
+                }
+                catch (AggregateException ex)
+                {
+                    var sme = ex.InnerException as ShardManagementException;
+                    if (sme != null)
+                    {
+                        failed = true;
+                        Assert.AreEqual(ShardManagementErrorCode.MappingIsOffline, sme.ErrorCode);
+                    }
+                }
+
+                Assert.AreEqual(true, failed);
+
+                // Mark the mapping online again so that it will be cleaned up
+                RangeMapping<int> rUpdated = rsm.MarkMappingOnline(rNew);
+                Assert.IsNotNull(rUpdated);
+
+                failed = false;
+
+                // Open 3rd connection. This should succeed.
+                try
+                {
+                    using (SqlConnection conn3 = rsm.OpenConnectionForKey(1, Globals.ShardUserConnectionString))
+                    {
+                    }
+                }
+                catch (ShardManagementException)
+                {
+                    failed = true;
+                }
+
+                Assert.AreEqual(false, failed);
+            }
+        }
 
         /// <summary>
         /// Update range mapping in range shard map to change location.
@@ -2253,6 +2452,59 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(1, 5), s);
 
             RangeMapping<int> rNew = rsm.MarkMappingOffline(r1);
+
+            Assert.IsNotNull(rNew);
+            Assert.AreEqual(MappingStatus.Offline, rNew.Status, "The range mapping was not successfully marked offline.");
+
+            rNew = rsm.MarkMappingOnline(rNew);
+
+            Assert.IsNotNull(rNew);
+            Assert.AreEqual(MappingStatus.Online, rNew.Status, "The range mapping was not successfully marked online.");
+        }
+
+        /// <summary>
+        /// Mark a point mapping offline or online using MappingOptions.None
+        /// </summary>
+        [TestMethod()]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void MarkMappingOfflineOnlineWithMappingOptions()
+        {
+            ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+                Globals.ShardMapManagerConnectionString,
+                ShardMapManagerLoadPolicy.Lazy);
+
+            ListShardMap<int> lsm = smm.GetListShardMap<int>(ShardMapperTests.s_listShardMapName);
+
+            Assert.IsNotNull(lsm);
+
+            ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapperTests.s_shardedDBs[0]);
+
+            Shard s = lsm.CreateShard(sl);
+
+            Assert.IsNotNull(s);
+
+            PointMapping<int> p1 = lsm.CreatePointMapping(1, s);
+
+            PointMapping<int> pNew = lsm.MarkMappingOffline(p1, MappingOptions.None);
+
+            Assert.IsNotNull(pNew);
+            Assert.AreEqual(MappingStatus.Offline, pNew.Status, "The point mapping was not successfully marked offline.");
+
+            pNew = lsm.MarkMappingOnline(pNew);
+
+            Assert.IsNotNull(pNew);
+            Assert.AreEqual(MappingStatus.Online, pNew.Status, "The point mapping was not successfully marked online.");
+
+            RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapperTests.s_rangeShardMapName);
+
+            Assert.IsNotNull(rsm);
+
+            s = rsm.CreateShard(sl);
+            Assert.IsNotNull(s);
+
+            RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(1, 5), s);
+
+            RangeMapping<int> rNew = rsm.MarkMappingOffline(r1, MappingLockToken.NoLock, MappingOptions.None);
 
             Assert.IsNotNull(rNew);
             Assert.AreEqual(MappingStatus.Offline, rNew.Status, "The range mapping was not successfully marked offline.");
