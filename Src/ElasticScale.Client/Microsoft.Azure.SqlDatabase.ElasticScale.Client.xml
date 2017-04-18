@@ -13421,6 +13421,14 @@
             <param name="mappingLockToken">An instance of <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingLockToken"/></param>
             <returns>An offline mapping.</returns>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMap`1.MarkMappingOffline(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMapping{`0},Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingOptions)">
+            <summary>
+            Marks the specified mapping offline.
+            </summary>
+            <param name="mapping">Input range mapping.</param>
+            <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
+            <returns>An offline mapping.</returns>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMap`1.MarkMappingOffline(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeMapping{`0},Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingLockToken,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.MappingOptions)">
             <summary>
             Marks the specified mapping offline.

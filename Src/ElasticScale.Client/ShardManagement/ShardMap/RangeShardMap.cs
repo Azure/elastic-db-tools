@@ -457,6 +457,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Marks the specified mapping offline.
         /// </summary>
         /// <param name="mapping">Input range mapping.</param>
+        /// <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
+        /// <returns>An offline mapping.</returns>
+        public RangeMapping<TKey> MarkMappingOffline(RangeMapping<TKey> mapping, MappingOptions options)
+        {
+            return this.MarkMappingOffline(mapping, MappingLockToken.NoLock, options);
+        }
+
+        /// <summary>
+        /// Marks the specified mapping offline.
+        /// </summary>
+        /// <param name="mapping">Input range mapping.</param>
         /// <param name="mappingLockToken">An instance of <see cref="MappingLockToken"/></param>
         /// <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
         /// <returns>An offline mapping.</returns>
