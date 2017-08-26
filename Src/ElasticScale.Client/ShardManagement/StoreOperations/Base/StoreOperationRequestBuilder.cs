@@ -573,6 +573,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="mappingSource">Shard to update.</param>
         /// <param name="mappingTarget">Updated shard.</param>
         /// <param name="lockOwnerId">Lock owner.</param>
+        /// <param name="killConnection">Whether to kill open connections.</param>
         /// <returns>Xml formatted request.</returns>
         internal static XElement UpdateShardMappingGlobal(
             Guid operationId,
@@ -582,7 +583,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             IStoreShardMap shardMap,
             IStoreMapping mappingSource,
             IStoreMapping mappingTarget,
-            Guid lockOwnerId)
+            Guid lockOwnerId,
+            bool killConnection)
         {
             return new XElement(
                 "BulkOperationShardMappingsGlobal",
@@ -592,6 +594,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 StoreOperationRequestBuilder.StepsCount(1),
                 StoreOperationRequestBuilder.s_gsmVersion,
                 new XElement("PatternForKill", patternForKill),
+                new XElement("KillConnection", killConnection),
                 StoreObjectFormatterXml.WriteIStoreShardMap("ShardMap", shardMap),
                 new XElement("Removes",
                     StoreObjectFormatterXml.WriteIStoreShard("Shard", mappingSource.StoreShard)),

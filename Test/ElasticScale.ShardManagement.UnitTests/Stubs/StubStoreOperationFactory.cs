@@ -156,9 +156,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         internal Func<StoreOperationCode, ShardMapManager, Guid, StoreOperationState, XElement, Guid, IStoreOperation> CreateReplaceMappingsOperationStoreOperationCodeShardMapManagerGuidStoreOperationStateXElementGuid;
         /// <summary>
-        /// Sets the stub of StoreOperationFactory.CreateUpdateMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, String patternForKill, Guid lockOwnerId)
+        /// Sets the stub of StoreOperationFactory.CreateUpdateMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, String patternForKill, Guid lockOwnerId, Bool killConnection)
         /// </summary>
-        internal Func<ShardMapManager, StoreOperationCode, IStoreShardMap, IStoreMapping, IStoreMapping, string, Guid, IStoreOperation> CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid;
+        internal Func<ShardMapManager, StoreOperationCode, IStoreShardMap, IStoreMapping, IStoreMapping, string, Guid, bool, IStoreOperation> CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool;
         /// <summary>
         /// Sets the stub of StoreOperationFactory.CreateUpdateMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, Guid operationId, StoreOperationState undoStartState, XElement root, Guid originalShardVersionRemoves, Guid originalShardVersionAdds)
         /// </summary>
@@ -669,15 +669,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         }
 
         /// <summary>
-        /// Sets the stub of StoreOperationFactory.CreateUpdateMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, String patternForKill, Guid lockOwnerId)
+        /// Sets the stub of StoreOperationFactory.CreateUpdateMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, String patternForKill, Guid lockOwnerId, bool KillConnection)
         /// </summary>
-        public override IStoreOperation CreateUpdateMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, string patternForKill, Guid lockOwnerId)
+        public override IStoreOperation CreateUpdateMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, string patternForKill, Guid lockOwnerId, bool killConnection)
         {
-            Func<ShardMapManager, StoreOperationCode, IStoreShardMap, IStoreMapping, IStoreMapping, string, Guid, IStoreOperation> func1 = this.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid;
+            Func<ShardMapManager, StoreOperationCode, IStoreShardMap, IStoreMapping, IStoreMapping, string, Guid, bool, IStoreOperation> func1 = this.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool;
             if (func1 != null)
-                return func1(shardMapManager, operationCode, shardMap, mappingSource, mappingTarget, patternForKill, lockOwnerId);
+                return func1(shardMapManager, operationCode, shardMap, mappingSource, mappingTarget, patternForKill, lockOwnerId, killConnection);
             if (this.___callBase)
-                return base.CreateUpdateMappingOperation(shardMapManager, operationCode, shardMap, mappingSource, mappingTarget, patternForKill, lockOwnerId);
+                return base.CreateUpdateMappingOperation(shardMapManager, operationCode, shardMap, mappingSource, mappingTarget, patternForKill, lockOwnerId, killConnection);
             return this.InstanceBehavior.Result<StubStoreOperationFactory, IStoreOperation>(this, "CreateUpdateMappingOperation");
         }
 

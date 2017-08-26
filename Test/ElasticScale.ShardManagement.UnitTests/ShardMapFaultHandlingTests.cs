@@ -447,9 +447,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 CreateRemoveMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingGuid =
                 (_smm, _opcode, _sm, _mapping, _loid) => new RemoveMappingOperationFailAfterGlobalPreLocal(_smm, _opcode, _sm, _mapping, _loid),
 
-                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId)
-                    => new UpdateMappingOperationFailAfterGlobalPreLocal(_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId),
+                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId, _killConnection)
+                    => new UpdateMappingOperationFailAfterGlobalPreLocal(_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId, _killConnection),
 
                 CreateReplaceMappingsOperationShardMapManagerStoreOperationCodeIStoreShardMapTupleOfIStoreMappingGuidArrayTupleOfIStoreMappingGuidArray =
                 (_smm, _opcode, _sm, _mappingsource, _mappingtarget) => new ReplaceMappingsOperationFailAfterGlobalPreLocal(_smm, _opcode, _sm, _mappingsource, _mappingtarget)
@@ -518,7 +518,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // below call will only execute global pre-local step to create operations log
             RangeMapping<int> r2 = rsm.UpdateMapping(r1, ru);
 
-            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid = null;
+            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool = null;
 
             // now update same mapping again, this will undo previous pending operation and then add this mapping
 
@@ -526,14 +526,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             // try mapping update failures with change in shard location
             // first reset CreateUpdateMappingOperation to just perform global pre-local
-            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId)
-                    => new UpdateMappingOperationFailAfterGlobalPreLocal(_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId);
+            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId, _killConnection)
+                    => new UpdateMappingOperationFailAfterGlobalPreLocal(_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId, _killConnection);
 
             RangeMapping<int> r4 = rsm.UpdateMapping(r3, new RangeMappingUpdate { Shard = s2 });
 
             // now try with actual update mapping operation
-            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid = null;
+            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool = null;
             RangeMapping<int> r5 = rsm.UpdateMapping(r3, new RangeMappingUpdate { Shard = s2 });
 
             // split mapping toperform gsm-only pre-local operation
@@ -577,9 +577,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 CreateRemoveMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingGuid =
                 (_smm, _opcode, _sm, _mapping, _loid) => new RemoveMappingOperationFailAfterLocalSource(_smm, _opcode, _sm, _mapping, _loid),
 
-                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId)
-                    => new UpdateMappingOperationFailAfterLocalSource(_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId),
+                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId, _killConnection)
+                    => new UpdateMappingOperationFailAfterLocalSource(_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId, _killConnection),
 
                 CreateReplaceMappingsOperationShardMapManagerStoreOperationCodeIStoreShardMapTupleOfIStoreMappingGuidArrayTupleOfIStoreMappingGuidArray =
                 (_smm, _opcode, _sm, _mappingsource, _mappingtarget) => new ReplaceMappingsOperationFailAfterLocalSource(_smm, _opcode, _sm, _mappingsource, _mappingtarget)
@@ -648,7 +648,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // below call will only execute global pre-local step to create operations log
             RangeMapping<int> r2 = rsm.UpdateMapping(r1, ru);
 
-            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid = null;
+            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool = null;
 
             // now update same mapping again, this will undo previous pending operation and then add this mapping
 
@@ -656,14 +656,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             // try mapping update failures with change in shard location
             // first reset CreateUpdateMappingOperation to just perform global pre-local
-            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId)
-                    => new UpdateMappingOperationFailAfterLocalSource(_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId);
+            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId, _killConnection)
+                    => new UpdateMappingOperationFailAfterLocalSource(_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId, _killConnection);
 
             RangeMapping<int> r4 = rsm.UpdateMapping(r3, new RangeMappingUpdate { Shard = s2 });
 
             // now try with actual update mapping operation
-            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid = null;
+            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool = null;
             RangeMapping<int> r5 = rsm.UpdateMapping(r3, new RangeMappingUpdate { Shard = s2 });
 
             // split mapping toperform gsm-only pre-local operation
@@ -707,9 +707,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 CreateRemoveMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingGuid =
                 (_smm, _opcode, _sm, _mapping, _loid) => new RemoveMappingOperationFailAfterLocalTarget(_smm, _opcode, _sm, _mapping, _loid),
 
-                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId)
-                    => new UpdateMappingOperationFailAfterLocalTarget(_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId),
+                CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId, _killConnection)
+                    => new UpdateMappingOperationFailAfterLocalTarget(_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId, _killConnection),
 
                 CreateReplaceMappingsOperationShardMapManagerStoreOperationCodeIStoreShardMapTupleOfIStoreMappingGuidArrayTupleOfIStoreMappingGuidArray =
                 (_smm, _opcode, _sm, _mappingsource, _mappingtarget) => new ReplaceMappingsOperationFailAfterLocalTarget(_smm, _opcode, _sm, _mappingsource, _mappingtarget)
@@ -778,7 +778,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // below call will only execute global pre-local step to create operations log
             RangeMapping<int> r2 = rsm.UpdateMapping(r1, ru);
 
-            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid = null;
+            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool = null;
 
             // now update same mapping again, this will undo previous pending operation and then add this mapping
 
@@ -786,14 +786,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             // try mapping update failures with change in shard location
             // first reset CreateUpdateMappingOperation to just perform global pre-local
-            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid =
-                (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId)
-                    => new UpdateMappingOperationFailAfterLocalTarget(_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId);
+            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool =
+                (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId, _killConnection)
+                    => new UpdateMappingOperationFailAfterLocalTarget(_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget, _patternForKill, _lockOwnerId, _killConnection);
 
             RangeMapping<int> r4 = rsm.UpdateMapping(r3, new RangeMappingUpdate { Shard = s2 });
 
             // now try with actual update mapping operation
-            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuid = null;
+            ssof.CreateUpdateMappingOperationShardMapManagerStoreOperationCodeIStoreShardMapIStoreMappingIStoreMappingStringGuidBool = null;
             RangeMapping<int> r5 = rsm.UpdateMapping(r3, new RangeMappingUpdate { Shard = s2 });
 
             // split mapping toperform gsm-only pre-local operation
@@ -1008,7 +1008,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 IStoreMapping mappingSource,
                 IStoreMapping mappingTarget,
                 string patternForKill,
-                Guid lockOwnerId)
+                Guid lockOwnerId,
+                bool killConnection)
             : base(
                 shardMapManager,
                 operationCode,
@@ -1016,7 +1017,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 mappingSource,
                 mappingTarget,
                 patternForKill,
-                lockOwnerId)
+                lockOwnerId,
+                killConnection)
             {
             }
 
@@ -1241,7 +1243,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 IStoreMapping mappingSource,
                 IStoreMapping mappingTarget,
                 string patternForKill,
-                Guid lockOwnerId)
+                Guid lockOwnerId,
+                bool killConnection)
                 : base(
                     shardMapManager,
                     operationCode,
@@ -1249,7 +1252,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     mappingSource,
                     mappingTarget,
                     patternForKill,
-                    lockOwnerId)
+                    lockOwnerId,
+                    killConnection)
             {
             }
 
@@ -1425,7 +1429,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 IStoreMapping mappingSource,
                 IStoreMapping mappingTarget,
                 string patternForKill,
-                Guid lockOwnerId)
+                Guid lockOwnerId,
+                bool killConnection)
                 : base(
                     shardMapManager,
                     operationCode,
@@ -1433,7 +1438,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     mappingSource,
                     mappingTarget,
                     patternForKill,
-                    lockOwnerId)
+                    lockOwnerId,
+                    killConnection)
             {
             }
 
