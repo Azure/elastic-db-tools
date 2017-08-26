@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -14,7 +14,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
     /// <summary>
     /// Tests cover shard range tests
     /// </summary>
-    [TestClass]
     public class ShardRangeTests
     {
         public const Int32 max32 = 0x7FFFFFFF;
@@ -23,8 +22,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         public ShardKey maxNonNullKey64 = new ShardKey(max64);
         public Random rValGen = new Random();
 
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void ShardKeyTests()
         {
             ShardKey key = null;

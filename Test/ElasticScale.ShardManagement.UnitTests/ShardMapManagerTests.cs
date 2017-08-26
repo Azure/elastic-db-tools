@@ -6,17 +6,17 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Fixtures;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stubs;
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
     /// <summary>
     /// Test related to ShardMapManager class and it's methods.
     /// </summary>
-    [TestClass]
-    public class ShardMapManagerTests
+    public class ShardMapManagerTests : IDisposable, IClassFixture<ShardMapManagerTestsFixture>
     {
         /// <summary>
         /// Shard map name used in the tests.
@@ -26,60 +26,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         #region Common Methods
 
         /// <summary>
-        /// Initializes common state for tests in this class.
-        /// </summary>
-        /// <param name="testContext">The TestContext we are running in.</param>
-        [ClassInitialize()]
-        public static void ShardMapManagerTestsInitialize(TestContext testContext)
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-
-                // Create ShardMapManager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.CreateDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-
-            // Create the shard map manager.
-            ShardMapManagerFactory.CreateSqlShardMapManager(
-                Globals.ShardMapManagerConnectionString,
-                ShardMapManagerCreateMode.ReplaceExisting);
-        }
-
-        /// <summary>
-        /// Cleans up common state for the all tests in this class.
-        /// </summary>
-        [ClassCleanup()]
-        public static void ShardMapManagerTestsCleanup()
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.DropDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        /// <summary>
         /// Initializes common state per-test.
         /// </summary>
-        [TestInitialize()]
-        public void ShardMapManagerTestInitialize()
+        public ShardMapManagerTests()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
                                     Globals.ShardMapManagerConnectionString,
@@ -91,15 +40,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException smme)
             {
-                Assert.IsTrue(smme.ErrorCode == ShardManagementErrorCode.ShardMapLookupFailure);
+                Assert.True(smme.ErrorCode == ShardManagementErrorCode.ShardMapLookupFailure);
             }
         }
 
         /// <summary>
         /// Cleans up common state per-test.
         /// </summary>
-        [TestCleanup()]
-        public void ShardMapManagerTestCleanup()
+        public void Dispose()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
                         Globals.ShardMapManagerConnectionString,
@@ -111,7 +59,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException smme)
             {
-                Assert.IsTrue(smme.ErrorCode == ShardManagementErrorCode.ShardMapLookupFailure);
+                Assert.True(smme.ErrorCode == ShardManagementErrorCode.ShardMapLookupFailure);
             }
         }
 
@@ -123,7 +71,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         //        /// <param name="arg">SqlStoreEvent event args to set TxnAbort.</param>
         //        void UpdateSqlStoreEvent(object sender, SqlStoreEventArgs arg)
         //        {
-        //            Assert.IsNotNull(arg);
+        //            Assert.NotNull(arg);
         //            arg.action = SqlStoreEventArgs.SqlStoreTxnFinishAction.TxnAbort;
         //        }
 
@@ -134,8 +82,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Get all shard maps from shard map manager.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void GetShardMapsDefault()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -144,9 +92,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ShardMap sm = smm.CreateListShardMap<int>(ShardMapManagerTests.s_shardMapName);
 
-            Assert.IsNotNull(sm);
+            Assert.NotNull(sm);
 
-            Assert.AreEqual(ShardMapManagerTests.s_shardMapName, sm.Name);
+            Assert.Equal(ShardMapManagerTests.s_shardMapName, sm.Name);
 
             IEnumerable<ShardMap> shardmaps = smm.GetShardMaps();
 
@@ -156,14 +104,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 while (mEnum.MoveNext())
                     count++;
             }
-            Assert.AreEqual(1, count);
+            Assert.True(1 == count);
         }
 
         /// <summary>
         /// Remove a default shard map from shard map manager.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void DeleteListShardMap()
         {
             CountingCacheStore cacheStore =
@@ -181,35 +129,35 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ShardMap sm = smm.CreateListShardMap<int>(ShardMapManagerTests.s_shardMapName);
 
-            Assert.IsNotNull(sm);
+            Assert.NotNull(sm);
 
-            Assert.AreEqual(ShardMapManagerTests.s_shardMapName, sm.Name);
+            Assert.Equal(ShardMapManagerTests.s_shardMapName, sm.Name);
 
             ShardMap smLookup = smm.LookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.s_shardMapName, true);
 
-            Assert.IsNotNull(smLookup);
-            Assert.AreEqual(1, cacheStore.LookupShardMapCount);
-            Assert.AreEqual(1, cacheStore.LookupShardMapHitCount);
+            Assert.NotNull(smLookup);
+            Assert.True(1 == cacheStore.LookupShardMapCount);
+            Assert.True(1 == cacheStore.LookupShardMapHitCount);
 
             smm.DeleteShardMap(sm);
 
-            Assert.AreEqual(1, cacheStore.DeleteShardMapCount);
+            Assert.True(1 == cacheStore.DeleteShardMapCount);
 
             cacheStore.ResetCounters();
 
             // Verify that shard map is removed from cache.
             ShardMap smLookupFailure = smm.LookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.s_shardMapName, true);
 
-            Assert.IsNull(smLookupFailure);
-            Assert.AreEqual(1, cacheStore.LookupShardMapCount);
-            Assert.AreEqual(1, cacheStore.LookupShardMapMissCount);
+            Assert.Null(smLookupFailure);
+            Assert.True(1 == cacheStore.LookupShardMapCount);
+            Assert.True(1 == cacheStore.LookupShardMapMissCount);
         }
 
         /// <summary>
         /// Remove non-existing shard map
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void DeleteShardMapNonExisting()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -218,9 +166,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ShardMap sm = smm.CreateListShardMap<int>(ShardMapManagerTests.s_shardMapName);
 
-            Assert.IsNotNull(sm);
+            Assert.NotNull(sm);
 
-            Assert.AreEqual(ShardMapManagerTests.s_shardMapName, sm.Name);
+            Assert.Equal(ShardMapManagerTests.s_shardMapName, sm.Name);
 
             smm.DeleteShardMap(sm);
 
@@ -230,8 +178,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Create list shard map.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void CreateListShardMapDefault()
         {
             CountingCacheStore cacheStore =
@@ -248,20 +196,20 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ListShardMap<int> lsm = smm.CreateListShardMap<int>(ShardMapManagerTests.s_shardMapName);
 
-            Assert.IsNotNull(lsm);
+            Assert.NotNull(lsm);
 
             ShardMap smLookup = smm.LookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.s_shardMapName, true);
-            Assert.IsNotNull(smLookup);
-            Assert.AreEqual(ShardMapManagerTests.s_shardMapName, smLookup.Name);
-            Assert.AreEqual(1, cacheStore.LookupShardMapCount);
-            Assert.AreEqual(1, cacheStore.LookupShardMapHitCount);
+            Assert.NotNull(smLookup);
+            Assert.Equal(ShardMapManagerTests.s_shardMapName, smLookup.Name);
+            Assert.True(1 == cacheStore.LookupShardMapCount);
+            Assert.True(1 == cacheStore.LookupShardMapHitCount);
         }
 
         /// <summary>
         /// Add a list shard map with duplicate name to shard map manager.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void CreateListShardMapDuplicate()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -270,9 +218,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ShardMap sm = smm.CreateListShardMap<int>(ShardMapManagerTests.s_shardMapName);
 
-            Assert.IsNotNull(sm);
+            Assert.NotNull(sm);
 
-            Assert.AreEqual(ShardMapManagerTests.s_shardMapName, sm.Name);
+            Assert.Equal(ShardMapManagerTests.s_shardMapName, sm.Name);
 
             bool creationFailed = false;
 
@@ -282,19 +230,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException sme)
             {
-                Assert.AreEqual(ShardManagementErrorCategory.ShardMapManager, sme.ErrorCategory);
-                Assert.AreEqual(ShardManagementErrorCode.ShardMapAlreadyExists, sme.ErrorCode);
+                Assert.Equal(ShardManagementErrorCategory.ShardMapManager, sme.ErrorCategory);
+                Assert.Equal(ShardManagementErrorCode.ShardMapAlreadyExists, sme.ErrorCode);
                 creationFailed = true;
             }
 
-            Assert.IsTrue(creationFailed);
+            Assert.True(creationFailed);
         }
 
         /// <summary>
         /// Create range shard map.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void CreateRangeShardMapDefault()
         {
             CountingCacheStore cacheStore =
@@ -312,22 +260,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.CreateRangeShardMap<int>(ShardMapManagerTests.s_shardMapName);
 
-            Assert.IsNotNull(rsm);
-            Assert.AreEqual(ShardMapManagerTests.s_shardMapName, rsm.Name);
+            Assert.NotNull(rsm);
+            Assert.Equal(ShardMapManagerTests.s_shardMapName, rsm.Name);
 
             ShardMap smLookup = smm.LookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.s_shardMapName, true);
 
-            Assert.IsNotNull(smLookup);
-            Assert.AreEqual(ShardMapManagerTests.s_shardMapName, smLookup.Name);
-            Assert.AreEqual(1, cacheStore.LookupShardMapCount);
-            Assert.AreEqual(1, cacheStore.LookupShardMapHitCount);
+            Assert.NotNull(smLookup);
+            Assert.Equal(ShardMapManagerTests.s_shardMapName, smLookup.Name);
+            Assert.True(1 == cacheStore.LookupShardMapCount);
+            Assert.True(1 == cacheStore.LookupShardMapHitCount);
         }
 
         /// <summary>
         /// Add a range shard map with duplicate name to shard map manager.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void CreateRangeShardMapDuplicate()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -336,9 +284,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ShardMap sm = smm.CreateRangeShardMap<int>(ShardMapManagerTests.s_shardMapName);
 
-            Assert.IsNotNull(sm);
+            Assert.NotNull(sm);
 
-            Assert.AreEqual(ShardMapManagerTests.s_shardMapName, sm.Name);
+            Assert.Equal(ShardMapManagerTests.s_shardMapName, sm.Name);
 
             bool creationFailed = false;
 
@@ -348,16 +296,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException sme)
             {
-                Assert.AreEqual(ShardManagementErrorCategory.ShardMapManager, sme.ErrorCategory);
-                Assert.AreEqual(ShardManagementErrorCode.ShardMapAlreadyExists, sme.ErrorCode);
+                Assert.Equal(ShardManagementErrorCategory.ShardMapManager, sme.ErrorCategory);
+                Assert.Equal(ShardManagementErrorCode.ShardMapAlreadyExists, sme.ErrorCode);
                 creationFailed = true;
             }
 
-            Assert.IsTrue(creationFailed);
+            Assert.True(creationFailed);
         }
 
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestShardMapManagerExceptionSerializability()
         {
             var errorCategory = ShardManagementErrorCategory.RangeShardMap;
@@ -379,9 +327,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
 
             // Validate
-            Assert.AreEqual(ex.ErrorCode, errorCode, "ErrorCode");
-            Assert.AreEqual(ex.ErrorCategory, errorCategory, "ErrorCategory");
-            Assert.AreEqual(exceptionToString, ex.ToString(), "ToString()");
+            AssertExtensions.EqualMsg(ex.ErrorCode, errorCode, "ErrorCode");
+            AssertExtensions.EqualMsg(ex.ErrorCategory, errorCategory, "ErrorCategory");
+            AssertExtensions.EqualMsg(exceptionToString, ex.ToString(), "ToString()");
         }
 
         #region GsmAbortTests
@@ -447,8 +395,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Remove a default shard map from shard map manager, do not commit GSM transaction.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void RemoveListShardMapAbortGSM()
         {
             ShardMapManager smm = new ShardMapManager(
@@ -466,9 +414,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ShardMap sm = smm.CreateListShardMap<int>(ShardMapManagerTests.s_shardMapName);
 
-            Assert.IsNotNull(sm);
+            Assert.NotNull(sm);
 
-            Assert.AreEqual(ShardMapManagerTests.s_shardMapName, sm.Name);
+            Assert.Equal(ShardMapManagerTests.s_shardMapName, sm.Name);
 
             bool storeOperationFailed = false;
             try
@@ -477,23 +425,23 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException sme)
             {
-                Assert.AreEqual(ShardManagementErrorCategory.ShardMapManager, sme.ErrorCategory);
-                Assert.AreEqual(ShardManagementErrorCode.StorageOperationFailure, sme.ErrorCode);
+                Assert.Equal(ShardManagementErrorCategory.ShardMapManager, sme.ErrorCategory);
+                Assert.Equal(ShardManagementErrorCode.StorageOperationFailure, sme.ErrorCode);
                 storeOperationFailed = true;
             }
 
-            Assert.IsTrue(storeOperationFailed);
+            Assert.True(storeOperationFailed);
 
             // Verify that shard map still exist in store.
             ShardMap smNew = smm.LookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.s_shardMapName, false);
-            Assert.IsNotNull(smNew);
+            Assert.NotNull(smNew);
         }
 
         /// <summary>
         /// Create list shard map, do not commit GSM transaction.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void CreateListShardMapAbortGSM()
         {
             ShardMapManager smm = new ShardMapManager(
@@ -513,24 +461,24 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             try
             {
                 ListShardMap<int> lsm = smm.CreateListShardMap<int>(ShardMapManagerTests.s_shardMapName);
-                Assert.IsNotNull(lsm);
-                Assert.AreEqual(ShardMapManagerTests.s_shardMapName, lsm.Name);
+                Assert.NotNull(lsm);
+                Assert.Equal(ShardMapManagerTests.s_shardMapName, lsm.Name);
             }
             catch (ShardManagementException sme)
             {
-                Assert.AreEqual(ShardManagementErrorCategory.ShardMapManager, sme.ErrorCategory);
-                Assert.AreEqual(ShardManagementErrorCode.StorageOperationFailure, sme.ErrorCode);
+                Assert.Equal(ShardManagementErrorCategory.ShardMapManager, sme.ErrorCategory);
+                Assert.Equal(ShardManagementErrorCode.StorageOperationFailure, sme.ErrorCode);
                 storeOperationFailed = true;
             }
 
-            Assert.IsTrue(storeOperationFailed);
+            Assert.True(storeOperationFailed);
         }
 
         /// <summary>
         /// Create range shard map, do not commit GSM transaction.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void CreateRangeShardMapAbortGSM()
         {
             ShardMapManager smm = new ShardMapManager(
@@ -550,17 +498,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             try
             {
                 RangeShardMap<int> rsm = smm.CreateRangeShardMap<int>(ShardMapManagerTests.s_shardMapName);
-                Assert.IsNotNull(rsm);
-                Assert.AreEqual(ShardMapManagerTests.s_shardMapName, rsm.Name);
+                Assert.NotNull(rsm);
+                Assert.Equal(ShardMapManagerTests.s_shardMapName, rsm.Name);
             }
             catch (ShardManagementException sme)
             {
-                Assert.AreEqual(ShardManagementErrorCategory.ShardMapManager, sme.ErrorCategory);
-                Assert.AreEqual(ShardManagementErrorCode.StorageOperationFailure, sme.ErrorCode);
+                Assert.Equal(ShardManagementErrorCategory.ShardMapManager, sme.ErrorCategory);
+                Assert.Equal(ShardManagementErrorCode.StorageOperationFailure, sme.ErrorCode);
                 storeOperationFailed = true;
             }
 
-            Assert.IsTrue(storeOperationFailed);
+            Assert.True(storeOperationFailed);
         }
 
         #endregion GsmAbortTests
@@ -570,8 +518,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Add a list shard map to shard map manager, do not add it to cache.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void AddListShardMapNoCacheUpdate()
         {
             // Create a cache store that always misses.
@@ -593,23 +541,23 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 RetryPolicy.DefaultRetryPolicy, RetryBehavior.DefaultRetryBehavior);
 
             ShardMap sm = smm.CreateListShardMap<int>(ShardMapManagerTests.s_shardMapName);
-            Assert.IsNotNull(sm);
-            Assert.AreEqual(ShardMapManagerTests.s_shardMapName, sm.Name);
-            Assert.AreEqual(1, cacheStore.AddShardMapCount);
+            Assert.NotNull(sm);
+            Assert.Equal(ShardMapManagerTests.s_shardMapName, sm.Name);
+            Assert.True(1 == cacheStore.AddShardMapCount);
             cacheStore.ResetCounters();
 
             ShardMap smLookup = smm.LookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.s_shardMapName, true);
 
-            Assert.IsNotNull(smLookup);
-            Assert.AreEqual(1, cacheStore.AddShardMapCount);
-            Assert.AreEqual(1, cacheStore.LookupShardMapMissCount);
+            Assert.NotNull(smLookup);
+            Assert.True(1 == cacheStore.AddShardMapCount);
+            Assert.True(1 == cacheStore.LookupShardMapMissCount);
         }
 
         /// <summary>
         /// Remove a default shard map from shard map manager, do not remove it from cache.
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void RemoveListShardMapNoCacheUpdate()
         {
             // Counting store that does not perform deletions of shard maps.
@@ -632,26 +580,26 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ShardMap sm = smm.CreateListShardMap<int>(ShardMapManagerTests.s_shardMapName);
 
-            Assert.IsNotNull(sm);
+            Assert.NotNull(sm);
 
-            Assert.AreEqual(ShardMapManagerTests.s_shardMapName, sm.Name);
+            Assert.Equal(ShardMapManagerTests.s_shardMapName, sm.Name);
 
             smm.DeleteShardMap(sm);
 
-            Assert.AreEqual(1, cacheStore.DeleteShardMapCount);
+            Assert.True(1 == cacheStore.DeleteShardMapCount);
 
             ShardMap smLookup = smm.LookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.s_shardMapName, true);
 
-            Assert.IsNotNull(smLookup);
-            Assert.AreEqual(1, cacheStore.LookupShardMapHitCount);
+            Assert.NotNull(smLookup);
+            Assert.True(1 == cacheStore.LookupShardMapHitCount);
         }
 
         #endregion CacheAbortTests
 
         #region ShardLocationTests
 
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestShardLocationPort()
         {
             string serverName = "testservername";

@@ -5,12 +5,44 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
 {
     public static class AssertExtensions
     {
+
+        public static void Inconclusive(TestOutputHelper thelper, string message) {
+
+            thelper.WriteLine("TEST INCONCLUSIVE: " + message);
+
+        }
+
+        public static void Fail(string userMessage) {
+            Assert.True(false, userMessage);
+        }
+
+        public static void Fail(string userMessage, params object[] formatArgs) {
+            Assert.True(false, String.Format(userMessage, formatArgs));
+        }
+
+        public static void EqualMsg(object o1, object o2, string message) {
+            try {
+                Assert.Equal(o1, o2);
+            } catch (EqualException) {
+                AssertExtensions.Fail(message);
+            }
+        }
+
+        public static void EqualMsg<T>(IEnumerable<T> o1, IEnumerable<T> o2, string message) {
+            try {
+                Assert.Equal<T>(o1, o2);
+            } catch(EqualException) {
+                AssertExtensions.Fail(message);
+            }
+        }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         public static async Task AssertCanceledWithinTimeout(CancellationToken cancellationToken, TimeSpan timeout, string message = null)
         {
@@ -19,11 +51,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 await Task.Delay(timeout, cancellationToken);
                 if (string.IsNullOrEmpty(message))
                 {
-                    Assert.Fail("The cancellation token was not cancelled within timeout of {0}", timeout);
+                    AssertExtensions.Fail("The cancellation token was not cancelled within timeout of {0}", timeout);
                 }
                 else
                 {
-                    Assert.Fail(
+                    AssertExtensions.Fail(
                         "The cancellation token was not cancelled within timeout of {0}. Additional message: {1}",
                         timeout, message);
                 }
@@ -52,7 +84,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 action();
 
                 // Exception not thrown
-                Assert.Fail("Exception of type {0} was expected, but no exception was thrown", typeof (TException));
+                AssertExtensions.Fail("Exception of type {0} was expected, but no exception was thrown", typeof (TException));
 
                 // Next line will never execute, it is required by the compiler
                 return null;
@@ -65,7 +97,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
             catch (Exception e)
             {
                 // Wrong exception thrown
-                Assert.Fail("Exception of type {0} was expected, exception of type {1} was thrown: {2}",
+                AssertExtensions.Fail("Exception of type {0} was expected, exception of type {1} was thrown: {2}",
                     typeof (TException), e.GetType(), e.ToString());
                 // Next line will never execute, it is required by the compiler
                 return null;
@@ -94,7 +126,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 action();
 
                 // Exception not thrown
-                Assert.Fail("Exception of type {0} containing {1} was expected, but was not thrown", 
+                AssertExtensions.Fail("Exception of type {0} containing {1} was expected, but was not thrown", 
                     typeof(TExceptionOuter), typeof(TExceptionInner));
             }
             catch (Exception ex)
@@ -148,14 +180,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 if (task.Wait(timeout))
                 {
                     // Exception not thrown, task completed
-                Assert.Fail(
+                AssertExtensions.Fail(
                     "The Task was expected to fail with an exception of type {0}, but it succeeded", 
                         typeof (TException));
                 }
                 else
                 {
                     // Exception not thrown within timeout, task still running
-                    Assert.Fail(
+                    AssertExtensions.Fail(
                         "The Task was expected to fail with an exception of type {0} within timeout {1}, but it is still running. Note: this leaves running task, which may have side effects.",
                         typeof(TException),
                         timeout);
@@ -210,7 +242,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 return;
             }
 
-            Assert.Fail("Expected string \'{0}\' to contain substring \'{1}\'", value, substring);
+            AssertExtensions.Fail("Expected string \'{0}\' to contain substring \'{1}\'", value, substring);
         }
 
         /// <summary>
@@ -224,7 +256,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 return;
             }
 
-            Assert.Fail("Item {0} found in sequence {1}", item, collection.ToCommaSeparatedString());
+            AssertExtensions.Fail("Item {0} found in sequence {1}", item, collection.ToCommaSeparatedString());
         }
 
         /// <summary>
@@ -246,7 +278,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 return;
             }
 
-            Assert.Fail("Item {0} not found in sequence {1}", item, collection.ToCommaSeparatedString());
+            AssertExtensions.Fail("Item {0} not found in sequence {1}", item, collection.ToCommaSeparatedString());
         }
 
         /// <summary>
@@ -276,7 +308,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
 
             Trace.TraceError("Expected: [{0}]", expectedArray.ToCommaSeparatedString());
             Trace.TraceError("Actual: [{0}]", actualArray.ToCommaSeparatedString());
-            Assert.Fail(
+            AssertExtensions.Fail(
                 "Sequences were not equal. Message: {0}. Expected sequence had {1} elements, actual had {2}. Comma separated contents for expected: <{3}>, for actual: <{4}>",
                 message,
                 expectedArray.Length,
@@ -322,7 +354,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
 
             Trace.TraceError("Expected: [{0}]", expectedArray.ToCommaSeparatedString());
             Trace.TraceError("Actual: [{0}]", actualArray.ToCommaSeparatedString());
-            Assert.Fail(
+            AssertExtensions.Fail(
                 "Sequences were not equivalent. Message: {0}. Expected sequence had {1} elements, actual had {2}. Comma separated contents for expected: <{3}>, for actual: <{4}>",
                 message,
                 expectedArray.Length,
@@ -346,7 +378,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 return;
             }
 
-            Assert.Fail("Actual value {0} was not greater than {1}.", actual, greaterThan);
+            AssertExtensions.Fail("Actual value {0} was not greater than {1}.", actual, greaterThan);
         }
 
         /// <summary>
@@ -364,7 +396,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 return;
             }
 
-            Assert.Fail("Actual value {0} was not greater than or equal to {1}.", actual, greaterThanOrEqualTo);
+            AssertExtensions.Fail("Actual value {0} was not greater than or equal to {1}.", actual, greaterThanOrEqualTo);
         }
 
         /// <summary>
@@ -382,7 +414,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 return;
             }
 
-            Assert.Fail("Actual value {0} was not less than {1}.", actual, lessThan);
+            AssertExtensions.Fail("Actual value {0} was not less than {1}.", actual, lessThan);
         }
 
         /// <summary>
@@ -400,7 +432,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 return;
             }
 
-            Assert.Fail("Actual value {0} was not less than or equal to {1}.", actual, lessThanOrEqualTo);
+            AssertExtensions.Fail("Actual value {0} was not less than or equal to {1}.", actual, lessThanOrEqualTo);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
@@ -411,7 +443,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
             {
                 return;
             }
-            Assert.Fail(
+            AssertExtensions.Fail(
                 "Message: {0}. Collection has {1} elements. string.Join representation: <{2}>",
                 message,
                 array.Length,
@@ -426,7 +458,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
             }
             else
             {
-                Assert.AreEqual(o1, o2, message);
+                AssertExtensions.EqualMsg(o1, o2, message);
             }
         }
 
@@ -443,7 +475,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
 
             if (array.Length == 0)
             {
-                Assert.Fail("The enumerable contains no elements.");
+                AssertExtensions.Fail("The enumerable contains no elements.");
             }
             else if (array.Length == 1)
             {
@@ -455,10 +487,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 Console.Error.WriteLine("Items: [{0}]", array.ToCommaSeparatedString());
 
                 // This assert will fail
-                Assert.AreEqual(1, array.Length);
+                Assert.Equal(1, array.Length);
             }
 
-            // The compiler doesn't know that the above Assert.Fail or Assert.AreEqual 
+            // The compiler doesn't know that the above AssertExtensions.Fail or Assert.AreEqual 
             // will throw, so it requires a throw or return.
             throw new InvalidOperationException();
         }
@@ -474,7 +506,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
             }
             if (!equalityComparer.Equals(expected, actual))
             {
-                Assert.Fail("Assert.AreEqual failed. expected: {0}, actual: {1}", expected, actual);
+                AssertExtensions.Fail("Assert.AreEqual failed. expected: {0}, actual: {1}", expected, actual);
             }
         }
     }

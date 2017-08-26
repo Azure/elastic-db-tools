@@ -21,7 +21,7 @@
 
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -40,14 +40,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
     /// Very basic unit tests for the MultiShardDataReader class.  
     /// Just enough to ensure that simple scenarios working as expected.
     /// </summary>
-    [TestClass]
-    public class MultiShardDataReaderTests
+    public class MultiShardDataReaderTests : IDisposable, IClassFixture<DatabaseFixture>
     {
         /// <summary>
         /// Currently doesn't do anything special.
         /// </summary>
         public MultiShardDataReaderTests()
         {
+            MyTestInitialize();
+        }
+
+        public void Dispose() {
+            MyTestCleanup();
         }
 
         private SqlConnection _conn1;
@@ -65,50 +69,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// </summary>
         private MultiShardCommand _dummyCommand;
 
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext { get; set; }
-
         #region Additional test attributes
-
-        /// <summary>
-        /// Sets up our three test databases that we drive the unit testing off of.
-        /// </summary>
-        /// <param name="testContext">The TestContext we are running in.</param>
-        [ClassInitialize()]
-        public static void MyClassInitialize(TestContext testContext)
-        {
-            // Drop and recreate the test databases, tables, and data that we will use to verify
-            // the functionality.
-            // For now I have hardcoded the server location and database names.  A better approach would be
-            // to make the server location configurable and the database names be guids.
-            // Not the top priority right now, though.
-            //
-            SqlConnection.ClearAllPools();
-            MultiShardTestUtils.DropAndCreateDatabases();
-            MultiShardTestUtils.CreateAndPopulateTables();
-        }
-
-        /// <summary>
-        /// Blow away our three test databases that we drove the tests off of.
-        /// Doing this so that we don't leave objects littered around.
-        /// </summary>
-        [ClassCleanup()]
-        public static void MyClassCleanup()
-        {
-            // We need to clear the connection pools so that we don't get a database still in use error
-            // resulting from our attenpt to drop the databases below.
-            //
-            SqlConnection.ClearAllPools();
-            MultiShardTestUtils.DropDatabases();
-        }
 
         /// <summary>
         /// Open up a clean connection to each test database prior to each test.
         /// </summary>
-        [TestInitialize()]
         public void MyTestInitialize()
         {
             ShardMap sm = MultiShardTestUtils.CreateAndGetTestShardMap();
@@ -137,7 +102,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Close our connections to each test database after each test.
         /// </summary>
-        [TestCleanup()]
         public void MyTestCleanup()
         {
             foreach (var conn in _shardConnection.ShardConnections)
@@ -151,8 +115,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Validate MultiShardDataReader can be supplied as argument to DataTable.Load
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestDataTableLoad()
         {
             // What we're doing:
@@ -166,7 +130,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                 DataTable dataTable = new DataTable();
                 dataTable.Load(sdr);
 
-                Assert.AreEqual(9, dataTable.Rows.Count, "Expected 9 rows loaded to DataTable");
+                Assert.True(9 == dataTable.Rows.Count, "Expected 9 rows loaded to DataTable");
 
                 int recordsRetrieved = 0;
                 foreach (DataRow row in dataTable.Rows)
@@ -181,15 +145,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                     Logger.Log(logRecord);
                     Debug.WriteLine(logRecord);
                 }
-                Assert.AreEqual(recordsRetrieved, 9);
+                Assert.Equal(recordsRetrieved, 9);
             }
         }
 
         /// <summary>
         /// Check that we can turn the $ShardName pseudo column on and off as expected.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestShardNamePseudoColumnOption()
         {
             // What we're doing:
@@ -214,14 +178,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
                 using (MultiShardDataReader sdr = GetMultiShardDataReaderFromDbDataReaders(readers, out exceptions, pseudoColumnPresent))
                 {
-                    Assert.AreEqual(0, exceptions.Count);
+                    Assert.Equal(0, exceptions.Count);
 
                     int recordsRetrieved = 0;
 
                     int expectedFieldCount = pseudoColumnPresent ? 4 : 3;
                     int expectedVisibleFieldCount = pseudoColumnPresent ? 4 : 3;
-                    Assert.AreEqual(expectedFieldCount, sdr.FieldCount);
-                    Assert.AreEqual(expectedVisibleFieldCount, sdr.VisibleFieldCount);
+                    Assert.Equal(expectedFieldCount, sdr.FieldCount);
+                    Assert.Equal(expectedVisibleFieldCount, sdr.VisibleFieldCount);
 
                     while (sdr.Read())
                     {
@@ -235,20 +199,20 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                             string shardIdPseudoColumn = sdr.GetFieldValue<string>(3);
                             if (!pseudoColumnPresent)
                             {
-                                Assert.Fail("Should not have been able to pull the pseudo column.");
+                                AssertExtensions.Fail("Should not have been able to pull the pseudo column.");
                             }
                         }
                         catch (IndexOutOfRangeException)
                         {
                             if (pseudoColumnPresent)
                             {
-                                Assert.Fail("Should not have encountered an exception.");
+                                AssertExtensions.Fail("Should not have encountered an exception.");
                             }
                         }
                     }
 
                     sdr.Close();
-                    Assert.AreEqual(recordsRetrieved, 9);
+                    Assert.Equal(recordsRetrieved, 9);
                 }
             }
         }
@@ -256,8 +220,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Check that we can handle empty result sets interspersed with non-empty result sets as expected.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestMiddleResultEmptyOnSelect()
         {
             // What we're doing:
@@ -276,7 +240,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
             using (MultiShardDataReader sdr = GetMultiShardDataReaderFromDbDataReaders(readers, out exceptions, true))
             {
-                Assert.AreEqual(0, exceptions.Count);
+                Assert.Equal(0, exceptions.Count);
 
                 int recordsRetrieved = 0;
                 while (sdr.Read())
@@ -286,15 +250,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
                 sdr.Close();
 
-                Assert.AreEqual(recordsRetrieved, 6);
+                Assert.Equal(recordsRetrieved, 6);
             }
         }
 
         /// <summary>
         /// Check that we can handle non-empty result sets interspersed with empty result sets as expected.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestOuterResultsEmptyOnSelect()
         {
             // What we're doing:
@@ -313,7 +277,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
             using (MultiShardDataReader sdr = GetMultiShardDataReaderFromDbDataReaders(readers, out exceptions, true))
             {
-                Assert.AreEqual(0, exceptions.Count);
+                Assert.Equal(0, exceptions.Count);
 
                 int recordsRetrieved = 0;
                 while (sdr.Read())
@@ -323,7 +287,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
                 sdr.Close();
 
-                Assert.AreEqual(recordsRetrieved, 3);
+                Assert.Equal(recordsRetrieved, 3);
             }
         }
 
@@ -332,8 +296,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// when encountering schema mismatches across result sets due to different 
         /// column names.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestMismatchedSchemasWrongColumnName()
         {
             // What we're doing:
@@ -355,7 +319,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             {
                 if ((null == exceptions) || (exceptions.Count != 1))
                 {
-                    Assert.Fail("Expected an element in the InvalidReaders collection.");
+                    AssertExtensions.Fail("Expected an element in the InvalidReaders collection.");
                 }
                 else
                 {
@@ -366,7 +330,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                         recordsRetrieved++;
                     }
 
-                    Assert.AreEqual(recordsRetrieved, 3);
+                    Assert.Equal(recordsRetrieved, 3);
                 }
                 sdr.Close();
             }
@@ -376,8 +340,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// Check that we throw as expected when encountering schema mismatches across result sets due to different 
         /// column types.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestMismatchedSchemasWrongType()
         {
             // What we're doing:
@@ -399,7 +363,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             {
                 if ((null == exceptions) || (exceptions.Count != 1))
                 {
-                    Assert.Fail("Expected an element in the InvalidReaders collection.");
+                    AssertExtensions.Fail("Expected an element in the InvalidReaders collection.");
                 }
                 else
                 {
@@ -410,7 +374,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                         recordsRetrieved++;
                     }
 
-                    Assert.AreEqual(recordsRetrieved, 3);
+                    Assert.Equal(recordsRetrieved, 3);
                 }
                 sdr.Close();
             }
@@ -419,9 +383,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Check that we throw as expected when trying to add a reader after the sharded reader has been marked complete.
         /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(MultiShardDataReaderInternalException))]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestAddReaderAfterReaderMarkedComplete()
         {
             // What we're doing:
@@ -441,15 +404,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             {
                 // Just a single call to AddReader should be sufficient to check this logic.
                 //
-                sdr.AddReader(readers[0]);
+                Assert.Throws<MultiShardDataReaderInternalException>(() => {
+                    sdr.AddReader(readers[0]);
+                });
             }
         }
 
         /// <summary>
         /// Check that we throw as expected when trying to add a null reader.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestAddNullReader()
         {
             // What we're doing:
@@ -475,8 +440,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Validate basic ReadAsync behavior.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestReadAsync()
         {
             LabeledDbDataReader[] readers = new LabeledDbDataReader[1];
@@ -490,7 +455,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                     numRowsRead++;
                 }
 
-                Assert.AreEqual(1, numRowsRead, "ReadAsync didn't return the expeceted number of rows.");
+                Assert.True(1 == numRowsRead, "ReadAsync didn't return the expeceted number of rows.");
             }
         }
 
@@ -501,8 +466,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// NOTE: We needn't replicate every single Read() test for ReadAsync() since Read() ends up calling ReadAsync().Result under the
         /// hood. So, by validating Read(), we are also validating ReadAsync() indirectly.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestReadSyncWithMultipleDataReaders()
         {
             // What we're doing:
@@ -521,7 +486,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
             using (MultiShardDataReader sdr = GetMultiShardDataReaderFromDbDataReaders(readers, out exceptions, true))
             {
-                Assert.AreEqual(0, exceptions.Count);
+                Assert.Equal(0, exceptions.Count);
 
                 int recordsRetrieved = 0;
                 while (sdr.ReadAsync().Result)
@@ -531,13 +496,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
                 sdr.Close();
 
-                Assert.AreEqual(recordsRetrieved, 6);
+                Assert.Equal(recordsRetrieved, 6);
             }
         }
 
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestMultiShardQueryCancellation()
         {
             ManualResetEvent rollback = new ManualResetEvent(false);
@@ -596,13 +561,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             try
             {
                 readToBlockTask.Wait();
-                Assert.IsTrue(false, "The task expected to block ran to completion.");
+                Assert.True(false, "The task expected to block ran to completion.");
             }
             catch(AggregateException aggex)
             {
                 TaskCanceledException ex = aggex.Flatten().InnerException as TaskCanceledException;
 
-                Assert.IsTrue(ex != null, "A task canceled exception was not received upon cancellation.");
+                Assert.True(ex != null, "A task canceled exception was not received upon cancellation.");
             }
             
             // Set the event signaling the first task to rollback its update transaction.
@@ -614,8 +579,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Check that we do not hang when trying to read after adding null readers.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestReadFromNullReader()
         {
             // The code below exposes a flaw in our current implementation related to
@@ -642,7 +607,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                 });
 
                 Thread.Sleep(500);
-                Assert.AreEqual(TaskStatus.RanToCompletion, t.Status, "Read hung on the null reader.");
+                AssertExtensions.EqualMsg(TaskStatus.RanToCompletion, t.Status, "Read hung on the null reader.");
                 sdr.ExpectNoMoreReaders();
             }
         }
@@ -650,8 +615,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Check that we do not hang when trying to read after adding a reader with an exception.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestReadFromReaderWithException()
         {
             // The code below exposes a flaw in our current implementation related to
@@ -679,7 +644,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                 });
 
                 Thread.Sleep(500);
-                Assert.AreEqual(TaskStatus.RanToCompletion, t.Status, "Read hung on the garbage reader.");
+                AssertExtensions.EqualMsg(TaskStatus.RanToCompletion, t.Status, "Read hung on the garbage reader.");
                 sdr.ExpectNoMoreReaders();
             }
         }
@@ -689,8 +654,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// MultiShardDataReader when we encounter a reader that has 
         /// multiple result sets
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestReadFromReaderWithNextResultException()
         {
             string selectSql = @"SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTable WHERE Test_int_Field = 876;
@@ -703,15 +668,14 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                 MultiShardExecutionPolicy.CompleteResults, true);
 
             AssertExtensions.WaitAndAssertThrows<NotSupportedException>(sdr.NextResultAsync());
-            Assert.IsTrue(sdr.IsClosed, "Expected MultiShardDataReader to be closed!");
+            Assert.True(sdr.IsClosed, "Expected MultiShardDataReader to be closed!");
         }
 
         /// <summary>
         /// Check that we throw as expected when trying to add a LabeledDataReader with a null DbDataReader underneath.
         /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestAddLabeledDataReaderWithNullDbDataReader()
         {
             // What we're doing:
@@ -728,16 +692,17 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             readers[2] = new LabeledDbDataReader(nothing, new ShardLocation(_conn2.DataSource, _conn2.Database),
                 new SqlCommand() { Connection = _conn2 });
 
-            using (MultiShardDataReader sdr = new MultiShardDataReader(_dummyCommand, readers, MultiShardExecutionPolicy.CompleteResults, true))
-            {
-            }
+            Assert.Throws<ArgumentNullException>(() => {
+                using(MultiShardDataReader sdr = new MultiShardDataReader(_dummyCommand, readers, MultiShardExecutionPolicy.CompleteResults, true)) {
+                }
+            });
         }
 
         /// <summary>
         /// Check that we throw as expected when trying to add a LabeledDataReader after the sharded data reader should be closed.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestAddDataReaderAfterShardedReaderIsClosed()
         {
             // What we're doing:
@@ -758,7 +723,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                 sdr.AddReader(readers[0]);
                 sdr.AddReader(readers[1]);
                 sdr.Close();
-                Assert.IsTrue(sdr.IsClosed);
+                Assert.True(sdr.IsClosed);
                 ExpectException<MultiShardDataReaderInternalException, LabeledDbDataReader>(sdr.AddReader, readerToAddAfterClose);
             }
         }
@@ -766,8 +731,8 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
         /// <summary>
         /// Check that we can successfully read from readers before all readers are added.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestReadsWhileReadersBeingAddedWithPartialResults()
         {
             string selectSql = "SELECT 1";
@@ -777,7 +742,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                 for (int i = 0; i < 1000; i++)
                 {
                     sdr.AddReader(GetReader(_conn1, selectSql));
-                    Assert.IsTrue(sdr.Read(), "MultiShardReader did not pick up newly added readers.");
+                    Assert.True(sdr.Read(), "MultiShardReader did not pick up newly added readers.");
                 }
             }
         }
@@ -785,8 +750,8 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
         /// <summary>
         /// Check that we throw as expected when trying to add a closed LabeledDataReader
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestAddClosedDataReaderAfterShardedReader()
         {
             // The code below exposes a flaw in our current implementation related to
@@ -816,18 +781,18 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                 sdr.AddReader(readers[0]);
                 sdr.AddReader(readers[1]);
                 closedReaderToAdd.DbDataReader.Close();
-                Assert.IsTrue(closedReaderToAdd.DbDataReader.IsClosed, "labeledDataReader was not successfully closed.");
+                Assert.True(closedReaderToAdd.DbDataReader.IsClosed, "labeledDataReader was not successfully closed.");
                 sdr.AddReader(closedReaderToAdd);
-                Assert.AreEqual(1, sdr.MultiShardExceptions.Count, "Adding a closed reader did not trigger the logging of an exception.");
-                Assert.IsInstanceOfType(sdr.MultiShardExceptions.First().InnerException, typeof(MultiShardDataReaderClosedException), "The incorrect exception type was detected.");
+                Assert.True(1 == sdr.MultiShardExceptions.Count, "Adding a closed reader did not trigger the logging of an exception.");
+                Assert.IsType<MultiShardDataReaderClosedException>(sdr.MultiShardExceptions.First().InnerException);
             }
         }
 
         /// <summary>
         /// Check that we successfuly support the addition of readers after initial creation when the expected number of readers is greater than those provided.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestAddDataReaderWhileExpectingAdditionalReaders()
         {
             string selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTable WHERE Test_int_Field = 876";
@@ -847,8 +812,8 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
         /// <summary>
         /// Check that we successfuly support the asynchronous addition of readers while we are in the process of reading.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestAddDataReaderWhileReadingRows()
         {
             List<Tuple<int, DateTime>> readersAddedTimes = new List<Tuple<int, DateTime>>();
@@ -890,10 +855,10 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                     Trace.TraceInformation("Reader {0} was read at {1:O}", tuple.Item1, tuple.Item2);
                 }
 
-                Assert.AreEqual(3, i, "Not all rows successfully returned.");
+                Assert.True(3 == i, "Not all rows successfully returned.");
                 foreach (bool happenedInOrder in readersAddedTimes.Zip(readersReadTimes, (x, y) => y.Item2 >= x.Item2))
                 {
-                    Assert.IsTrue(happenedInOrder,
+                    Assert.True(happenedInOrder,
                         "The next row was somehow able to be retrieved before its corresponding reader was added.");
                 }
             }
@@ -903,8 +868,8 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
         /// Check that we successfuly support the asynchronous addition of readers while we are in the process of reading, when we start 
         /// with some readers already added.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestAddDataReaderWhileReadingRowsWhenReadersAlreadyPresent()
         {
             List<Tuple<int, DateTime>> readersAddedTimes = new List<Tuple<int, DateTime>>();
@@ -952,10 +917,10 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                     Trace.TraceInformation("Reader {0} was read at {1:O}", tuple.Item1, tuple.Item2);
                 }
 
-                Assert.AreEqual(3, i, "Not all rows successfully returned.");
+                Assert.True(3 == i, "Not all rows successfully returned.");
                 foreach (bool happenedInOrder in readersAddedTimes.Zip(readersReadTimes, (x, y) => y.Item2 >= x.Item2))
                 {
-                    Assert.IsTrue(happenedInOrder, "The next row was somehow able to be retrieved before its corresponding reader was added.");
+                    Assert.True(happenedInOrder, "The next row was somehow able to be retrieved before its corresponding reader was added.");
                 }
             }
         }
@@ -963,8 +928,8 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
         /// <summary>
         /// Check that we wait a long time until we explicitly call ExpectNoMoreReaders
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestAddDataReaderWaitsALongTimeForExpectedReadersUntilExpectNoMoreReadersIsCalled()
         {
             string selectSql = "SELECT 1";
@@ -996,7 +961,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         Thread.Sleep(50);
                         sdr.ExpectNoMoreReaders();
                     }
-                    Assert.IsTrue(readingCompleted, "The reader's read call did not return false after ExpectNoMoreReaders was called.");
+                    Assert.True(readingCompleted, "The reader's read call did not return false after ExpectNoMoreReaders was called.");
                 }
                 finally
                 {
@@ -1008,8 +973,8 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
         /// <summary>
         /// A little stress test that tries adding a few readers concurrently. Make sure no exceptions were thrown.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestAddDataReadersConcurrently()
         {
             string selectSql = "SELECT 1";
@@ -1031,7 +996,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                 {
                     rowsRead++;
                 }
-                Assert.AreEqual(3, rowsRead, "Not all expected rows were read.");
+                Assert.True(3 == rowsRead, "Not all expected rows were read.");
             }
         }
 
@@ -1039,9 +1004,8 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
         /// <summary>
         /// Check that we throw as expected when trying to call CreateObjRef.
         /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(RemotingException))]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestCreateObjRefFails()
         {
             // What we're doing:
@@ -1053,7 +1017,9 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
 
             using (MultiShardDataReader sdr = GetShardedDbReader(_shardConnection, selectSql))
             {
-                sdr.CreateObjRef(typeof(MultiShardDataReader));
+                Assert.Throws<RemotingException>(() => {
+                    sdr.CreateObjRef(typeof(MultiShardDataReader));
+                });
             }
         }
 
@@ -1062,8 +1028,8 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
         /// returned from the getters plus some of the properties.
         /// Check everythign both with and without the $ShardName pseudo column.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestGettersPositiveCases()
         {
             TestGettersPositiveCasesHelper(true);
@@ -1096,8 +1062,8 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                     while (sdr.Read())
                     {
                         int expectedFieldCount = includeShardNamePseudoColumn ? 2 : 1; // 2 columns if we have the shard name, 1 column if not.
-                        Assert.AreEqual(expectedFieldCount, sdr.FieldCount);
-                        Assert.AreEqual(expectedFieldCount, sdr.VisibleFieldCount);
+                        Assert.Equal(expectedFieldCount, sdr.FieldCount);
+                        Assert.Equal(expectedFieldCount, sdr.VisibleFieldCount);
 
                         recordsRetrieved++;
 
@@ -1119,7 +1085,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
 
                     sdr.Close();
 
-                    Assert.AreEqual(recordsRetrieved, 9);
+                    Assert.Equal(recordsRetrieved, 9);
                 }
             }
         }
@@ -1127,8 +1093,8 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
         /// <summary>
         /// Test what happens when we try to get a value without calling read first.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestBadlyPlacedGetValueCalls()
         {
             // What we're doing:
@@ -1165,7 +1131,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             try
             {
                 func(ordinal);
-                Assert.Fail(string.Format("Should have hit {0}.", typeof(T)));
+                AssertExtensions.Fail(string.Format("Should have hit {0}.", typeof(T)));
             }
             catch (T)
             {
@@ -1177,7 +1143,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             try
             {
                 func(input);
-                Assert.Fail(string.Format("Should have hit {0}.", typeof(T)));
+                AssertExtensions.Fail(string.Format("Should have hit {0}.", typeof(T)));
             }
             catch (T)
             {
@@ -1186,8 +1152,8 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
 
         private void CheckColumnName(MultiShardDataReader reader, MutliShardTestCaseColumn column, int ordinal)
         {
-            Assert.AreEqual(column.TestColumnName, reader.GetName(ordinal));
-            Assert.AreEqual(ordinal, reader.GetOrdinal(column.TestColumnName));
+            Assert.Equal(column.TestColumnName, reader.GetName(ordinal));
+            Assert.Equal(ordinal, reader.GetOrdinal(column.TestColumnName));
         }
 
         private void CheckDataTypeName(MultiShardDataReader reader, MutliShardTestCaseColumn column, int ordinal)
@@ -1196,11 +1162,11 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             //
             if (column.SqlServerDatabaseEngineType.Equals("numeric"))
             {
-                Assert.AreEqual(reader.GetDataTypeName(ordinal), "decimal");
+                Assert.Equal(reader.GetDataTypeName(ordinal), "decimal");
             }
             else
             {
-                Assert.AreEqual(reader.GetDataTypeName(ordinal), column.SqlServerDatabaseEngineType);
+                Assert.Equal(reader.GetDataTypeName(ordinal), column.SqlServerDatabaseEngineType);
             }
         }
 
@@ -1257,7 +1223,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         sqlResults[SqlGetResult] = reader.GetSqlInt64(ordinal);
                         AssertAllAreEqual(sqlResults);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(Int64));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(Int64));
                     }
                     break;
                 case SqlDbType.Binary:
@@ -1271,7 +1237,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         reader.GetBytes(ordinal, 0, byteBuffer, 0, column.FieldLength);
 
                         Stream theStream = reader.GetStream(ordinal);
-                        Assert.AreEqual(theStream.Length, column.FieldLength);
+                        Assert.Equal(theStream.Length, column.FieldLength);
                         Byte[] byteBufferFromStream = new Byte[column.FieldLength];
 
                         int bytesRead = theStream.Read(byteBufferFromStream, 0, column.FieldLength);
@@ -1285,7 +1251,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         sqlResults[SqlGetResult] = reader.GetSqlBinary(ordinal);
                         AssertAllAreEqual(sqlResults);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(Byte[]));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(Byte[]));
                     }
                     break;
                 case SqlDbType.Bit:
@@ -1299,7 +1265,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         sqlResults[SqlGetResult] = reader.GetSqlBoolean(ordinal);
                         AssertAllAreEqual(sqlResults);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(Boolean));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(Boolean));
                     }
                     break;
                 case SqlDbType.Char:
@@ -1332,12 +1298,12 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         // and get a text reader.
                         //
                         string fromTr = reader.GetTextReader(ordinal).ReadToEnd();
-                        Assert.AreEqual(fromTr, results[GetResult]);
+                        Assert.Equal(fromTr, results[GetResult]);
 
                         sqlResults[SqlGetResult] = reader.GetSqlString(ordinal);
                         AssertAllAreEqual(sqlResults);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(string));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(string));
                     }
                     break;
                 case SqlDbType.DateTime:
@@ -1352,7 +1318,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         sqlResults[SqlGetResult] = reader.GetSqlDateTime(ordinal);
                         AssertAllAreEqual(sqlResults);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(DateTime));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(DateTime));
                     }
                     break;
                 case SqlDbType.Date:  // NOTE: docs say this can come back via SqlDateTime, but apparently it can't.
@@ -1365,7 +1331,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         results[AsyncResult] = reader.GetFieldValueAsync<DateTime>(ordinal).Result;
                         AssertAllAreEqual(results);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(DateTime));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(DateTime));
                     }
                     break;
                 case SqlDbType.DateTimeOffset:
@@ -1376,7 +1342,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         results[AsyncResult] = reader.GetFieldValueAsync<DateTimeOffset>(ordinal).Result;
                         AssertAllAreEqual(results);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(DateTimeOffset));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(DateTimeOffset));
                     }
                     break;
                 case SqlDbType.Decimal:
@@ -1390,7 +1356,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         sqlResults[SqlGetResult] = reader.GetSqlDecimal(ordinal);
                         AssertAllAreEqual(sqlResults);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(Decimal));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(Decimal));
                     }
                     break;
                 case SqlDbType.Float:
@@ -1404,7 +1370,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         sqlResults[SqlGetResult] = reader.GetSqlDouble(ordinal);
                         AssertAllAreEqual(sqlResults);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(Double));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(Double));
                     }
                     break;
                 case SqlDbType.Int:
@@ -1418,7 +1384,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         sqlResults[SqlGetResult] = reader.GetSqlInt32(ordinal);
                         AssertAllAreEqual(sqlResults);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(Int32));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(Int32));
                     }
                     break;
                 case SqlDbType.Money:
@@ -1433,7 +1399,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         sqlResults[SqlGetResult] = reader.GetSqlMoney(ordinal);
                         AssertAllAreEqual(sqlResults);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(Decimal));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(Decimal));
                     }
                     break;
                 case SqlDbType.Real:
@@ -1447,7 +1413,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         sqlResults[SqlGetResult] = reader.GetSqlSingle(ordinal);
                         AssertAllAreEqual(sqlResults);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(float));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(float));
                     }
                     break;
                 case SqlDbType.SmallInt:
@@ -1461,7 +1427,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         sqlResults[SqlGetResult] = reader.GetSqlInt16(ordinal);
                         AssertAllAreEqual(sqlResults);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(Int16));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(Int16));
                     }
                     break;
                 case SqlDbType.Time: // NOTE: docs say this can come back via GetDateTime, but apparently it can't.
@@ -1472,7 +1438,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         results[AsyncResult] = reader.GetFieldValueAsync<TimeSpan>(ordinal).Result;
                         AssertAllAreEqual(results);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(TimeSpan));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(TimeSpan));
                     }
                     break;
                 case SqlDbType.Timestamp:
@@ -1492,7 +1458,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         sqlResults[SqlGetResult] = reader.GetSqlBinary(ordinal);
                         AssertAllAreEqual(sqlResults);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(Byte[]));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(Byte[]));
                     }
                     break;
                 case SqlDbType.TinyInt:
@@ -1506,7 +1472,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         sqlResults[SqlGetResult] = reader.GetSqlByte(ordinal);
                         AssertAllAreEqual(sqlResults);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(Byte));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(Byte));
                     }
                     break;
                 case SqlDbType.UniqueIdentifier:
@@ -1520,7 +1486,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                         sqlResults[SqlGetResult] = reader.GetSqlGuid(ordinal);
                         AssertAllAreEqual(sqlResults);
 
-                        Assert.AreEqual(reader.GetFieldType(ordinal), typeof(Guid));
+                        Assert.Equal(reader.GetFieldType(ordinal), typeof(Guid));
                     }
                     break;
                 default:
@@ -1533,16 +1499,16 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             object baseline = toCheck[0];
             foreach (object curObject in toCheck)
             {
-                Assert.AreEqual(baseline, curObject);
+                Assert.Equal(baseline, curObject);
             }
         }
 
         private void PerformArrayComparison<T>(T[] first, T[] second)
         {
-            Assert.AreEqual(first.Length, second.Length);
+            Assert.Equal(first.Length, second.Length);
             for (int i = 0; i < first.Length; i++)
             {
-                Assert.AreEqual(first[i], second[i]);
+                Assert.Equal(first[i], second[i]);
             }
         }
 

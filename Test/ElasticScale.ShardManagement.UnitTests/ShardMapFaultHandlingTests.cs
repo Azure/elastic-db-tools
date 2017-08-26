@@ -6,21 +6,21 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Fixtures;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stubs;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
     /// <summary>
     /// Test related to ShardMap fault handling.
     /// </summary>
-    [TestClass]
-    public class ShardMapFaultHandlingTests
+    public class ShardMapFaultHandlingTests : IDisposable, IClassFixture<ShardMapFaultHandlingTestsFixture>
     {
         /// <summary>
         /// Sharded databases to create for the test.
         /// </summary>
-        private static string[] s_shardedDBs = new[]
+        internal static string[] s_shardedDBs = new[]
         {
             "shard1" + Globals.TestDatabasePostfix, "shard2" + Globals.TestDatabasePostfix
         };
@@ -28,12 +28,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// List shard map name.
         /// </summary>
-        private static string s_listShardMapName = "Customers_list";
+        internal static string s_listShardMapName = "Customers_list";
 
         /// <summary>
         /// Range shard map name.
         /// </summary>
-        private static string s_rangeShardMapName = "Customers_range";
+        internal static string s_rangeShardMapName = "Customers_range";
 
         #region Common Methods
 
@@ -48,12 +48,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             // Remove all existing mappings from the list shard map.
             ListShardMap<int> lsm = smm.GetListShardMap<int>(ShardMapFaultHandlingTests.s_listShardMapName);
-            Assert.IsNotNull(lsm);
+            Assert.NotNull(lsm);
 
             foreach (PointMapping<int> pm in lsm.GetMappings())
             {
                 PointMapping<int> pmOffline = lsm.MarkMappingOffline(pm);
-                Assert.IsNotNull(pmOffline);
+                Assert.NotNull(pmOffline);
                 lsm.DeleteMapping(pmOffline);
             }
 
@@ -65,12 +65,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             // Remove all existing mappings from the range shard map.
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapFaultHandlingTests.s_rangeShardMapName);
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             foreach (RangeMapping<int> rm in rsm.GetMappings())
             {
                 RangeMapping<int> rmOffline = rsm.MarkMappingOffline(rm);
-                Assert.IsNotNull(rmOffline);
+                Assert.NotNull(rmOffline);
                 rsm.DeleteMapping(rmOffline);
             }
 
@@ -82,108 +82,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         }
 
         /// <summary>
-        /// Initializes common state for tests in this class.
-        /// </summary>
-        /// <param name="testContext">The TestContext we are running in.</param>
-        [ClassInitialize()]
-        public static void ShardMapFaultHandlingTestsInitialize(TestContext testContext)
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-
-                // Create ShardMapManager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.CreateDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-
-                // Create shard databases
-                for (int i = 0; i < ShardMapFaultHandlingTests.s_shardedDBs.Length; i++)
-                {
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.DropDatabaseQuery, ShardMapFaultHandlingTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.CreateDatabaseQuery, ShardMapFaultHandlingTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-
-            // Create shard map manager.
-            ShardMapManagerFactory.CreateSqlShardMapManager(
-                Globals.ShardMapManagerConnectionString,
-                ShardMapManagerCreateMode.ReplaceExisting);
-
-            // Create list shard map.
-            ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
-                        Globals.ShardMapManagerConnectionString,
-                        ShardMapManagerLoadPolicy.Lazy);
-
-            ListShardMap<int> lsm = smm.CreateListShardMap<int>(ShardMapFaultHandlingTests.s_listShardMapName);
-
-            Assert.IsNotNull(lsm);
-
-            Assert.AreEqual(ShardMapFaultHandlingTests.s_listShardMapName, lsm.Name);
-
-            // Create range shard map.
-            RangeShardMap<int> rsm = smm.CreateRangeShardMap<int>(ShardMapFaultHandlingTests.s_rangeShardMapName);
-
-            Assert.IsNotNull(rsm);
-
-            Assert.AreEqual(ShardMapFaultHandlingTests.s_rangeShardMapName, rsm.Name);
-        }
-
-        /// <summary>
-        /// Cleans up common state for the all tests in this class.
-        /// </summary>
-        [ClassCleanup()]
-        public static void ShardMapFaultHandlingTestsCleanup()
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-                // Drop shard databases
-                for (int i = 0; i < ShardMapFaultHandlingTests.s_shardedDBs.Length; i++)
-                {
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.DropDatabaseQuery, ShardMapFaultHandlingTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-
-                // Drop shard map manager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.DropDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        /// <summary>
         /// Initializes common state per-test.
         /// </summary>
-        [TestInitialize()]
-        public void ShardMapperTestInitialize()
+        public ShardMapFaultHandlingTests()
         {
             ShardMapFaultHandlingTests.CleanShardMapsHelper();
         }
@@ -191,8 +92,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Cleans up common state per-test.
         /// </summary>
-        [TestCleanup()]
-        public void ShardMapperTestCleanup()
+        public void Dispose()
         {
             ShardMapFaultHandlingTests.CleanShardMapsHelper();
         }
@@ -230,8 +130,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
         }
 
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void AddPointMappingFailGSMAfterSuccessLSMSingleRetry()
         {
             ShardMapManager smm = new ShardMapManager(
@@ -249,11 +149,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ListShardMap<int> lsm = smm.GetListShardMap<int>(ShardMapFaultHandlingTests.s_listShardMapName);
 
-            Assert.IsNotNull(lsm);
+            Assert.NotNull(lsm);
 
             Shard s = lsm.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapFaultHandlingTests.s_shardedDBs[0]));
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             bool failed = false;
 
@@ -266,11 +166,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 failed = true;
             }
 
-            Assert.IsFalse(failed);
+            Assert.False(failed);
         }
 
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void AddPointMappingFailGSMAfterSuccessLSM()
         {
             StubStoreOperationFactory ssof = new StubStoreOperationFactory()
@@ -291,11 +191,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ListShardMap<int> lsm = smm.GetListShardMap<int>(ShardMapFaultHandlingTests.s_listShardMapName);
 
-            Assert.IsNotNull(lsm);
+            Assert.NotNull(lsm);
 
             Shard s = lsm.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapFaultHandlingTests.s_shardedDBs[0]));
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             bool failed = false;
 
@@ -309,7 +209,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 failed = true;
             }
 
-            Assert.IsTrue(failed);
+            Assert.True(failed);
 
             failed = false;
 
@@ -324,11 +224,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 failed = true;
             }
 
-            Assert.IsFalse(failed);
+            Assert.False(failed);
         }
 
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void AddRangeMappingFailGSMAfterSuccessLSMSingleRetry()
         {
             ShardMapManager smm = new ShardMapManager(
@@ -346,11 +246,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapFaultHandlingTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             Shard s = rsm.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapFaultHandlingTests.s_shardedDBs[0]));
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             bool failed = false;
 
@@ -364,11 +264,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 failed = true;
             }
 
-            Assert.IsFalse(failed);
+            Assert.False(failed);
         }
 
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void AddRangeMappingFailGSMAfterSuccessLSM()
         {
             StubStoreOperationFactory ssof = new StubStoreOperationFactory()
@@ -388,11 +288,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapFaultHandlingTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             Shard s = rsm.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapFaultHandlingTests.s_shardedDBs[0]));
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             bool failed = false;
 
@@ -406,7 +306,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 failed = true;
             }
 
-            Assert.IsTrue(failed);
+            Assert.True(failed);
 
             failed = false;
 
@@ -421,11 +321,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 failed = true;
             }
 
-            Assert.IsFalse(failed);
+            Assert.False(failed);
         }
 
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void ShardMapOperationsFailureAfterGlobalPreLocal()
         {
             StubStoreOperationFactory ssof = new StubStoreOperationFactory()
@@ -466,7 +366,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapFaultHandlingTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             // test undo operations on shard
 
@@ -496,11 +396,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             Shard s1 = rsm.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapFaultHandlingTests.s_shardedDBs[0]));
 
-            Assert.IsNotNull(s1);
+            Assert.NotNull(s1);
 
             Shard s2 = rsm.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapFaultHandlingTests.s_shardedDBs[1]));
 
-            Assert.IsNotNull(s2);
+            Assert.NotNull(s2);
 
             // first add mapping will just execute global pre-local and add operation into pending operations log
             RangeMapping<int> rtemp = rsm.CreateRangeMapping(new Range<int>(1, 10), s1);
@@ -511,7 +411,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(1, 10), s1);
 
-            Assert.IsNotNull(r1);
+            Assert.NotNull(r1);
 
             RangeMappingUpdate ru = new RangeMappingUpdate { Status = MappingStatus.Offline };
 
@@ -554,8 +454,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             rsm.DeleteMapping(rlist[0]);
         }
 
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void ShardMapOperationsFailureAfterLocalSource()
         {
             StubStoreOperationFactory ssof = new StubStoreOperationFactory()
@@ -596,7 +496,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapFaultHandlingTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             // test undo operations on shard
 
@@ -626,11 +526,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             Shard s1 = rsm.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapFaultHandlingTests.s_shardedDBs[0]));
 
-            Assert.IsNotNull(s1);
+            Assert.NotNull(s1);
 
             Shard s2 = rsm.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapFaultHandlingTests.s_shardedDBs[1]));
 
-            Assert.IsNotNull(s2);
+            Assert.NotNull(s2);
 
             // first add mapping will just execute global pre-local and add operation into pending operations log
             RangeMapping<int> rtemp = rsm.CreateRangeMapping(new Range<int>(1, 10), s1);
@@ -641,7 +541,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(1, 10), s1);
 
-            Assert.IsNotNull(r1);
+            Assert.NotNull(r1);
 
             RangeMappingUpdate ru = new RangeMappingUpdate { Status = MappingStatus.Offline };
 
@@ -684,8 +584,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             rsm.DeleteMapping(rlist[0]);
         }
 
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void ShardMapOperationsFailureAfterLocalTarget()
         {
             StubStoreOperationFactory ssof = new StubStoreOperationFactory()
@@ -726,7 +626,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeShardMap<int> rsm = smm.GetRangeShardMap<int>(ShardMapFaultHandlingTests.s_rangeShardMapName);
 
-            Assert.IsNotNull(rsm);
+            Assert.NotNull(rsm);
 
             // test undo operations on shard
 
@@ -756,11 +656,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             Shard s1 = rsm.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapFaultHandlingTests.s_shardedDBs[0]));
 
-            Assert.IsNotNull(s1);
+            Assert.NotNull(s1);
 
             Shard s2 = rsm.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, ShardMapFaultHandlingTests.s_shardedDBs[1]));
 
-            Assert.IsNotNull(s2);
+            Assert.NotNull(s2);
 
             // first add mapping will just execute global pre-local and add operation into pending operations log
             RangeMapping<int> rtemp = rsm.CreateRangeMapping(new Range<int>(1, 10), s1);
@@ -771,7 +671,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             RangeMapping<int> r1 = rsm.CreateRangeMapping(new Range<int>(1, 10), s1);
 
-            Assert.IsNotNull(r1);
+            Assert.NotNull(r1);
 
             RangeMappingUpdate ru = new RangeMappingUpdate { Status = MappingStatus.Offline };
 

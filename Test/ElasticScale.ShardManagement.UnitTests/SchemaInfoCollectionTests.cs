@@ -9,61 +9,17 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Fixtures;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
-    [TestClass]
-    public class SchemaInfoCollectionTests
+    public class SchemaInfoCollectionTests : IClassFixture<SchemaInfoCollectionTestsFixture>
     {
-        /// <summary>
-        /// Initializes common state for tests in this class.
-        /// </summary>
-        /// <param name="testContext">The TestContext we are running in.</param>
-        [ClassInitialize()]
-        public static void SchemaInfoTestsInitialize(TestContext testContext)
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
 
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-
-                // Create ShardMapManager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.CreateDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Cleans up common state for the all tests in this class.
-        /// </summary>
-        [ClassCleanup()]
-        public static void SchemaInfoTestsCleanup()
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.DropDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestAddAndLookupAndDeleteSchemaInfo()
         {
             ShardMapManagerFactory.CreateSqlShardMapManager(
@@ -86,7 +42,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             si.Add(stmd1);
             si.Add(stmd2);
 
-            Assert.AreEqual(2, si.ShardedTables.Count);
+            Assert.True(2 == si.ShardedTables.Count);
 
             ReferenceTableInfo rtmd1 = new ReferenceTableInfo("ReferenceTableName1");
             ReferenceTableInfo rtmd2 = new ReferenceTableInfo("dbo", "ReferenceTableName2");
@@ -94,51 +50,51 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             si.Add(rtmd1);
             si.Add(rtmd2);
 
-            Assert.AreEqual(2, si.ReferenceTables.Count);
+            Assert.True(2 == si.ReferenceTables.Count);
             // Add an existing sharded table again. Make sure it doesn't create duplicate entries.
             SchemaInfoException siex = AssertExtensions.AssertThrows<SchemaInfoException>(
                 () => si.Add(new ShardedTableInfo("ShardedTableName1", "ColumnName")));
-            Assert.AreEqual(SchemaInfoErrorCode.TableInfoAlreadyPresent, siex.ErrorCode);
+            Assert.Equal(SchemaInfoErrorCode.TableInfoAlreadyPresent, siex.ErrorCode);
 
             // Add an existing sharded table with a different key column name. This should fail too.
             siex = AssertExtensions.AssertThrows<SchemaInfoException>(
                 () => si.Add(new ShardedTableInfo("ShardedTableName1", "ColumnName_Different")));
-            Assert.AreEqual(SchemaInfoErrorCode.TableInfoAlreadyPresent, siex.ErrorCode);
+            Assert.Equal(SchemaInfoErrorCode.TableInfoAlreadyPresent, siex.ErrorCode);
 
             siex = AssertExtensions.AssertThrows<SchemaInfoException>(
                 () => si.Add(new ShardedTableInfo("dbo", "ShardedTableName2", "ColumnName_Different")));
-            Assert.AreEqual(SchemaInfoErrorCode.TableInfoAlreadyPresent, siex.ErrorCode);
+            Assert.Equal(SchemaInfoErrorCode.TableInfoAlreadyPresent, siex.ErrorCode);
 
-            Assert.AreEqual(2, si.ShardedTables.Count);
+            Assert.True(2 == si.ShardedTables.Count);
 
             // Add an existing reference tables again. Make sure it doesn't create duplicate entries.
             siex = AssertExtensions.AssertThrows<SchemaInfoException>(
                 () => si.Add(new ReferenceTableInfo("dbo", "ReferenceTableName2")));
-            Assert.AreEqual(SchemaInfoErrorCode.TableInfoAlreadyPresent, siex.ErrorCode);
+            Assert.Equal(SchemaInfoErrorCode.TableInfoAlreadyPresent, siex.ErrorCode);
 
-            Assert.AreEqual(2, si.ReferenceTables.Count);
+            Assert.True(2 == si.ReferenceTables.Count);
 
             // Now trying adding a reference table as a sharded table and vice versa. Both operations should fail.
             siex = AssertExtensions.AssertThrows<SchemaInfoException>(
                 () => si.Add(new ShardedTableInfo("ReferenceTableName1", "ColumnName")));
-            Assert.AreEqual(SchemaInfoErrorCode.TableInfoAlreadyPresent, siex.ErrorCode);
+            Assert.Equal(SchemaInfoErrorCode.TableInfoAlreadyPresent, siex.ErrorCode);
 
-            Assert.AreEqual(2, si.ShardedTables.Count);
+            Assert.True(2 == si.ShardedTables.Count);
 
             siex = AssertExtensions.AssertThrows<SchemaInfoException>(
                 () => si.Add(new ReferenceTableInfo("dbo", "ShardedTableName2")));
-            Assert.AreEqual(SchemaInfoErrorCode.TableInfoAlreadyPresent, siex.ErrorCode);
+            Assert.Equal(SchemaInfoErrorCode.TableInfoAlreadyPresent, siex.ErrorCode);
 
-            Assert.AreEqual(2, si.ReferenceTables.Count);
+            Assert.True(2 == si.ReferenceTables.Count);
 
             // Try removing an existing table info and adding it back.
             si.Remove(stmd1);
             si.Add(stmd1);
-            Assert.AreEqual(2, si.ShardedTables.Count);
+            Assert.True(2 == si.ShardedTables.Count);
 
             si.Remove(rtmd2);
             si.Add(rtmd2);
-            Assert.AreEqual(2, si.ReferenceTables.Count);
+            Assert.True(2 == si.ReferenceTables.Count);
 
             // Test with NULL inputs.
             ArgumentException arex = AssertExtensions.AssertThrows<ArgumentException>(
@@ -157,7 +113,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // Trying to add schema info with the same name again will result in a 'name conflict' exception.
             siex = AssertExtensions.AssertThrows<SchemaInfoException>(
                 () => siCollection.Add(mdName, si));
-            Assert.AreEqual(SchemaInfoErrorCode.SchemaInfoNameConflict, siex.ErrorCode);
+            Assert.Equal(SchemaInfoErrorCode.SchemaInfoNameConflict, siex.ErrorCode);
 
             #endregion
 
@@ -166,7 +122,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // Try looking up schema info with a non-existent name.
             siex = AssertExtensions.AssertThrows<SchemaInfoException>(
                 () => siCollection.Get(mdName + "Fail"));
-            Assert.AreEqual(SchemaInfoErrorCode.SchemaInfoNameDoesNotExist, siex.ErrorCode);
+            Assert.Equal(SchemaInfoErrorCode.SchemaInfoNameDoesNotExist, siex.ErrorCode);
 
 
             #endregion
@@ -179,13 +135,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // Lookup should fail on removed data.
             siex = AssertExtensions.AssertThrows<SchemaInfoException>(
                 () => siCollection.Get(mdName));
-            Assert.AreEqual(SchemaInfoErrorCode.SchemaInfoNameDoesNotExist, siex.ErrorCode);
+            Assert.Equal(SchemaInfoErrorCode.SchemaInfoNameDoesNotExist, siex.ErrorCode);
 
             #endregion
         }
 
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestSetSchemaInfoWithSpecialChars()
         {
             ShardMapManagerFactory.CreateSqlShardMapManager(
@@ -212,8 +168,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             AssertEqual(si, sdmdRead);
         }
 
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestUpdateSchemaInfo()
         {
             ShardMapManagerFactory.CreateSqlShardMapManager(
@@ -241,7 +197,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // Try updating schema info without adding it first.
             SchemaInfoException siex = AssertExtensions.AssertThrows<SchemaInfoException>(
                 () => siCollection.Replace(mdName, si));
-            Assert.AreEqual(SchemaInfoErrorCode.SchemaInfoNameDoesNotExist, siex.ErrorCode);
+            Assert.Equal(SchemaInfoErrorCode.SchemaInfoNameDoesNotExist, siex.ErrorCode);
 
             siCollection.Add(mdName, si);
 
@@ -256,8 +212,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             AssertEqual(sdmdNew, sdmdRead);
         }
 
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestGetAll()
         {
             ShardMapManagerFactory.CreateSqlShardMapManager(
@@ -324,8 +280,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 i++;
             }
 
-            Assert.IsTrue(success);
-            Assert.AreEqual(3, i);
+            Assert.True(success);
+            Assert.True(3 == i);
         }
 
         /// <summary>
@@ -337,7 +293,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// This test will need to be more sophisticated if new fields are added. Since no fields have been added yet,
         /// we can just do a direct string comparison, which is very simple and precise.
         /// </remarks>
-        [TestMethod]
+        [Fact]
         public void SerializeCompatibility()
         {
             SchemaInfo schemaInfo = new SchemaInfo();
@@ -363,7 +319,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
   </ShardedTableSet>
 </Schema>";
             string actualSerializedSchemaInfo = ToXml(schemaInfo);
-            Assert.AreEqual(
+            Assert.Equal(
                 expectedSerializedSchemaInfo,
                 actualSerializedSchemaInfo);
 
@@ -375,7 +331,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Verifies that <see cref="SchemaInfo"/>data from EDCL v1.0.0 can be deserialized.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void DeserializeCompatibilityV100()
         {
             // Why is this slightly different from the XML in the SerializeCompatibility test?
@@ -399,13 +355,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 </Schema>";
 
             SchemaInfo schemaInfo = FromXml(originalSchemaInfo);
-            Assert.AreEqual(1, schemaInfo.ReferenceTables.Count);
-            Assert.AreEqual("r1", schemaInfo.ReferenceTables.First().SchemaName);
-            Assert.AreEqual("r2", schemaInfo.ReferenceTables.First().TableName);
-            Assert.AreEqual(1, schemaInfo.ShardedTables.Count);
-            Assert.AreEqual("s1", schemaInfo.ShardedTables.First().SchemaName);
-            Assert.AreEqual("s2", schemaInfo.ShardedTables.First().TableName);
-            Assert.AreEqual("s3", schemaInfo.ShardedTables.First().KeyColumnName);
+            Assert.True(1 == schemaInfo.ReferenceTables.Count);
+            Assert.Equal("r1", schemaInfo.ReferenceTables.First().SchemaName);
+            Assert.Equal("r2", schemaInfo.ReferenceTables.First().TableName);
+            Assert.True(1 == schemaInfo.ShardedTables.Count);
+            Assert.Equal("s1", schemaInfo.ShardedTables.First().SchemaName);
+            Assert.Equal("s2", schemaInfo.ShardedTables.First().TableName);
+            Assert.Equal("s3", schemaInfo.ShardedTables.First().KeyColumnName);
 
             // Serialize the data back. It should not contain _referenceTableSet or _shardedTableSet.
             string expectedFinalSchemaInfo = @"<?xml version=""1.0"" encoding=""utf-16""?>
@@ -425,13 +381,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
   </ShardedTableSet>
 </Schema>";
             string actualFinalSchemaInfo = ToXml(schemaInfo);
-            Assert.AreEqual(expectedFinalSchemaInfo, actualFinalSchemaInfo);
+            Assert.Equal(expectedFinalSchemaInfo, actualFinalSchemaInfo);
         }
 
         /// <summary>
         /// Verifies that <see cref="SchemaInfo"/>data from EDCL v1.1.0 can be deserialized.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void DeserializeCompatibilityV110()
         {
             // Why is this slightly different from the XML in the SerializeCompatibility test?
@@ -455,13 +411,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 </Schema>";
 
             SchemaInfo schemaInfo = FromXml(originalSchemaInfo);
-            Assert.AreEqual(1, schemaInfo.ReferenceTables.Count);
-            Assert.AreEqual("r1", schemaInfo.ReferenceTables.First().SchemaName);
-            Assert.AreEqual("r2", schemaInfo.ReferenceTables.First().TableName);
-            Assert.AreEqual(1, schemaInfo.ShardedTables.Count);
-            Assert.AreEqual("s1", schemaInfo.ShardedTables.First().SchemaName);
-            Assert.AreEqual("s2", schemaInfo.ShardedTables.First().TableName);
-            Assert.AreEqual("s3", schemaInfo.ShardedTables.First().KeyColumnName);
+            Assert.True(1 == schemaInfo.ReferenceTables.Count);
+            Assert.Equal("r1", schemaInfo.ReferenceTables.First().SchemaName);
+            Assert.Equal("r2", schemaInfo.ReferenceTables.First().TableName);
+            Assert.True(1 == schemaInfo.ShardedTables.Count);
+            Assert.Equal("s1", schemaInfo.ShardedTables.First().SchemaName);
+            Assert.Equal("s2", schemaInfo.ShardedTables.First().TableName);
+            Assert.Equal("s3", schemaInfo.ShardedTables.First().KeyColumnName);
 
             // Serialize the data back. It should be not contain _referenceTableSet or _shardedTableSet.
             string expectedFinalSchemaInfo = @"<?xml version=""1.0"" encoding=""utf-16""?>
@@ -481,7 +437,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
   </ShardedTableSet>
 </Schema>";
             string actualFinalSchemaInfo = ToXml(schemaInfo);
-            Assert.AreEqual(expectedFinalSchemaInfo, actualFinalSchemaInfo);
+            Assert.Equal(expectedFinalSchemaInfo, actualFinalSchemaInfo);
         }
 
         private string ToXml(SchemaInfo schemaInfo)

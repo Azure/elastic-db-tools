@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -9,19 +10,19 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Fixtures;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
     /// <summary>
     /// Test related to ShardMapper class and it's methods.
     /// </summary>
-    [TestClass]
-    public class DateTimeShardMapperTests
+    public class DateTimeShardMapperTests : IDisposable, IClassFixture<DateTimeShardMapperTestsFixture>
     {
         /// <summary>
         /// Sharded databases to create for the test.
         /// </summary>
-        private static string[] s_shardedDBs = new[]
+        internal static string[] s_shardedDBs = new[]
         {
             "shard1" + Globals.TestDatabasePostfix, "shard2" + Globals.TestDatabasePostfix
         };
@@ -29,12 +30,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// List shard map name.
         /// </summary>
-        private static string s_listShardMapName = "Customers_list";
+        internal static string s_listShardMapName = "Customers_list";
 
         /// <summary>
         /// Range shard map name.
         /// </summary>
-        private static string s_rangeShardMapName = "Customers_range";
+        internal static string s_rangeShardMapName = "Customers_range";
 
         #region Common Methods
 
@@ -51,12 +52,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             ListShardMap<DateTime> lsm;
             if (smm.TryGetListShardMap<DateTime>(DateTimeShardMapperTests.s_listShardMapName, out lsm))
             {
-                Assert.IsNotNull(lsm);
+                Assert.NotNull(lsm);
 
                 foreach (PointMapping<DateTime> pm in lsm.GetMappings())
                 {
                     PointMapping<DateTime> pmOffline = lsm.MarkMappingOffline(pm);
-                    Assert.IsNotNull(pmOffline);
+                    Assert.NotNull(pmOffline);
                     lsm.DeleteMapping(pmOffline);
                 }
 
@@ -71,14 +72,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             RangeShardMap<DateTime> rsm;
             if (smm.TryGetRangeShardMap<DateTime>(DateTimeShardMapperTests.s_rangeShardMapName, out rsm))
             {
-                Assert.IsNotNull(rsm);
+                Assert.NotNull(rsm);
 
                 foreach (RangeMapping<DateTime> rm in rsm.GetMappings())
                 {
                     MappingLockToken mappingLockToken = rsm.GetMappingLockOwner(rm);
                     rsm.UnlockMapping(rm, mappingLockToken);
                     RangeMapping<DateTime> rmOffline = rsm.MarkMappingOffline(rm);
-                    Assert.IsNotNull(rmOffline);
+                    Assert.NotNull(rmOffline);
                     rsm.DeleteMapping(rmOffline);
                 }
 
@@ -91,108 +92,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         }
 
         /// <summary>
-        /// Initializes common state for tests in this class.
-        /// </summary>
-        /// <param name="testContext">The TestContext we are running in.</param>
-        [ClassInitialize()]
-        public static void ShardMapperTestsInitialize(TestContext testContext)
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-
-                // Create ShardMapManager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.CreateDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-
-                // Create shard databases
-                for (int i = 0; i < DateTimeShardMapperTests.s_shardedDBs.Length; i++)
-                {
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.DropDatabaseQuery, DateTimeShardMapperTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.CreateDatabaseQuery, DateTimeShardMapperTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-
-            // Create shard map manager.
-            ShardMapManagerFactory.CreateSqlShardMapManager(
-                Globals.ShardMapManagerConnectionString,
-                ShardMapManagerCreateMode.ReplaceExisting);
-
-            // Create list shard map.
-            ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
-                        Globals.ShardMapManagerConnectionString,
-                        ShardMapManagerLoadPolicy.Lazy);
-
-            ListShardMap<DateTime> lsm = smm.CreateListShardMap<DateTime>(DateTimeShardMapperTests.s_listShardMapName);
-
-            Assert.IsNotNull(lsm);
-
-            Assert.AreEqual(DateTimeShardMapperTests.s_listShardMapName, lsm.Name);
-
-            // Create range shard map.
-            RangeShardMap<DateTime> rsm = smm.CreateRangeShardMap<DateTime>(DateTimeShardMapperTests.s_rangeShardMapName);
-
-            Assert.IsNotNull(rsm);
-
-            Assert.AreEqual(DateTimeShardMapperTests.s_rangeShardMapName, rsm.Name);
-        }
-
-        /// <summary>
-        /// Cleans up common state for the all tests in this class.
-        /// </summary>
-        [ClassCleanup()]
-        public static void ShardMapperTestsCleanup()
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-                // Drop shard databases
-                for (int i = 0; i < DateTimeShardMapperTests.s_shardedDBs.Length; i++)
-                {
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.DropDatabaseQuery, DateTimeShardMapperTests.s_shardedDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-
-                // Drop shard map manager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.DropDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        /// <summary>
         /// Initializes common state per-test.
         /// </summary>
-        [TestInitialize()]
-        public void ShardMapperTestInitialize()
+        public DateTimeShardMapperTests()
         {
             DateTimeShardMapperTests.CleanShardMapsHelper();
         }
@@ -200,8 +102,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Cleans up common state per-test.
         /// </summary>
-        [TestCleanup()]
-        public void ShardMapperTestCleanup()
+        public void Dispose()
         {
             DateTimeShardMapperTests.CleanShardMapsHelper();
         }
@@ -213,8 +114,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// All combinations of getting point mappings from a list shard map
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void DateGetPointMappingsForRange()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -223,25 +124,25 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ListShardMap<DateTime> lsm = smm.GetListShardMap<DateTime>(DateTimeShardMapperTests.s_listShardMapName);
 
-            Assert.IsNotNull(lsm);
+            Assert.NotNull(lsm);
 
             Shard s1 = lsm.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, DateTimeShardMapperTests.s_shardedDBs[0]));
-            Assert.IsNotNull(s1);
+            Assert.NotNull(s1);
 
             Shard s2 = lsm.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, DateTimeShardMapperTests.s_shardedDBs[1]));
-            Assert.IsNotNull(s2);
+            Assert.NotNull(s2);
 
             DateTime val1 = DateTime.Now.Subtract(TimeSpan.FromMinutes(10));
             PointMapping<DateTime> p1 = lsm.CreatePointMapping(val1, s1);
-            Assert.IsNotNull(p1);
+            Assert.NotNull(p1);
 
             DateTime val2 = DateTime.Now.Subtract(TimeSpan.FromMinutes(20));
             PointMapping<DateTime> p2 = lsm.CreatePointMapping(val2, s1);
-            Assert.IsNotNull(p2);
+            Assert.NotNull(p2);
 
             DateTime val3 = DateTime.Now.Subtract(TimeSpan.FromMinutes(30));
             PointMapping<DateTime> p3 = lsm.CreatePointMapping(val3, s2);
-            Assert.IsNotNull(p2);
+            Assert.NotNull(p2);
 
             // Get all mappings in shard map.
             int count = 0;
@@ -251,7 +152,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 while (mEnum.MoveNext())
                     count++;
             }
-            Assert.AreEqual(3, count);
+            Assert.True(3 == count);
 
             // Get all mappings in specified range.
             Range<DateTime> wantedRange = new Range<DateTime>(val3.AddMinutes(-5), val3.AddMinutes(15));
@@ -262,7 +163,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 while (mEnum.MoveNext())
                     count++;
             }
-            Assert.AreEqual(2, count);
+            Assert.True(2 == count);
 
             // Get all mappings for a shard.
             count = 0;
@@ -272,7 +173,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 while (mEnum.MoveNext())
                     count++;
             }
-            Assert.AreEqual(2, count);
+            Assert.True(2 == count);
 
             // Get all mappings in specified range for a particular shard.
             count = 0;
@@ -282,14 +183,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 while (mEnum.MoveNext())
                     count++;
             }
-            Assert.AreEqual(1, count);
+            Assert.True(1 == count);
         }
 
         /// <summary>
         /// Add a duplicate point mapping to list shard map
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void DateAddPointMappingDuplicate()
         {
             CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
@@ -304,18 +205,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ListShardMap<DateTime> lsm = smm.GetListShardMap<DateTime>(DateTimeShardMapperTests.s_listShardMapName);
 
-            Assert.IsNotNull(lsm);
+            Assert.NotNull(lsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, DateTimeShardMapperTests.s_shardedDBs[0]);
 
             Shard s = lsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             DateTime val = DateTime.Now;
             PointMapping<DateTime> p1 = lsm.CreatePointMapping(val, s);
 
-            Assert.IsNotNull(p1);
+            Assert.NotNull(p1);
 
             bool addFailed = false;
             try
@@ -325,24 +226,24 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException sme)
             {
-                Assert.AreEqual(ShardManagementErrorCategory.ListShardMap, sme.ErrorCategory);
-                Assert.AreEqual(ShardManagementErrorCode.MappingPointAlreadyMapped, sme.ErrorCode);
+                Assert.Equal(ShardManagementErrorCategory.ListShardMap, sme.ErrorCategory);
+                Assert.Equal(ShardManagementErrorCode.MappingPointAlreadyMapped, sme.ErrorCode);
                 addFailed = true;
             }
 
-            Assert.IsTrue(addFailed);
+            Assert.True(addFailed);
 
             PointMapping<DateTime> p2 = lsm.GetMappingForKey(val);
 
-            Assert.IsNotNull(p2);
-            Assert.AreEqual(0, countingCache.LookupMappingHitCount);
+            Assert.NotNull(p2);
+            Assert.True(0 == countingCache.LookupMappingHitCount);
         }
 
         /// <summary>
         /// Delete existing point mapping from list shard map
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void DateDeletePointMappingDefault()
         {
             CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
@@ -358,21 +259,21 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ListShardMap<DateTime> lsm = smm.GetListShardMap<DateTime>(DateTimeShardMapperTests.s_listShardMapName);
 
-            Assert.IsNotNull(lsm);
+            Assert.NotNull(lsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, DateTimeShardMapperTests.s_shardedDBs[0]);
 
             Shard s = lsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             DateTime val = DateTime.Now;
             PointMapping<DateTime> p1 = lsm.CreatePointMapping(val, s);
 
             PointMapping<DateTime> p2 = lsm.GetMappingForKey(val);
 
-            Assert.IsNotNull(p2);
-            Assert.AreEqual(0, countingCache.LookupMappingHitCount);
+            Assert.NotNull(p2);
+            Assert.True(0 == countingCache.LookupMappingHitCount);
 
             // The mapping must be made offline first before it can be deleted.
             PointMappingUpdate ru = new PointMappingUpdate();
@@ -390,20 +291,20 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException sme)
             {
-                Assert.AreEqual(ShardManagementErrorCategory.ListShardMap, sme.ErrorCategory);
-                Assert.AreEqual(ShardManagementErrorCode.MappingNotFoundForKey, sme.ErrorCode);
+                Assert.Equal(ShardManagementErrorCategory.ListShardMap, sme.ErrorCategory);
+                Assert.Equal(ShardManagementErrorCode.MappingNotFoundForKey, sme.ErrorCode);
                 lookupFailed = true;
             }
 
-            Assert.IsTrue(lookupFailed);
-            Assert.AreEqual(0, countingCache.LookupMappingMissCount);
+            Assert.True(lookupFailed);
+            Assert.True(0 == countingCache.LookupMappingMissCount);
         }
 
         /// <summary>
         /// Delete non-existing point mapping from list shard map
         /// </summary>
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void DateDeletePointMappingNonExisting()
         {
             ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -412,18 +313,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             ListShardMap<DateTime> lsm = smm.GetListShardMap<DateTime>(DateTimeShardMapperTests.s_listShardMapName);
 
-            Assert.IsNotNull(lsm);
+            Assert.NotNull(lsm);
 
             ShardLocation sl = new ShardLocation(Globals.ShardMapManagerTestsDatasourceName, DateTimeShardMapperTests.s_shardedDBs[0]);
 
             Shard s = lsm.CreateShard(sl);
 
-            Assert.IsNotNull(s);
+            Assert.NotNull(s);
 
             DateTime val = DateTime.Now;
             PointMapping<DateTime> p1 = lsm.CreatePointMapping(val, s);
 
-            Assert.IsNotNull(p1);
+            Assert.NotNull(p1);
 
             PointMappingUpdate ru = new PointMappingUpdate();
             ru.Status = MappingStatus.Offline;
@@ -441,12 +342,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException sme)
             {
-                Assert.AreEqual(ShardManagementErrorCategory.ListShardMap, sme.ErrorCategory);
-                Assert.AreEqual(ShardManagementErrorCode.MappingDoesNotExist, sme.ErrorCode);
+                Assert.Equal(ShardManagementErrorCategory.ListShardMap, sme.ErrorCategory);
+                Assert.Equal(ShardManagementErrorCode.MappingDoesNotExist, sme.ErrorCode);
                 removeFailed = true;
             }
 
-            Assert.IsTrue(removeFailed);
+            Assert.True(removeFailed);
         }
         #endregion
 

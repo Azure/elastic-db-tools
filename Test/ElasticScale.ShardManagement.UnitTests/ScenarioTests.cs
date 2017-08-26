@@ -2,12 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Fixtures;
+using Xunit.Sdk;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
@@ -15,9 +17,20 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
     /// Tests based on scenarios which cover various aspects of the
     /// ShardMapManager library.
     /// </summary>
-    [TestClass]
-    public class ScenarioTests
+    public class ScenarioTests : IDisposable, IClassFixture<ScenarioTestsFixture>
     {
+
+        private readonly TestOutputHelper _thelper;
+
+        public ScenarioTests(TestOutputHelper thelper) {
+            _thelper = thelper;
+
+        }
+
+        public void Dispose() {
+
+        }
+
 #if CODESAMPLE
         private static Lazy<ShardMapManager> smm = new Lazy<ShardMapManager>(
             () => ShardMapManagerFactory.GetSqlShardMapManager(ShardMapManagerLoadPolicy.Eager),
@@ -33,13 +46,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 #endif
 
         // Shards with single user per tenant model.
-        private static string[] s_perTenantDBs = new[]
+        internal static string[] s_perTenantDBs = new[]
         {
             "PerTenantDB1", "PerTenantDB2", "PerTenantDB3", "PerTenantDB4"
         };
 
         // Shards with multiple users per tenant model.
-        private static string[] s_multiTenantDBs = new[]
+        internal static string[] s_multiTenantDBs = new[]
         {
             "MultiTenantDB1", "MultiTenantDB2", "MultiTenantDB3", "MultiTenantDB4", "MultiTenantDB5"
         };
@@ -50,109 +63,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         // Password for test user.
         private static string s_testPassword = "dogmat1C";
 
-        #region Common Methods
-
-        /// <summary>
-        /// Initializes common state for tests in this class.
-        /// </summary>
-        /// <param name="testContext">The TestContext we are running in.</param>
-        [ClassInitialize()]
-        public static void ScenarioTestsInitialize(TestContext testContext)
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-
-                // Create ShardMapManager database
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.CreateDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-
-                // Create PerTenantDB databases
-                for (int i = 0; i < ScenarioTests.s_perTenantDBs.Length; i++)
-                {
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.DropDatabaseQuery, ScenarioTests.s_perTenantDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.CreateDatabaseQuery, ScenarioTests.s_perTenantDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-
-                // Create MultiTenantDB databases
-                for (int i = 0; i < ScenarioTests.s_multiTenantDBs.Length; i++)
-                {
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.DropDatabaseQuery, ScenarioTests.s_multiTenantDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    using (SqlCommand cmd = new SqlCommand(
-                        string.Format(Globals.CreateDatabaseQuery, ScenarioTests.s_multiTenantDBs[i]),
-                        conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Cleans up common state for the all tests in this class.
-        /// </summary>
-        [ClassCleanup()]
-        public static void ScenarioTestsCleanup()
-        {
-            // Clear all connection pools.
-            SqlConnection.ClearAllPools();
-
-            using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString))
-            {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(
-                    string.Format(Globals.DropDatabaseQuery, Globals.ShardMapManagerDatabaseName),
-                    conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Initializes common state per-test.
-        /// </summary>
-        [TestInitialize()]
-        public void ScenarioTestInitialize()
-        {
-        }
-
-        /// <summary>
-        /// Cleans up common state per-test.
-        /// </summary>
-        [TestCleanup()]
-        public void ScenarioTestCleanup()
-        {
-        }
-
-        #endregion Common Methods
-
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void BasicScenarioDefaultShardMaps()
         {
             bool success = true;
@@ -211,7 +123,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     });
 
                 // Verify that update succeeded.
-                Assert.AreEqual(ShardStatus.Offline, updatedShard.Status);
+                Assert.Equal(ShardStatus.Offline, updatedShard.Status);
 
                 #endregion UpdateShard
 
@@ -227,7 +139,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 defaultShardMap.TryGetShard(shardToDelete.Location, out deletedShard);
 
-                Assert.IsNull(deletedShard);
+                Assert.Null(deletedShard);
 
                 // Now add the shard back for further tests.
                 // Create the shard.
@@ -263,10 +175,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 catch (ShardManagementException smme)
                 {
                     validationFailed = true;
-                    Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.ShardDoesNotExist);
+                    Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.ShardDoesNotExist);
                 }
 
-                Assert.AreEqual(validationFailed, true);
+                Assert.Equal(validationFailed, true);
 
                 #endregion OpenConnection with Validation
 
@@ -301,11 +213,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     if (smme != null)
                     {
                         validationFailed = true;
-                        Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.ShardDoesNotExist);
+                        Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.ShardDoesNotExist);
                     }
                 }
 
-                Assert.AreEqual(validationFailed, true);
+                Assert.Equal(validationFailed, true);
 
                 #endregion OpenConnectionAsync with Validation
 
@@ -340,18 +252,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 }
             }
 
-            Assert.IsTrue(success);
+            Assert.True(success);
         }
 
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void BasicScenarioListShardMapsWithIntegratedSecurity()
         {
             BasicScenarioListShardMapsInternal(Globals.ShardMapManagerConnectionString, Globals.ShardUserConnectionString);
         }
 
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void BasicScenarioListShardMapsWithSqlAuthentication()
         {
             // Try to create a test login
@@ -378,7 +290,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             else
             {
-                Assert.Inconclusive("Failed to create sql login, test skipped");
+                AssertExtensions.Inconclusive(this._thelper, "Failed to create sql login, test skipped");
             }
         }
 
@@ -500,7 +412,7 @@ end", s_testUser);
 
                 PointMapping<int> mappingForFive = perTenantShardMap.CreatePointMapping(5, mappingForOne.Shard);
 
-                Assert.IsTrue(mappingForOne.Shard.Location.Equals(mappingForFive.Shard.Location));
+                Assert.True(mappingForOne.Shard.Location.Equals(mappingForFive.Shard.Location));
 
                 // Move 3 from PerTenantDB3 to PerTenantDB for 5.
                 PointMapping<int> mappingToUpdate = perTenantShardMap.GetMappingForKey(3);
@@ -518,19 +430,19 @@ end", s_testUser);
                 }
                 catch (ShardManagementException smme)
                 {
-                    Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingIsNotOffline);
+                    Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.MappingIsNotOffline);
                     updateFailed = true;
                 }
 
-                Assert.IsTrue(updateFailed);
+                Assert.True(updateFailed);
 
                 // Perform the actual update.
                 PointMapping<int> newMappingFor3 = MarkMappingOfflineAndUpdateShard<int>(
                     perTenantShardMap, mappingToUpdate, mappingForFive.Shard);
 
                 // Verify that update succeeded.
-                Assert.IsTrue(newMappingFor3.Shard.Location.Equals(mappingForFive.Shard.Location));
-                Assert.IsTrue(newMappingFor3.Status == MappingStatus.Offline);
+                Assert.True(newMappingFor3.Shard.Location.Equals(mappingForFive.Shard.Location));
+                Assert.True(newMappingFor3.Status == MappingStatus.Offline);
 
                 // Update custom field for the updated mapping.
                 //PointMapping<int> veryNewMappingFor3 = perTenantShardMap.UpdatePointMapping(
@@ -556,7 +468,7 @@ end", s_testUser);
                 catch (ShardManagementException smme)
                 {
                     operationFailed = true;
-                    Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingIsNotOffline);
+                    Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.MappingIsNotOffline);
                 }
 
                 Trace.Assert(operationFailed);
@@ -578,7 +490,7 @@ end", s_testUser);
                 }
                 catch (ShardManagementException smme)
                 {
-                    Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingNotFoundForKey);
+                    Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.MappingNotFoundForKey);
                 }
 
                 #endregion DeleteMapping
@@ -610,10 +522,10 @@ end", s_testUser);
                 catch (ShardManagementException smme)
                 {
                     validationFailed = true;
-                    Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
+                    Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
                 }
 
-                Assert.AreEqual(validationFailed, true);
+                Assert.Equal(validationFailed, true);
 
                 #endregion OpenConnection with Validation
 
@@ -675,10 +587,10 @@ end", s_testUser);
                 catch (ShardManagementException smme)
                 {
                     validationFailed = true;
-                    Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
+                    Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
                 }
 
-                Assert.AreEqual(validationFailed, true);
+                Assert.Equal(validationFailed, true);
 
                 #endregion
 
@@ -712,11 +624,11 @@ end", s_testUser);
                     if (smme != null)
                     {
                         validationFailed = true;
-                        Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
+                        Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
                     }
                 }
 
-                Assert.AreEqual(validationFailed, true);
+                Assert.Equal(validationFailed, true);
 
                 #endregion
 
@@ -780,11 +692,11 @@ end", s_testUser);
                     if (smme != null)
                     {
                         validationFailed = true;
-                        Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
+                        Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
                     }
                 }
 
-                Assert.AreEqual(validationFailed, true);
+                Assert.Equal(validationFailed, true);
 
                 #endregion
 
@@ -800,7 +712,7 @@ end", s_testUser);
                     Trace.WriteLine(result.Shard.Location);
 
                     // Since we moved 3 to database 1 earlier.
-                    Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_perTenantDBs[i != 2 ? i : 0]);
+                    Assert.True(result.Shard.Location.Database == ScenarioTests.s_perTenantDBs[i != 2 ? i : 0]);
                 }
 
                 // Perform tenant lookup. This will read from the cache.
@@ -813,7 +725,7 @@ end", s_testUser);
                     Trace.WriteLine(result.Shard.Location);
 
                     // Since we moved 3 to database 1 earlier.
-                    Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_perTenantDBs[i != 2 ? i : 0]);
+                    Assert.True(result.Shard.Location.Database == ScenarioTests.s_perTenantDBs[i != 2 ? i : 0]);
                 }
 
                 #endregion LookupPointMapping
@@ -837,11 +749,11 @@ end", s_testUser);
                 }
             }
 
-            Assert.IsTrue(success);
+            Assert.True(success);
         }
 
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void BasicScenarioRangeShardMaps()
         {
             bool success = true;
@@ -902,7 +814,7 @@ end", s_testUser);
                     new Range<int>(50, 60),
                     mappingFor23.Shard);
 
-                Assert.IsTrue(mappingFor23.Shard.Location.Equals(mappingFor50To60.Shard.Location));
+                Assert.True(mappingFor23.Shard.Location.Equals(mappingFor50To60.Shard.Location));
 
                 // Move [10, 20) from MultiTenantDB2 to MultiTenantDB1
                 RangeMapping<int> mappingToUpdate = multiTenantShardMap.GetMappingForKey(10);
@@ -921,7 +833,7 @@ end", s_testUser);
                 }
                 catch (ShardManagementException smme)
                 {
-                    Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingIsNotOffline);
+                    Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.MappingIsNotOffline);
                     updateFailed = true;
                 }
 
@@ -932,8 +844,8 @@ end", s_testUser);
                     multiTenantShardMap, mappingToUpdate, mappingFor5.Shard);
 
                 // Verify that update succeeded.
-                Assert.IsTrue(newMappingFor10To20Offline.Shard.Location.Equals(mappingFor5.Shard.Location));
-                Assert.IsTrue(newMappingFor10To20Offline.Status == MappingStatus.Offline);
+                Assert.True(newMappingFor10To20Offline.Shard.Location.Equals(mappingFor5.Shard.Location));
+                Assert.True(newMappingFor10To20Offline.Status == MappingStatus.Offline);
 
                 // Bring the mapping back online.
                 RangeMapping<int> newMappingFor10To20Online = multiTenantShardMap.UpdateMapping(
@@ -944,7 +856,7 @@ end", s_testUser);
                     });
 
                 // Verify that update succeeded.
-                Assert.IsTrue(newMappingFor10To20Online.Status == MappingStatus.Online);
+                Assert.True(newMappingFor10To20Online.Status == MappingStatus.Online);
 
                 #endregion UpdateMapping
 
@@ -962,7 +874,7 @@ end", s_testUser);
                 catch (ShardManagementException smme)
                 {
                     operationFailed = true;
-                    Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingIsNotOffline);
+                    Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.MappingIsNotOffline);
                 }
 
                 Trace.Assert(operationFailed);
@@ -983,7 +895,7 @@ end", s_testUser);
                 }
                 catch (ShardManagementException smme)
                 {
-                    Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingNotFoundForKey);
+                    Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.MappingNotFoundForKey);
                 }
 
                 #endregion DeleteMapping
@@ -1015,10 +927,10 @@ end", s_testUser);
                 catch (ShardManagementException smme)
                 {
                     validationFailed = true;
-                    Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
+                    Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
                 }
 
-                Assert.AreEqual(validationFailed, true);
+                Assert.Equal(validationFailed, true);
 
                 #endregion OpenConnection with Validation
 
@@ -1081,10 +993,10 @@ end", s_testUser);
                 catch (ShardManagementException smme)
                 {
                     validationFailed = true;
-                    Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
+                    Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
                 }
 
-                Assert.AreEqual(validationFailed, true);
+                Assert.Equal(validationFailed, true);
 
                 #endregion
 
@@ -1118,11 +1030,11 @@ end", s_testUser);
                     if (smme != null)
                     {
                         validationFailed = true;
-                        Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
+                        Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
                     }
                 }
 
-                Assert.AreEqual(validationFailed, true);
+                Assert.Equal(validationFailed, true);
 
                 #endregion
 
@@ -1187,11 +1099,11 @@ end", s_testUser);
                     if (smme != null)
                     {
                         validationFailed = true;
-                        Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
+                        Assert.Equal(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
                     }
                 }
 
-                Assert.AreEqual(validationFailed, true);
+                Assert.Equal(validationFailed, true);
 
                 #endregion
 
@@ -1209,16 +1121,16 @@ end", s_testUser);
                     if (i == 0)
                     {
                         // Since we moved [10,20) to database 1 earlier.
-                        Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[0]);
+                        Assert.True(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[0]);
                     }
                     else
                         if (i < 4)
                         {
-                            Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[i + 1]);
+                            Assert.True(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[i + 1]);
                         }
                         else
                         {
-                            Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[2]);
+                            Assert.True(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[2]);
                         }
                 }
 
@@ -1234,16 +1146,16 @@ end", s_testUser);
                     if (i == 0)
                     {
                         // Since we moved [10,20) to database 1 earlier.
-                        Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[0]);
+                        Assert.True(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[0]);
                     }
                     else
                         if (i < 4)
                         {
-                            Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[i + 1]);
+                            Assert.True(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[i + 1]);
                         }
                         else
                         {
-                            Assert.IsTrue(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[2]);
+                            Assert.True(result.Shard.Location.Database == ScenarioTests.s_multiTenantDBs[2]);
                         }
                 }
 
@@ -1261,12 +1173,12 @@ end", s_testUser);
                 rangesAfterSplit = rangesAfterSplit.OrderBy(nr => nr.Value.Low).ToArray();
 
                 // We should get 2 ranges back.
-                Assert.AreEqual(2, rangesAfterSplit.Count);
+                Assert.True(2 == rangesAfterSplit.Count);
 
-                Assert.AreEqual(rangesAfterSplit[0].Value.Low, new Range<int>(50, 55).Low);
-                Assert.AreEqual(rangesAfterSplit[0].Value.High, new Range<int>(50, 55).High);
-                Assert.AreEqual(rangesAfterSplit[1].Value.Low, new Range<int>(55, 60).Low);
-                Assert.AreEqual(rangesAfterSplit[1].Value.High, new Range<int>(55, 60).High);
+                Assert.Equal(rangesAfterSplit[0].Value.Low, new Range<int>(50, 55).Low);
+                Assert.Equal(rangesAfterSplit[0].Value.High, new Range<int>(50, 55).High);
+                Assert.Equal(rangesAfterSplit[1].Value.Low, new Range<int>(55, 60).Low);
+                Assert.Equal(rangesAfterSplit[1].Value.High, new Range<int>(55, 60).High);
 
                 // Split [50, 55) into [50, 52) and [52, 55)
                 IReadOnlyList<RangeMapping<int>> newRangesAfterAdd = multiTenantShardMap.SplitMapping(rangesAfterSplit[0], 52);
@@ -1274,12 +1186,12 @@ end", s_testUser);
                 newRangesAfterAdd = newRangesAfterAdd.OrderBy(nr => nr.Value.Low).ToArray();
 
                 // We should get 2 ranges back.
-                Assert.AreEqual(2, newRangesAfterAdd.Count);
+                Assert.True(2 == newRangesAfterAdd.Count);
 
-                Assert.AreEqual(newRangesAfterAdd[0].Value.Low, new Range<int>(50, 52).Low);
-                Assert.AreEqual(newRangesAfterAdd[0].Value.High, new Range<int>(50, 52).High);
-                Assert.AreEqual(newRangesAfterAdd[1].Value.Low, new Range<int>(52, 55).Low);
-                Assert.AreEqual(newRangesAfterAdd[1].Value.High, new Range<int>(52, 55).High);
+                Assert.Equal(newRangesAfterAdd[0].Value.Low, new Range<int>(50, 52).Low);
+                Assert.Equal(newRangesAfterAdd[0].Value.High, new Range<int>(50, 52).High);
+                Assert.Equal(newRangesAfterAdd[1].Value.Low, new Range<int>(52, 55).Low);
+                Assert.Equal(newRangesAfterAdd[1].Value.High, new Range<int>(52, 55).High);
 
                 // Move [50, 52) to MultiTenantDB1
 
@@ -1313,8 +1225,8 @@ end", s_testUser);
                 // Obtain the final moved mapping.
                 RangeMapping<int> finalMovedMapping = multiTenantShardMap.MergeMappings(movedMapping1, movedMapping2);
 
-                Assert.AreEqual(finalMovedMapping.Value.Low, new Range<int>(50, 55).Low);
-                Assert.AreEqual(finalMovedMapping.Value.High, new Range<int>(50, 55).High);
+                Assert.Equal(finalMovedMapping.Value.Low, new Range<int>(50, 55).Low);
+                Assert.Equal(finalMovedMapping.Value.High, new Range<int>(50, 55).High);
 
                 #endregion Split/Merge
             }
@@ -1337,11 +1249,11 @@ end", s_testUser);
                 }
             }
 
-            Assert.IsTrue(success);
+            Assert.True(success);
         }
 
-        [TestMethod()]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void ListShardMapPerformanceCounterValidation()
         {
             if (PerfCounterInstance.HasCreatePerformanceCategoryPermissions())
@@ -1381,10 +1293,10 @@ end", s_testUser);
                 // check if perf counter instance exists, instance name logic is from PerfCounterInstance.cs
                 string instanceName = string.Concat(Process.GetCurrentProcess().Id.ToString(), "-", shardMapName);
 
-                Assert.IsTrue(ValidateInstanceExists(instanceName));
+                Assert.True(ValidateInstanceExists(instanceName));
 
                 // verify # of mappings.
-                Assert.IsTrue(ValidateCounterValue(instanceName, PerformanceCounterName.MappingsCount, 1));
+                Assert.True(ValidateCounterValue(instanceName, PerformanceCounterName.MappingsCount, 1));
 
                 ListShardMap<int> lsm = smm.GetListShardMap<int>(shardMapName);
 
@@ -1396,7 +1308,7 @@ end", s_testUser);
                 Shard s2 = lsm.CreateShard(sl2);
 
                 PointMapping<int> p2 = lsm.CreatePointMapping(2, s2);
-                Assert.IsTrue(ValidateCounterValue(instanceName, PerformanceCounterName.MappingsCount, 2));
+                Assert.True(ValidateCounterValue(instanceName, PerformanceCounterName.MappingsCount, 2));
 
                 // Create few more mappings and validate MappingsAddOrUpdatePerSec counter
                 s2 = lsm.GetShard(sl2);
@@ -1406,7 +1318,7 @@ end", s_testUser);
                     s2 = lsm.GetShard(sl2);
                 }
 
-                Assert.IsTrue(ValidateNonZeroCounterValue(instanceName,
+                Assert.True(ValidateNonZeroCounterValue(instanceName,
                     PerformanceCounterName.MappingsAddOrUpdatePerSec));
 
                 // try to lookup non-existing mapping and verify MappingsLookupFailedPerSec
@@ -1416,7 +1328,7 @@ end", s_testUser);
                         () => lsm.OpenConnectionForKey(20, Globals.ShardUserConnectionString));
                 }
 
-                Assert.IsTrue(ValidateNonZeroCounterValue(instanceName,
+                Assert.True(ValidateNonZeroCounterValue(instanceName,
                     PerformanceCounterName.MappingsLookupFailedPerSec));
 
                 // perform DDR operation few times and validate non-zero counter values
@@ -1427,8 +1339,8 @@ end", s_testUser);
                     }
                 }
 
-                Assert.IsTrue(ValidateNonZeroCounterValue(instanceName, PerformanceCounterName.DdrOperationsPerSec));
-                Assert.IsTrue(ValidateNonZeroCounterValue(instanceName,
+                Assert.True(ValidateNonZeroCounterValue(instanceName, PerformanceCounterName.DdrOperationsPerSec));
+                Assert.True(ValidateNonZeroCounterValue(instanceName,
                     PerformanceCounterName.MappingsLookupSucceededPerSec));
 
                 // Remove shard map after removing mappings and shard
@@ -1437,22 +1349,22 @@ end", s_testUser);
                     lsm.DeleteMapping(lsm.MarkMappingOffline(lsm.GetMappingForKey(i)));
                 }
 
-                Assert.IsTrue(ValidateNonZeroCounterValue(instanceName,
+                Assert.True(ValidateNonZeroCounterValue(instanceName,
                     PerformanceCounterName.MappingsRemovePerSec));
 
                 lsm.DeleteShard(lsm.GetShard(sl1));
                 lsm.DeleteShard(lsm.GetShard(sl2));
 
-                Assert.IsTrue(ValidateCounterValue(instanceName, PerformanceCounterName.MappingsCount, 0));
+                Assert.True(ValidateCounterValue(instanceName, PerformanceCounterName.MappingsCount, 0));
 
                 smm.DeleteShardMap(lsm);
 
                 // make sure that perf counter instance is removed
-                Assert.IsFalse(ValidateInstanceExists(instanceName));
+                Assert.False(ValidateInstanceExists(instanceName));
             }
             else
             {
-                Assert.Inconclusive("Do not have permissions to create performance counter category, test skipped");
+                AssertExtensions.Inconclusive(this._thelper, "Do not have permissions to create performance counter category, test skipped");
             }
         }
 
@@ -1495,7 +1407,7 @@ end", s_testUser);
                     {
                         Status = MappingStatus.Offline
                     });
-            Assert.IsNotNull(mappingOffline);
+            Assert.NotNull(mappingOffline);
 
             return map.UpdateMapping(
                     mappingOffline,
@@ -1513,7 +1425,7 @@ end", s_testUser);
                     {
                         Status = MappingStatus.Offline
                     });
-            Assert.IsNotNull(mappingOffline);
+            Assert.NotNull(mappingOffline);
 
             return map.UpdateMapping(
                     mappingOffline,

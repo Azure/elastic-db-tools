@@ -12,7 +12,7 @@
 using System.Diagnostics;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -23,6 +23,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ClientTestCommon;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 {
@@ -31,12 +32,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
     /// connects to his shards, executes commands against them
     /// and receives results
     /// </summary>
-    [TestClass]
-    public class MultiShardQueryE2ETests
+    public class MultiShardQueryE2ETests : IDisposable, IClassFixture<DatabaseFixture>
     {
-        #region Global vars
 
-        private TestContext _testContextInstance;
+        public MultiShardQueryE2ETests() {
+            MyTestInitialize();
+        }
+
+        public void Dispose() {
+            MyTestCleanup();
+        }
+
+        #region Global vars
 
         /// <summary>
         /// Handle on connections to all shards
@@ -53,53 +60,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         #region Boilerplate
 
         /// <summary>
-        /// Gets or sets the test context which provides
-        /// information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return _testContextInstance;
-            }
-            set
-            {
-                _testContextInstance = value;
-            }
-        }
-
-        [ClassInitialize()]
-        public static void MyClassInitialize(TestContext testContext)
-        {
-            // Drop and recreate the test databases, tables, and data that we will use to verify
-            // the functionality.
-            // For now I have hardcoded the server location and database names.  A better approach would be
-            // to make the server location configurable and the database names be guids.
-            // Not the top priority right now, though.
-            //
-            SqlConnection.ClearAllPools();
-            MultiShardTestUtils.DropAndCreateDatabases();
-            MultiShardTestUtils.CreateAndPopulateTables();
-        }
-
-        /// <summary>
-        /// Blow away our three test databases that we drove the tests off of.
-        /// Doing this so that we don't leave objects littered around.
-        /// </summary>
-        [ClassCleanup()]
-        public static void MyClassCleanup()
-        {
-            // We need to clear the connection pools so that we don't get a database still in use error
-            // resulting from our attenpt to drop the databases below.
-            //
-            SqlConnection.ClearAllPools();
-            MultiShardTestUtils.DropDatabases();
-        }
-
-        /// <summary>
         /// Open up a clean connection to each test database prior to each test.
         /// </summary>
-        [TestInitialize()]
         public void MyTestInitialize()
         {
             _shardMap = MultiShardTestUtils.CreateAndGetTestShardMap();
@@ -110,7 +72,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Close our connections to each test database after each test.
         /// </summary>
-        [TestCleanup()]
         public void MyTestCleanup()
         {
             // Close connections after each test.
@@ -123,8 +84,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Check that we can iterate through 3 result sets as expected.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestSimpleSelect_PartialResults()
         {
             TestSimpleSelect(MultiShardExecutionPolicy.PartialResults);
@@ -133,8 +94,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Check that we can iterate through 3 result sets as expected.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestSimpleSelect_CompleteResults()
         {
             TestSimpleSelect(MultiShardExecutionPolicy.CompleteResults);
@@ -176,7 +137,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
                         sdr.Close();
 
-                        Assert.AreEqual(recordsRetrieved, 9);
+                        Assert.Equal(recordsRetrieved, 9);
                     }
                 }
             }
@@ -186,8 +147,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Check that we can return an empty result set that has a schema table
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestSelect_NoRows_CompleteResults()
         {
             TestSelectNoRows("select 1 where 0 = 1", MultiShardExecutionPolicy.CompleteResults);
@@ -196,8 +157,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Check that we can return an empty result set that has a schema table
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestSelect_NoRows_PartialResults()
         {
             TestSelectNoRows("select 1 where 0 = 1", MultiShardExecutionPolicy.PartialResults);
@@ -215,22 +176,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                     // Read first
                     using (MultiShardDataReader sdr = cmd.ExecuteReader())
                     {
-                        Assert.AreEqual(0, sdr.MultiShardExceptions.Count);
+                        Assert.Equal(0, sdr.MultiShardExceptions.Count);
                         while (sdr.Read())
                         {
-                            Assert.Fail("Should not have gotten any records.");
+                            AssertExtensions.Fail("Should not have gotten any records.");
                         }
-                        Assert.IsFalse(sdr.HasRows);
+                        Assert.False(sdr.HasRows);
                     }
 
                     // HasRows first
                     using (MultiShardDataReader sdr = cmd.ExecuteReader())
                     {
-                        Assert.AreEqual(0, sdr.MultiShardExceptions.Count);
-                        Assert.IsFalse(sdr.HasRows);
+                        Assert.Equal(0, sdr.MultiShardExceptions.Count);
+                        Assert.False(sdr.HasRows);
                         while (sdr.Read())
                         {
-                            Assert.Fail("Should not have gotten any records.");
+                            AssertExtensions.Fail("Should not have gotten any records.");
                         }
                     }
                 }
@@ -240,8 +201,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Check that we can return an empty result set that does not have a schema table
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestSelect_NonQuery_CompleteResults()
         {
             TestSelectNonQuery("if (0 = 1) select 1 ", MultiShardExecutionPolicy.CompleteResults);
@@ -251,8 +212,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Check that we can return a completely empty result set as expected.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestSelect_NonQuery_PartialResults()
         {
             TestSelectNonQuery("if (0 = 1) select 1", MultiShardExecutionPolicy.PartialResults);
@@ -269,7 +230,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
                     using (MultiShardDataReader sdr = cmd.ExecuteReader())
                     {
-                        Assert.AreEqual(0, sdr.MultiShardExceptions.Count);
+                        Assert.Equal(0, sdr.MultiShardExceptions.Count);
 
                         // TODO: This is a weird error message, but it's good enough for now
                         // Fixing this will require significant refactoring of MultiShardDataReader,
@@ -283,8 +244,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Check that ExecuteReader throws when all shards have an exception
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestSelect_Failure_PartialResults()
         {
             MultiShardAggregateException e = TestSelectFailure(
@@ -292,14 +253,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                 MultiShardExecutionPolicy.PartialResults);
 
             // All children should have failed
-            Assert.AreEqual(_shardMap.GetShards().Count(), e.InnerExceptions.Count);
+            Assert.Equal(_shardMap.GetShards().Count(), e.InnerExceptions.Count);
         }
 
         /// <summary>
         /// Check that ExecuteReader throws when all shards have an exception
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestSelect_Failure_CompleteResults()
         {
             MultiShardAggregateException e = TestSelectFailure(
@@ -328,8 +289,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                     // Sanity check the exceptions are the correct type
                     foreach (Exception e in aggregateException.InnerExceptions)
                     {
-                        Assert.IsInstanceOfType(e, typeof(MultiShardException));
-                        Assert.IsInstanceOfType(e.InnerException, typeof(SqlException));
+                        Assert.IsType<MultiShardException>(e);
+                        Assert.IsType<SqlException>(e.InnerException);
                     }
 
                     // Return the exception so that the caller can do additional validation
@@ -341,8 +302,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Check that we can return a partially succeeded reader when PartialResults policy is on
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestSelect_PartialFailure_PartialResults()
         {
             using (MultiShardConnection conn = new MultiShardConnection(_shardMap.GetShards(), MultiShardTestUtils.ShardConnectionString))
@@ -355,7 +316,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                     using (MultiShardDataReader sdr = cmd.ExecuteReader())
                     {
                         // Exactly one should have failed
-                        Assert.AreEqual(1, sdr.MultiShardExceptions.Count);
+                        Assert.Equal(1, sdr.MultiShardExceptions.Count);
 
                         // We should be able to read
                         while (sdr.Read())
@@ -369,15 +330,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Check that we fail a partially successful command when CompleteResults policy is on
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestSelect_PartialFailure_CompleteResults()
         {
             string query = GetPartialFailureQuery();
             MultiShardAggregateException e = TestSelectFailure(query, MultiShardExecutionPolicy.CompleteResults);
 
             // Exactly one should have failed
-            Assert.AreEqual(1, e.InnerExceptions.Count);
+            Assert.Equal(1, e.InnerExceptions.Count);
         }
 
         /// <summary>
@@ -392,7 +353,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
             // This query assumes that the chosen shard location's db name is distinct from all others
             // In other words, only one shard location should have a database equal to the chosen location
-            Assert.AreEqual(1, shardLocations.Count(l => l.Database.Equals(chosenShardLocation.Database)));
+            Assert.Equal(1, shardLocations.Count(l => l.Database.Equals(chosenShardLocation.Database)));
 
             // We also assume that there is more than one shard
             AssertExtensions.AssertGreaterThan(1, shardLocations.Count());
@@ -407,8 +368,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// Also demonstrates the async pattern of this library
         /// The Sync api is implicitly tested in MultiShardDataReaderTests::TestSimpleSelect
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestQueryShardsAsync()
         {
             // Create new sharded connection so we can test the OpenAsync call as well.
@@ -433,7 +394,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                                 dbNameField, testIntField, testBigIntField, recordsRetrieved);
                         }
 
-                        Assert.AreEqual(recordsRetrieved, 9);
+                        Assert.Equal(recordsRetrieved, 9);
                     }
                 }
             }
@@ -442,8 +403,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Basic test for ensuring that we include/don't include the $ShardName pseudo column as desired.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestShardNamePseudoColumnOption()
         {
             bool[] pseudoColumnOptions = new bool[2];
@@ -467,14 +428,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                             MultiShardExecutionOptions.None;
                         using (MultiShardDataReader sdr = cmd.ExecuteReader(CommandBehavior.Default))
                         {
-                            Assert.AreEqual(0, sdr.MultiShardExceptions.Count);
+                            Assert.Equal(0, sdr.MultiShardExceptions.Count);
 
                             int recordsRetrieved = 0;
 
                             int expectedFieldCount = pseudoColumnPresent ? 4 : 3;
                             int expectedVisibleFieldCount = pseudoColumnPresent ? 4 : 3;
-                            Assert.AreEqual(expectedFieldCount, sdr.FieldCount);
-                            Assert.AreEqual(expectedVisibleFieldCount, sdr.VisibleFieldCount);
+                            Assert.Equal(expectedFieldCount, sdr.FieldCount);
+                            Assert.Equal(expectedVisibleFieldCount, sdr.VisibleFieldCount);
 
                             while (sdr.Read())
                             {
@@ -488,19 +449,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                                     string shardIdPseudoColumn = sdr.GetFieldValue<string>(3);
                                     if (!pseudoColumnPresent)
                                     {
-                                        Assert.Fail("Should not have been able to pull the pseudo column.");
+                                        AssertExtensions.Fail("Should not have been able to pull the pseudo column.");
                                     }
                                 }
                                 catch (IndexOutOfRangeException)
                                 {
                                     if (pseudoColumnPresent)
                                     {
-                                        Assert.Fail("Should not have encountered an exception.");
+                                        AssertExtensions.Fail("Should not have encountered an exception.");
                                     }
                                 }
                             }
 
-                            Assert.AreEqual(recordsRetrieved, 9);
+                            Assert.Equal(recordsRetrieved, 9);
                         }
                     }
                 }
@@ -510,8 +471,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Basic test for ensuring that we don't fail due to a schema mismatch on the shards.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestSchemaMismatchErrorPropagation()
         {
             // First we need to alter the schema on one of the shards - we'll choose the last one.
@@ -542,7 +503,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                             // The number of errors we have depends on which shard executed first.
                             // So, we know it should be 1 OR 2.
                             //
-                            Assert.IsTrue(
+                            Assert.True(
                                 ((sdr.MultiShardExceptions.Count == 1) || (sdr.MultiShardExceptions.Count == 2)),
                                 string.Format("Expected 1 or 2 execution erros, but saw {0}", sdr.MultiShardExceptions.Count));
 
@@ -556,7 +517,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                             // We should see 9 records less 3 for each one that had a schema error.
                             int expectedRecords = ((9 - (3 * sdr.MultiShardExceptions.Count)));
 
-                            Assert.AreEqual(recordsRetrieved, expectedRecords);
+                            Assert.Equal(recordsRetrieved, expectedRecords);
                         }
                     }
                 }
@@ -579,9 +540,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// Try connecting to a non-existant shard
         /// Verify exception is propagated to the user
         /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(SqlException))]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestQueryShardsInvalidConnectionSync()
         {
             var badShard = new ShardLocation("badLocation", "badDatabase");
@@ -589,37 +549,33 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             bldr.DataSource = badShard.DataSource;
             bldr.InitialCatalog = badShard.Database;
             var badConn = new SqlConnection(bldr.ConnectionString);
-            try
-            {
-                using (var conn = new MultiShardConnection(_shardMap.GetShards(), MultiShardTestUtils.ShardConnectionString))
-                {
-                    conn.ShardConnections.Add(new Tuple<ShardLocation, System.Data.Common.DbConnection>(badShard,
-                        badConn));
-                    using (var cmd = conn.CreateCommand())
-                    {
-                        cmd.CommandText = "select 1";
-                        cmd.ExecuteReader();
+            Assert.Throws<SqlException>(() => {
+                try {
+                    using(var conn = new MultiShardConnection(_shardMap.GetShards(), MultiShardTestUtils.ShardConnectionString)) {
+                        conn.ShardConnections.Add(new Tuple<ShardLocation, System.Data.Common.DbConnection>(badShard,
+                            badConn));
+                        using(var cmd = conn.CreateCommand()) {
+                            cmd.CommandText = "select 1";
+                            cmd.ExecuteReader();
+                        }
                     }
+                } catch(Exception ex) {
+                    if(ex is MultiShardAggregateException) {
+                        var maex = (MultiShardAggregateException)ex;
+                        Logger.Log("Exception encountered: " + maex.ToString());
+                        throw ((MultiShardException)(maex.InnerException)).InnerException;
+                    }
+                    throw;
                 }
-            }
-            catch (Exception ex)
-            {
-                if (ex is MultiShardAggregateException)
-                {
-                    var maex = (MultiShardAggregateException)ex;
-                    Logger.Log("Exception encountered: " + maex.ToString());
-                    throw ((MultiShardException)(maex.InnerException)).InnerException;
-                }
-                throw;
-            }
+            });
         }
 
         /// <summary>
         /// Tests passing a tvp as a param
         /// using a datatable
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestQueryShardsTvpParam()
         {
             try
@@ -698,7 +654,7 @@ END";
                         {
                             long pageCount = (long)sdr["PageViewCount"];
                             Logger.Log("Page view count: {0} obtained from shard: {1}", pageCount, sdr.GetFieldValue<string>(1));
-                            Assert.AreEqual(2, pageCount);
+                            Assert.Equal(2, pageCount);
                         }
                     }
                 }
@@ -743,8 +699,8 @@ end";
         /// Verifies that the command cancellation events are fired
         /// upon cancellation of a command that is in progress
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestQueryShardsCommandCancellationHandler()
         {
             List<ShardLocation> cancelledShards = new List<ShardLocation>();
@@ -775,7 +731,7 @@ end";
                 Task cmdTask = cmd.ExecuteReaderAsync(cts.Token);
 
                 bool syncronized = barrier.SignalAndWait(barrierTimeout);
-                Assert.IsTrue(syncronized);
+                Assert.True(syncronized);
 
                 // Cancel the command once execution begins
                 // Sleeps are bad but this is just to really make sure
@@ -789,7 +745,7 @@ end";
 
                 // Validate that the cancellation event was fired for all shards
                 List<ShardLocation> allShards = _shardConnection.ShardConnections.Select(l => l.Item1).ToList();
-                CollectionAssert.AreEquivalent(allShards, cancelledShards, "Expected command canceled event to be fired for all shards!");
+                AssertExtensions.EqualMsg(allShards, cancelledShards, "Expected command canceled event to be fired for all shards!");
             }
         }
 
@@ -797,8 +753,8 @@ end";
         /// Close the connection to one of the shards behind 
         /// MultiShardConnection's back. Verify that we reopen the connection with the built-in retry policy
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestQueryShardsInvalidShardStateSync()
         {
             // Get a shard and close it's connection
@@ -837,8 +793,8 @@ end";
         /// - ApplicationName should be enhanced with a MSQ library
         /// specific suffix and should be capped at 128 chars
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestInvalidMultiShardConnectionString()
         {
             MultiShardConnection conn;
@@ -849,7 +805,7 @@ end";
             }
             catch (Exception ex)
             {
-                Assert.IsTrue(ex is ArgumentNullException, "Expected ArgumentNullException!");
+                Assert.True(ex is ArgumentNullException, "Expected ArgumentNullException!");
             }
 
             try
@@ -858,7 +814,7 @@ end";
             }
             catch (Exception ex)
             {
-                Assert.IsTrue(ex is ArgumentException, "Expected ArgumentException!");
+                Assert.True(ex is ArgumentException, "Expected ArgumentException!");
             }
 
             // Validate that the ApplicationName is updated properly
@@ -874,20 +830,20 @@ end";
 
             string updatedApplicationName = new SqlConnectionStringBuilder
                 (conn.ShardConnections[0].Item2.ConnectionString).ApplicationName;
-            Assert.IsTrue(updatedApplicationName.Length == ApplicationNameHelper.MaxApplicationNameLength &&
-                updatedApplicationName.EndsWith(MultiShardConnection.ApplicationNameSuffix), "ApplicationName not appended with {0}!",
-                MultiShardConnection.ApplicationNameSuffix);
+            Assert.True(updatedApplicationName.Length == ApplicationNameHelper.MaxApplicationNameLength &&
+                updatedApplicationName.EndsWith(MultiShardConnection.ApplicationNameSuffix), String.Format("ApplicationName not appended with {0}!",
+                MultiShardConnection.ApplicationNameSuffix));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestCreateConnectionWithNoShards()
         {
-            using (MultiShardConnection conn = new MultiShardConnection(new Shard[] { }, String.Empty))
-            {
-                Assert.Fail("Should have failed in the MultiShardConnection c-tor.");
-            }
+            Assert.Throws<ArgumentException>(() => {
+                using(MultiShardConnection conn = new MultiShardConnection(new Shard[] { }, String.Empty)) {
+                    AssertExtensions.Fail("Should have failed in the MultiShardConnection c-tor.");
+                }
+            });
         }
 
         /// <summary>
@@ -895,41 +851,32 @@ end";
         /// - Execute a command that will result in a failure in a loop
         /// - Without the fix (disabling the command behavior)s, the test will hang and timeout.
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
-        [Timeout(300000)]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestFailedCommandWithConnectionCloseCmdBehavior()
         {
-            Parallel.For(0, 100, i =>
-            {
-                try
-                {
-                    using (MultiShardConnection conn = new MultiShardConnection(_shardMap.GetShards(), MultiShardTestUtils.ShardConnectionString))
-                    {
-                        using (MultiShardCommand cmd = conn.CreateCommand())
-                        {
-                            cmd.CommandText = "select * from table_does_not_exist";
-                            cmd.CommandType = CommandType.Text;
+            using(new TimedTest(300000)) {
+                Parallel.For(0, 100, i => {
+                    try {
+                        using(MultiShardConnection conn = new MultiShardConnection(_shardMap.GetShards(), MultiShardTestUtils.ShardConnectionString)) {
+                            using(MultiShardCommand cmd = conn.CreateCommand()) {
+                                cmd.CommandText = "select * from table_does_not_exist";
+                                cmd.CommandType = CommandType.Text;
 
-                            using (MultiShardDataReader sdr = cmd.ExecuteReader())
-                            {
-                                while (sdr.Read())
-                                {
+                                using(MultiShardDataReader sdr = cmd.ExecuteReader()) {
+                                    while(sdr.Read()) {
+                                    }
                                 }
                             }
                         }
+                    } catch(Exception ex) {
+                        Console.WriteLine("Encountered exception: {0} in iteration: {1}",
+                            ex.ToString(), i);
+                    } finally {
+                        Console.WriteLine("Completed execution of iteration: {0}", i);
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Encountered exception: {0} in iteration: {1}",
-                        ex.ToString(), i);
-                }
-                finally
-                {
-                    Console.WriteLine("Completed execution of iteration: {0}", i);
-                }
-            });
+                });
+            }
         }
 
         /// <summary>
@@ -937,8 +884,8 @@ end";
         ///  a) we are handling reader failures as expected, and 
         ///  b) we get all-or-nothing semantics on our reads from a single row
         /// </summary>
-        [TestMethod]
-        [TestCategory("ExcludeFromGatedCheckin")]
+        [Fact]
+        [Trait("Category", "ExcludeFromGatedCheckin")]
         public void TestShardResultFailures()
         {
             ProxyServer proxyServer = GetProxyServer();
@@ -988,7 +935,7 @@ end";
                                         //
                                         string dbName1 = sdr.GetString(0);
                                         string longExpr = sdr.GetString(1);
-                                        Assert.IsTrue(longExpr.Contains(dbName1));
+                                        Assert.True(longExpr.Contains(dbName1));
 
                                         if (tuplesRead == preKillReads)
                                         {
@@ -998,13 +945,13 @@ end";
                                         // The second dbName field should be the same as the first dbName field.
                                         //
                                         string dbName2 = sdr.GetString(2);
-                                        Assert.AreEqual(dbName1, dbName2);
+                                        Assert.Equal(dbName1, dbName2);
 
                                         // The shardId should contain both the first and the second dbName fields.
                                         //
                                         string shardId = sdr.GetString(3);
-                                        Assert.IsTrue(shardId.Contains(dbName1));
-                                        Assert.IsTrue(shardId.Contains(dbName2));
+                                        Assert.True(shardId.Contains(dbName1));
+                                        Assert.True(shardId.Contains(dbName2));
                                     }
                                     catch (Exception ex)
                                     {
@@ -1018,13 +965,13 @@ end";
                                         // So, the first step I will take is to pull additional exception information
                                         // so that we can see some more information about what went wrong the next time it repros.
                                         //
-                                        Assert.Fail("Unexpected exception, rethrowing.  Here is some info: \n Message: {0} \n Source: {1} \n StackTrace: {2}",
+                                        AssertExtensions.Fail("Unexpected exception, rethrowing.  Here is some info: \n Message: {0} \n Source: {1} \n StackTrace: {2}",
                                             ex.Message, ex.Source, ex.StackTrace);
                                         throw;
                                     }
                                 }
 
-                                Assert.IsTrue((tuplesRead <= preKillReads) || (0 == preKillReads),
+                                Assert.True((tuplesRead <= preKillReads) || (0 == preKillReads),
                                     String.Format("Tuples read was {0}, Pre-kill reads was {1}", tuplesRead, preKillReads));
                             }
                         }
