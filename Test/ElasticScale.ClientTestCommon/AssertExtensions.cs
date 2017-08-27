@@ -274,8 +274,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 return;
             }
 
-            Trace.TraceError("Expected: [{0}]", expectedArray.ToCommaSeparatedString());
-            Trace.TraceError("Actual: [{0}]", actualArray.ToCommaSeparatedString());
             Assert.Fail(
                 "Sequences were not equal. Message: {0}. Expected sequence had {1} elements, actual had {2}. Comma separated contents for expected: <{3}>, for actual: <{4}>",
                 message,
@@ -320,8 +318,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
                 }
             }
 
-            Trace.TraceError("Expected: [{0}]", expectedArray.ToCommaSeparatedString());
-            Trace.TraceError("Actual: [{0}]", actualArray.ToCommaSeparatedString());
             Assert.Fail(
                 "Sequences were not equivalent. Message: {0}. Expected sequence had {1} elements, actual had {2}. Comma separated contents for expected: <{3}>, for actual: <{4}>",
                 message,

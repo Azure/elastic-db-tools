@@ -91,7 +91,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException smme)
             {
-                Assert.IsTrue(smme.ErrorCode == ShardManagementErrorCode.ShardMapLookupFailure);
+                Assert.AreEqual(ShardManagementErrorCode.ShardMapLookupFailure, smme.ErrorCode);
             }
         }
 
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException smme)
             {
-                Assert.IsTrue(smme.ErrorCode == ShardManagementErrorCode.ShardMapLookupFailure);
+                Assert.AreEqual(ShardManagementErrorCode.ShardMapLookupFailure, smme.ErrorCode);
             }
         }
 

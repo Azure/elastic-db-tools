@@ -24,3 +24,7 @@ TestResults
 
 # Visual studio
 .vs/
+
+# Build output
+*.dll
+*.exe

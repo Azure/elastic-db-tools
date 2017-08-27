@@ -8,7 +8,6 @@
     <RootNamespace>ShardSqlCmd</RootNamespace>
     <AssemblyName>ShardSqlCmd</AssemblyName>
   </PropertyGroup>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Build.props))\Build.props" />
   <!--
     BUILD PROCESS FOR SAMPLES GALLERY
   -->
@@ -19,9 +18,9 @@
     <SamplesGallerySolutionInput Include="ShardSqlCmd.sln.SamplesGallery" />
   </ItemGroup>
   <Import Project="..\SamplesGallery.targets" />
-  <!-- 
+  <!--
     Any changes below must be copied to ShardSqlCmd.csproj.SamplesGallery, except:
-    - $(NugetPack) must be replaced with ..\packages 
+    - $(NugetPack) must be replaced with ..\packages
   -->
   <ItemGroup>
     <Reference Include="$(NugetPack)\Microsoft.Azure.SqlDatabase.ElasticScale.Client.1.3.2\lib\net45\Microsoft.Azure.SqlDatabase.ElasticScale.Client.dll">

@@ -2,7 +2,7 @@
 <RuleSet ToolsVersion="10.0"
   Name="Template for custom ruleset"
   Description="This template includes everything (including SDL ruleset, if enabled) but the rules that are explicitly disabled.">
-  
+
   <!--
     To use: copy template to a location of the tree, and,
     for a build.props, add this to the build.props:
@@ -10,18 +10,18 @@
     for a leaf msbuild project, add this to the project file:
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)CodeAnalysis.ruleset</CodeAnalysisRuleSet>
   -->
-  
+
   <!-- this node ensures all rules (including SDL ones if CodeAnalysisUseFxCopForSdl is set to true) are imported -->
   <IncludeAll Action="Warning" />
-  
+
   <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
 
-    <!-- 
-      These are examples of disabled rules 
+    <!--
+      These are examples of disabled rules
       The pro of implicitly importing all and explicitly silencing some rules is auto-getting new rules when setting
       properties (such as CodeAnalysisUseFxCopForSdl to true) and picking up new versions of the code analysis tools.
     -->
-        
+
     <Rule Id="CA1014" Action="None" /> <!-- MarkAssembliesWithClsCompliant -->
     <Rule Id="CA1026" Action="None" /> <!-- DefaultParametersShouldNotBeUsed -->
     <Rule Id="CA1303" Action="None" /> <!-- DoNotPassLiteralsAsLocalizedParameters -->
