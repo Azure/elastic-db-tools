@@ -73,18 +73,20 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="runUpdate">Delegate to perform update from the <paramref name="mapping">input mapping</paramref> and 
         /// the update object returned by <paramref name="getStatus">createUpdate</paramref>.</param>
         /// <param name="lockOwnerId">Lock owner id of this mapping</param>
+        /// <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
         /// <returns></returns>
         protected static TMapping SetStatus<TMapping, TUpdate, TStatus>(
             TMapping mapping,
             TStatus status,
             Func<TStatus, TStatus> getStatus,
             Func<TStatus, TUpdate> createUpdate,
-            Func<TMapping, TUpdate, Guid, TMapping> runUpdate,
-            Guid lockOwnerId = default(Guid))
+            Func<TMapping, TUpdate, Guid, MappingOptions, TMapping> runUpdate,
+            Guid lockOwnerId = default(Guid),
+            MappingOptions options = MappingOptions.Validate)
         {
             TStatus newStatus = getStatus(status);
             TUpdate update = createUpdate(newStatus);
-            return runUpdate(mapping, update, lockOwnerId);
+            return runUpdate(mapping, update, lockOwnerId, options);
         }
 
         /// <summary>
@@ -703,6 +705,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="statusAsInt">Delegate to get the mapping status as an integer value.</param>
         /// <param name="intAsStatus">Delegate to get the mapping status from an integer value.</param>
         /// <param name="lockOwnerId">Lock owner id of this mapping</param>
+        /// <param name="options">Options for validation operations to perform on opened connection to affected shard.</param>
         /// <returns>New instance of mapping with updated information.</returns>
         protected TMapping Update<TMapping, TUpdate, TStatus>(
             TMapping currentMapping,
@@ -710,7 +713,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             Func<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping,
             Func<TStatus, int> statusAsInt,
             Func<int, TStatus> intAsStatus,
-            Guid lockOwnerId = default(Guid))
+            Guid lockOwnerId = default(Guid),
+            MappingOptions options = MappingOptions.Validate)
             where TUpdate : class, IMappingUpdate<TStatus>
             where TMapping : class, IShardProvider, IMappingInfoProvider
             where TStatus : struct
@@ -801,6 +805,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     StoreOperationCode.UpdateRangeMapping;
             }
 
+            var killConnection = options == MappingOptions.Validate;
+
             using (IStoreOperation op = this.Manager.StoreOperationFactory.CreateUpdateMappingOperation(
                 this.Manager,
                 opCode,
@@ -808,7 +814,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 originalMapping,
                 updatedMapping,
                 this.ShardMap.ApplicationNameSuffix,
-                lockOwnerId))
+                lockOwnerId,
+                killConnection))
             {
                 op.Do();
             }
