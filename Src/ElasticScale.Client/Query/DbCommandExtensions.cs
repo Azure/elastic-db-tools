@@ -15,11 +15,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query {
         /// <param name="from"></param>
         /// <returns></returns>
         public static DbCommand BestAttemptClone(this DbCommand from) {
-#if NET451
             if(from is ICloneable) {
                 return (DbCommand)(from as ICloneable).Clone();
             }
-#endif
+
             DbCommand newcmd = null;
 
             if(from is SqlCommand) {

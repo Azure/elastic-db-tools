@@ -80,8 +80,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema
             this.ErrorCode = code;
         }
 
-#if NET451
-
         /// <summary>
         /// Initializes a new instance with serialized data.
         /// </summary>
@@ -90,7 +88,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema
         private SchemaInfoException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-            this.ErrorCode = (SchemaInfoErrorCode)info.GetValue("ErrorCode", typeof(ShardManagementErrorCode));
+            this.ErrorCode = (SchemaInfoErrorCode)info.GetValue("ErrorCode", typeof(SchemaInfoErrorCode));
         }
 
         /// <summary>
@@ -106,7 +104,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema
                 base.GetObjectData(info, context);
             }
         }
-#endif
 
         /// <summary>
         /// Error code.

@@ -112,8 +112,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
         }
 
-#if NET451
-
         /// <summary>
         /// Initializes a new instance of the MultiShardException class with serialized data.
         /// </summary>
@@ -129,13 +127,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             _shardLocation = (ShardLocation)(info.GetValue("ShardLocation", typeof(ShardLocation)));
         }
 
-#endif
-
         #endregion Standard Exception Constructors
 
         #region Serialization Methods
 
-#if NET451
         /// <summary>
         /// Populates the provided <see cref="SerializationInfo"/> parameter with the data needed to serialize the target object.
         /// </summary>
@@ -146,7 +141,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             base.GetObjectData(info, context);
             info.AddValue("ShardLocation", _shardLocation);
         }
-#endif
 
 #endregion Serialization Methods
 

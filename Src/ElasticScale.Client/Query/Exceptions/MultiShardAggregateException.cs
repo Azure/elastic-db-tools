@@ -55,8 +55,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
         }
 
-#if NET451
-
         /// <summary>
         /// Initializes a new instance of the MultiShardAggregateException class with serialized data.
         /// </summary>
@@ -67,8 +65,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             _innerExceptions = (ReadOnlyCollection<Exception>)(info.GetValue("InnerExceptions", typeof(ReadOnlyCollection<Exception>)));
         }
-
-#endif
 
 #endregion Standard Exception Constructors
 
@@ -121,7 +117,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
 #region Serialization Support
 
-#if NET451
         /// <summary>
         /// Populates a SerializationInfo with the data needed to serialize the target object.
         /// </summary>
@@ -132,7 +127,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             base.GetObjectData(info, context);
             info.AddValue("InnerExceptions", _innerExceptions);
         }
-#endif
 
 #endregion Serialization Support
 

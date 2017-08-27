@@ -10,7 +10,9 @@ using System.Collections;
 using System.Data;
 using System.Data.Common;
 using System.IO;
+#if NET451
 using System.Runtime.Remoting;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -154,6 +156,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             _isClosed = false;
         }
 
+#if NET451
         /// <summary>
         /// Not implemented
         ///</summary>
@@ -161,6 +164,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         {
             throw new NotImplementedException();
         }
+#endif
 
         /// <summary>
         /// Gets the value of the specified column as a Boolean.
@@ -544,6 +548,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             base.Dispose(disposing);
         }
 
-        #endregion
+#endregion
     }
 }

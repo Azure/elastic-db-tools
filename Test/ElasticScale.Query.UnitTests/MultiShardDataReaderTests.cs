@@ -29,7 +29,9 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics;
+#if NET451
 using System.Runtime.Remoting;
+#endif
 using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
@@ -71,7 +73,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         ///</summary>
         public TestContext TestContext { get; set; }
 
-        #region Additional test attributes
+#region Additional test attributes
 
         /// <summary>
         /// Sets up our three test databases that we drive the unit testing off of.
@@ -146,7 +148,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             }
         }
 
-        #endregion
+#endregion
 
         /// <summary>
         /// Validate MultiShardDataReader can be supplied as argument to DataTable.Load
@@ -1035,7 +1037,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             }
         }
 
-
+#if NET451
         /// <summary>
         /// Check that we throw as expected when trying to call CreateObjRef.
         /// </summary>
@@ -1056,6 +1058,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                 sdr.CreateObjRef(typeof(MultiShardDataReader));
             }
         }
+#endif
 
         /// <summary>
         /// Check that we can iterate through the result sets as expected comparing all the values
@@ -1158,7 +1161,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             }
         }
 
-        #region Helpers
+#region Helpers
 
         private void ExpectException<T>(Func<int, object> func, int ordinal) where T : Exception
         {
@@ -1649,6 +1652,6 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             return sdr;
         }
 
-        #endregion Helpers
+#endregion Helpers
     }
 }
