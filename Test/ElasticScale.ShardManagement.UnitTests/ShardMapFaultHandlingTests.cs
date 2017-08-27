@@ -1481,11 +1481,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
         private static SqlException CreateSqlException()
         {
-            ConstructorInfo ciSqlError = typeof(SqlError)
-                .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
-                .Single(c => c.GetParameters().Length == 7);
+            ConstructorInfo[] cisSqlError = typeof(SqlError)
+                .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic);
 
+#if NET451
+            ConstructorInfo ciSqlError = cisSqlError.Single(c => c.GetParameters().Length == 7);
             SqlError se = (SqlError)ciSqlError.Invoke(new object[] { (int)10928, (byte)0, (byte)0, "", "", "", (int)0 });
+#else
+            ConstructorInfo ciSqlError = cisSqlError.Single(c => c.GetParameters().Length == 8);
+            SqlError se = (SqlError)ciSqlError.Invoke(new object[] { (int)10928, (byte)0, (byte)0, "", "", "", (int)0, null });
+#endif
 
             ConstructorInfo ciSqlErrorCollection = typeof(SqlErrorCollection)
                 .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic).Single();
