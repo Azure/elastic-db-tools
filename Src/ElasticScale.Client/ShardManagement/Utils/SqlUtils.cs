@@ -493,7 +493,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             List<UpgradeSteps> upgradeSteps = new List<UpgradeSteps>();
 
             // Previously Scripts.ResourceManager.GetResourceSet was used, but that is not available in .NET Core
-            IEnumerable<PropertyInfo> props = typeof(Scripts).GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy).Where(p => p.PropertyType == typeof(string));
+            IEnumerable<PropertyInfo> props = typeof(Scripts).GetProperties(BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy).Where(p => p.PropertyType == typeof(string));
 
             string upgradeFileNameFilter = @"^UpgradeShardMapManagerGlobalFrom(\d*).(\d*)";
 
