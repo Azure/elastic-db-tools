@@ -177,9 +177,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <remarks>DEVNOTE: Should we expose a DbCommand instead? Do we even want to expose this at all?</remarks>
         internal static MultiShardCommand Create(MultiShardConnection connection, DbCommand command, int commandTimeout)
         {
-#if NET451
             Contract.Requires(command is ICloneable);
-#endif
 
             return new MultiShardCommand(connection, command, commandTimeout);
         }
@@ -764,9 +762,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                             // arise potentially due to parallel Cancel and Close calls because this is the only
                             // thread that will be responsible for cleanup.
                             labeledReader.Command.Cancel();
-#if NET451
                             labeledReader.DbDataReader.Close();
-#endif
                         }
                     }
                     catch (Exception)

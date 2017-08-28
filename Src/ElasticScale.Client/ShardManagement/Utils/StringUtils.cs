@@ -118,12 +118,5 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     throw new InvalidOperationException("Unexpected byte value.");
             }
         }
-
-#if NET451
-        public static string ToUpperInvariant(this string s)
-        {
-            return s.ToUpper(CultureInfo.InvariantCulture);
-        }
-#endif
     }
 }
