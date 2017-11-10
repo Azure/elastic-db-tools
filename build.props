@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Condition=" $(TargetFramework.StartsWith(`net4`)) ">
+    <DefineConstants>$(DefineConstants);NETFRAMEWORK</DefineConstants>
+  </PropertyGroup>
+</Project>

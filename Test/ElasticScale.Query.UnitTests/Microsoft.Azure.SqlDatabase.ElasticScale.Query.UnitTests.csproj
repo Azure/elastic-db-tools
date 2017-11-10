@@ -3,6 +3,7 @@
     <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('build.props'))" />
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0-preview-20170628-02" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.1.18" />

@@ -1484,7 +1484,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             ConstructorInfo[] cisSqlError = typeof(SqlError)
                 .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic);
 
-#if NET451
+#if NETFRAMEWORK
             ConstructorInfo ciSqlError = cisSqlError.Single(c => c.GetParameters().Length == 7);
             SqlError se = (SqlError)ciSqlError.Invoke(new object[] { (int)10928, (byte)0, (byte)0, "", "", "", (int)0 });
 #else

@@ -10,7 +10,7 @@ using System.Collections;
 using System.Data;
 using System.Data.Common;
 using System.IO;
-#if NET451
+#if NETFRAMEWORK
 using System.Runtime.Remoting;
 #endif
 using System.Threading;
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         }
 
         /// <summary>
-        /// Gets the number of columns in the current row. 
+        /// Gets the number of columns in the current row.
         /// </summary>
         public override int FieldCount
         {
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         }
 
         /// <summary>
-        /// Gets a value that indicates whether this DbDataReader contains one or more rows. 
+        /// Gets a value that indicates whether this DbDataReader contains one or more rows.
         /// </summary>
         public override bool HasRows
         {
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         }
 
         /// <summary>
-        /// Gets the number of rows changed, inserted, or deleted by execution of the SQL statement. 
+        /// Gets the number of rows changed, inserted, or deleted by execution of the SQL statement.
         /// </summary>
         /// <remarks>
         /// However, from the SqlDataReader source, it looks like the property is updated before the reader is closed
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             _isClosed = false;
         }
 
-#if NET451
+#if NETFRAMEWORK
         /// <summary>
         /// Not implemented
         ///</summary>
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         }
 
         /// <summary>
-        /// Reads a stream of bytes from the specified column, starting at location indicated by dataOffset, into the 
+        /// Reads a stream of bytes from the specified column, starting at location indicated by dataOffset, into the
         /// buffer, starting at the location indicated by bufferOffset.
         /// </summary>
         /// <param name="ordinal">The zero-based column ordinal.</param>
@@ -212,7 +212,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         }
 
         /// <summary>
-        /// Reads a stream of characters from the specified column, starting at location indicated by dataOffset, into 
+        /// Reads a stream of characters from the specified column, starting at location indicated by dataOffset, into
         /// the buffer, starting at the location indicated by bufferOffset.
         /// </summary>
         /// <param name="ordinal">The zero-based column ordinal.</param>
@@ -247,7 +247,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         }
 
         /// <summary>
-        /// Returns a DbDataReader object for the requested column ordinal that can be overridden with a 
+        /// Returns a DbDataReader object for the requested column ordinal that can be overridden with a
         /// provider-specific implementation.
         /// </summary>
         /// <param name="ordinal">The zero-based column ordinal.</param>

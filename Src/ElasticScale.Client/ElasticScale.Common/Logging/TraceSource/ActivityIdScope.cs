@@ -41,7 +41,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
 
     internal static class CorrelationManager
     {
-#if NET451
+#if NETFRAMEWORK
         public static Guid ActivityId
         {
             get

@@ -1344,7 +1344,7 @@ end", s_testUser);
         [TestCategory("ExcludeFromGatedCheckin")]
         public void ListShardMapPerformanceCounterValidation()
         {
-#if NET451
+#if NETFRAMEWORK
             if (PerfCounterInstance.HasCreatePerformanceCategoryPermissions())
             {
                 string shardMapName = "PerTenantShardMap";
@@ -1458,7 +1458,7 @@ end", s_testUser);
 #endif
         }
 
-#if NET451
+#if NETFRAMEWORK
         private bool ValidateNonZeroCounterValue(string instanceName, PerformanceCounterName counterName)
         {
             string counterdisplayName = (from c in PerfCounterInstance.counterList
