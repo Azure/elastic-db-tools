@@ -492,39 +492,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             List<UpgradeSteps> upgradeSteps = new List<UpgradeSteps>();
 
-            // Previously Scripts.ResourceManager.GetResourceSet was used, but that is not available in .NET Core
-            IEnumerable<PropertyInfo> props = typeof(Scripts).GetProperties(BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy).Where(p => p.PropertyType == typeof(string));
+            IEnumerable<Scripts.UpgradeScript> upgradeScripts = parseLocal ? Scripts.UpgradeLocalScripts : Scripts.UpgradeGlobalScripts;
 
-            string upgradeFileNameFilter = @"^UpgradeShardMapManagerGlobalFrom(\d*).(\d*)";
-
-            if (parseLocal)
+            foreach (var entry in upgradeScripts)
             {
-                upgradeFileNameFilter = upgradeFileNameFilter.Replace("Global", "Local");
-            }
-
-            Regex fileNameRegEx = new Regex(
-                upgradeFileNameFilter,
-                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-
-            // Filter upgrade scripts based on file name and order by initial Major.Minor version
-            var upgradeScriptObjects = from r in props
-                                       let m = fileNameRegEx.Match(r.Name.ToString())
-                                       where
-                                           m.Success
-                                       orderby new Version(Convert.ToInt32(m.Groups[1].Value), Convert.ToInt32(m.Groups[2].Value))
-                                       select new
-                                       {
-                                           Key = r.Name,
-                                           Value = r.GetValue(null),
-                                           initialMajorVersion = Convert.ToInt32(m.Groups[1].Value),
-                                           initialMinorVersion = Convert.ToInt32(m.Groups[2].Value)
-                                       };
-
-            foreach (var entry in upgradeScriptObjects)
-            {
-                foreach (StringBuilder cmd in SplitScriptCommands(entry.Value.ToString()))
+                foreach (StringBuilder cmd in SplitScriptCommands(entry.Script))
                 {
-                    upgradeSteps.Add(new UpgradeSteps(entry.initialMajorVersion, entry.initialMinorVersion, cmd));
+                    upgradeSteps.Add(new UpgradeSteps(entry.InitialMajorVersion, entry.InitialMinorVersion, cmd));
                 }
             }
 

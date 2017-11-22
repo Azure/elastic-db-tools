@@ -38,16 +38,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>PerformanceCounters.resx</DependentUpon>
     </Compile>
-    <Compile Update="ShardManagement\ReadOnlyScripts.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ReadOnlyScripts.resx</DependentUpon>
-    </Compile>
-    <Compile Update="ShardManagement\Scripts.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Scripts.resx</DependentUpon>
-    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -58,14 +48,6 @@
     <EmbeddedResource Update="ShardManagement\PerformanceCounters.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>PerformanceCounters.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="ShardManagement\ReadOnlyScripts.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>ReadOnlyScripts.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="ShardManagement\Scripts.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Scripts.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

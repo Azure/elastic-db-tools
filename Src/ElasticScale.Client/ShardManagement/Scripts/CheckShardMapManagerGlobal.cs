@@ -1,3 +1,14 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
+{
+    /// <summary>
+    /// Utility properties and methods used for managing scripts and errors.
+    /// </summary>
+    internal static partial class ReadOnlyScripts
+    {
+        internal const string CheckShardMapManagerGlobal = @"
 -- Copyright (c) Microsoft. All rights reserved.
 -- Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
@@ -19,3 +30,6 @@ begin
 	exec(@stmt)
 end
 go
+";
+    }
+}

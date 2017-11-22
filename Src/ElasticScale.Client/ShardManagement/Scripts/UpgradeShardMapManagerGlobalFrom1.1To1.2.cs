@@ -1,3 +1,14 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
+{
+    /// <summary>
+    /// Utility properties and methods used for managing scripts and errors.
+    /// </summary>
+    internal static partial class Scripts
+    {
+        internal static readonly UpgradeScript UpgradeShardMapManagerGlobalFrom1_1To1_2 = new UpgradeScript(1, 1, @"
 -- Copyright (c) Microsoft. All rights reserved.
 -- Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
@@ -26,7 +37,7 @@ create procedure __ShardManagement.spLockOrUnlockShardMappingsGlobal
 @result int output
 as
 begin
-	declare @gsmVersionMajorClient int, 
+	declare @gsmVersionMajorClient int,
 			@gsmVersionMinorClient int,
 			@shardMapId uniqueidentifier,
 			@mappingId uniqueidentifier,
@@ -34,7 +45,7 @@ begin
 			@lockOperationType int
 
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier'),
 		@mappingId = x.value('(Mapping/Id)[1]', 'uniqueidentifier'),
@@ -53,9 +64,9 @@ begin
 		goto Error_MissingParameters;
 
 	if not exists (
-		select 
-			ShardMapId 
-		from 
+		select
+			ShardMapId
+		from
 			__ShardManagement.ShardMapsGlobal with (updlock)
 		where
 			ShardMapId = @shardMapId)
@@ -65,14 +76,14 @@ begin
 			@currentOperationId uniqueidentifier
 
 	if (@lockOperationType < 2)
-	begin			
+	begin
 		declare @ForceUnLockLockOwnerId uniqueidentifier = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF',
 				@currentLockOwnerId uniqueidentifier
 
-		select 
+		select
 			@currentOperationId = OperationId,
 			@currentLockOwnerId = LockOwnerId
-		from 
+		from
 			__ShardManagement.ShardMappingsGlobal with (updlock)
 		where
 			ShardMapId = @shardMapId and MappingId = @mappingId
@@ -92,16 +103,16 @@ begin
 
 	update
 		__ShardManagement.ShardMappingsGlobal
-	set 
-		LockOwnerId = case 
-		when 
-			@lockOperationType = 0 
-		then 
-			@lockOwnerId 
-		when  
+	set
+		LockOwnerId = case
+		when
+			@lockOperationType = 0
+		then
+			@lockOwnerId
+		when
 			@lockOperationType = 1 or @lockOperationType = 2 or @lockOperationType = 3
-		then 
-			@DefaultLockOwnerId 
+		then
+			@DefaultLockOwnerId
 		end
 		where
 			ShardMapId = @shardMapId and (@lockOperationType = 3 or -- unlock all mappings
@@ -149,10 +160,13 @@ go
 
 -- update version as 1.2
 update
-	__ShardManagement.ShardMapManagerGlobal 
-set 
+	__ShardManagement.ShardMapManagerGlobal
+set
 	StoreVersionMinor = 2
 where
 	StoreVersionMajor = 1 and StoreVersionMinor = 1
 
 go
+");
+    }
+}
