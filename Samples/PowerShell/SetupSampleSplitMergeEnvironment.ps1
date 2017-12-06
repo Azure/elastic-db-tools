@@ -43,6 +43,15 @@
         -SplitRangeLow '0x00' `
         -SplitValue '0x64' `
         -SplitRangeHigh '0xc8'
+
+    .\SetupSampleSplitMergeEnvironment.ps1 `
+        -UserName 'mysqluser' `
+        -Password 'MySqlPassw0rd' `
+        -ShardMapManagerServerName 'abcdefghij.database.windows.net' `
+        -ShardKeyType 'Datetime' `
+        -SplitRangeLow '2010-3-21 12:00:00' `
+        -SplitValue '2015-7-1 12:00:00' `
+        -SplitRangeHigh '2018-9-24 12:00:00'
 #>
 
 param (
@@ -58,7 +67,7 @@ param (
 
     $ShardMapName = 'MyTestShardMap',
 
-    $ShardKeyType = 'Int32', # Other accepted values are 'Int64', 'Guid', or 'Binary'
+    $ShardKeyType = 'Int32', # Other accepted values are 'Int64', 'Guid', 'Binary', or 'Datetime'
 
     # Below values must be convertible to KeyType
     $SplitRangeLow = 0,
@@ -88,7 +97,7 @@ foreach ($DbName in $ShardDatabaseName1, $ShardDatabaseName2, $ShardMapManagerDa
     if (!$(Test-SqlDatabase -UserName $UserName -Password $Password -SqlServerName $ShardMapManagerServerName -SqlDatabaseName $DbName))
     {
         $jobs += Start-Job `
-            -ScriptBlock { 
+            -ScriptBlock {
                 param (
                     $ScriptDir,
                     $UserName,
@@ -109,17 +118,18 @@ if ($jobs.Count -gt 0)
     Remove-Job $jobs
 }
 
-# Create new (or replace existing) shard map manager 
+# Create new (or replace existing) shard map manager
 $ShardMapManager = New-ShardMapManager -UserName $UserName -Password $Password -SqlServerName $ShardMapManagerServerName -SqlDatabaseName $ShardMapManagerDatabaseName -ReplaceExisting $true
 
 # Parse key type string
 switch ($ShardKeyType)
 {
-    'Int32'  { $TKey = $([int]);    $SqlKeyType = 'INT';              break }
-    'Int64'  { $TKey = $([long]);   $SqlKeyType = 'BIGINT';           break }
-    'Guid'   { $TKey = $([Guid]);   $SqlKeyType = 'UNIQUEIDENTIFIER'; break }
-    'Binary' { $Tkey = $([byte[]]); $SqlKeyType = 'BINARY';           break }
-    default  { throw "Invalid ShardKeyType $ShardKeyType. Accepted values are Int32, Int64, Guid, and Binary" }
+    'Int32'    { $TKey = $([int]);    $SqlKeyType = 'INT';              break }
+    'Int64'    { $TKey = $([long]);   $SqlKeyType = 'BIGINT';           break }
+    'Guid'     { $TKey = $([Guid]);   $SqlKeyType = 'UNIQUEIDENTIFIER'; break }
+    'Binary'   { $Tkey = $([byte[]]); $SqlKeyType = 'BINARY';           break }
+    'Datetime' { $Tkey = $([datetime]); $SqlKeyType = 'DATETIME';     break }
+    default    { throw "Invalid ShardKeyType $ShardKeyType. Accepted values are Int32, Int64, Guid, and Binary" }
 }
 
 # Converts a hex string like 0x1234 to a byte[]
@@ -166,7 +176,6 @@ else
     $HighKey = $SplitRangeHigh;
 }
 
-
 # Create shard map
 $ShardMap = New-RangeShardMap -KeyType $TKey -ShardMapManager $ShardMapManager -RangeShardMapName $ShardMapName
 
@@ -210,23 +219,30 @@ foreach ($DbName in $ShardDatabaseName1, $ShardDatabaseName2)
     Invoke-SqlScalar -UserName $UserName -Password $Password -SqlServerName $ShardMapManagerServerName -SqlDatabaseName $DbName -DbQuery $CreateTablesQuery
 }
 
-# Only populate for Int32 and Int64 key types. Populating other types is possible but not yet supported in this sample script.
+# Popluate tables with sample data
 if ($ShardKeyType -eq 'Int32' -or $ShardKeyType -eq 'Int64')
 {
+    $SampleKeys = ($LowKey .. $($HighKey - 1))
+}
+elseif ($ShardKeyType -eq 'Binary')
+{
+    $SampleKeys = @("$SplitRangeLow", "$SplitValue", "$SplitRangeHigh")
+}
+else
+{
+    $SampleKeys = @("'$SplitRangeLow'", "'$SplitValue'", "'$SplitRangeHigh'")
+}
+
+foreach ($i in $SampleKeys)
+{
     # Populate sharded table in the first shard
-    foreach ($i in ($LowKey .. $($HighKey - 1)))
-    {
-        $InsertIntoShardedTableQuery = "INSERT INTO $ShardedTableName ($ShardedTableKeyColumnName) VALUES ($i)"
-        Invoke-SqlScalar -UserName $UserName -Password $Password -SqlServerName $ShardMapManagerServerName -SqlDatabaseName $ShardDatabaseName1 -DbQuery $InsertIntoShardedTableQuery
-    }
+    $InsertIntoShardedTableQuery = "INSERT INTO $ShardedTableName ($ShardedTableKeyColumnName) VALUES ($i)"
+    Invoke-SqlScalar -UserName $UserName -Password $Password -SqlServerName $ShardMapManagerServerName -SqlDatabaseName $ShardDatabaseName1 -DbQuery $InsertIntoShardedTableQuery
 
     # Populate reference table in the first shard
     # The Split-Merge service can copy reference tables, but only if they are empty in the target.
-    foreach ($i in 0 .. 9)
-    {
-        $InsertIntoReferenceTableQuery = "INSERT INTO $ReferenceTableName ($ReferenceTableDataColumnName) VALUES ($(Get-Random))"
-        Invoke-SqlScalar -UserName $UserName -Password $Password -SqlServerName $ShardMapManagerServerName -SqlDatabaseName $ShardDatabaseName1 -DbQuery $InsertIntoReferenceTableQuery
-    }
+    $InsertIntoReferenceTableQuery = "INSERT INTO $ReferenceTableName ($ReferenceTableDataColumnName) VALUES ($i)"
+    Invoke-SqlScalar -UserName $UserName -Password $Password -SqlServerName $ShardMapManagerServerName -SqlDatabaseName $ShardDatabaseName1 -DbQuery $InsertIntoReferenceTableQuery
 }
 
 Write-Host

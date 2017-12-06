@@ -51,6 +51,17 @@
         -SplitRangeHigh '0xc8' `
         -SplitMergeServiceEndpoint 'https://mysplitmergeservice.cloudapp.net' `
         -CertificateThumbprint '0123456789abcdef0123456789abcdef01234567'
+
+    .\ExecuteSampleSplitMerge.ps1 `
+        -UserName 'mysqluser' `
+        -Password 'MySqlPassw0rd' `
+        -ShardMapManagerServerName 'abcdefghij.database.windows.net' `
+        -ShardKeyType 'Datetime' `
+        -SplitRangeLow '2010-3-21 12:00:00' `
+        -SplitValue '2015-7-1 12:00:00' `
+        -SplitRangeHigh '2018-9-24 12:00:00' `
+        -SplitMergeServiceEndpoint 'https://mysplitmergeservice.cloudapp.net' `
+        -CertificateThumbprint '0123456789abcdef0123456789abcdef01234567'
 #>
 
 [CmdletBinding()]
@@ -68,13 +79,13 @@ param (
 
     [string]$ShardMapName = "MyTestShardMap",
 
-    $ShardKeyType = 'Int32', # Other accepted values are 'Int64', 'Guid', or 'Binary'
+    $ShardKeyType = 'Int32', # Other accepted values are 'Int64', 'Guid', 'Binary', or 'Datetime'
 
     # Below values must be convertible to ShardKeyType
     $SplitRangeLow = 0,
     $SplitValue = 100,
     $SplitRangeHigh = 200,
-    
+
     # The thumbprint of the client certificate to be used for authentication.
     # Do not specify if client certificate authentication is not enabled in the service.
     [string]$CertificateThumbprint = $null
