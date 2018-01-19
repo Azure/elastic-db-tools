@@ -5,7 +5,7 @@
     <Copyright>Copyright � Microsoft Corporation. All rights reserved.</Copyright>
     <AssemblyTitle>Microsoft Azure SQL Database: Elastic Database Client Library</AssemblyTitle>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <VersionPrefix>1.4.0</VersionPrefix>
+    <Version>2.0.0-preview1</Version>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>net451;netstandard2.0</TargetFrameworks>
     <PackageTags>Microsoft;Elastic;Scale;Azure;SQL;DB;Database;Shard;Sharding;Management;Query;azureofficial</PackageTags>
@@ -17,7 +17,6 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Azure/elastic-db-tools</RepositoryUrl>
     <RuntimeIdentifiers>win;unix</RuntimeIdentifiers>
-    <Version>1.4.0.0</Version>
     <RootNamespace>Microsoft.Azure.SqlDatabase.ElasticScale</RootNamespace>
   </PropertyGroup>
 
