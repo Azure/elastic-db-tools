@@ -12,7 +12,7 @@
     <PackageReleaseNotes>Added support for .NET Standard 2.0.</PackageReleaseNotes>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
     <PackageProjectUrl>https://github.com/Azure/elastic-db-tools</PackageProjectUrl>
-    <PackageLicenseUrl>http://go.microsoft.com/?linkid=9862941</PackageLicenseUrl>
+    <PackageLicenseUrl>https://github.com/Azure/elastic-db-tools/blob/master/LICENSE</PackageLicenseUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Azure/elastic-db-tools</RepositoryUrl>
