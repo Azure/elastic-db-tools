@@ -46,12 +46,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         private static string s_dbNameField = "dbNameField";
 
         /// <summary>
-        /// SqlCredential encapsulating the testUserId and testPassword that we will use
-        /// when opening connections to shards when issuing a fanout query.
-        /// </summary>
-        private static SqlCredential s_testCredential = GenerateDefaultSqlCredential();
-
-        /// <summary>
         /// Connection string for local shard user.
         /// </summary>
         internal static string ShardConnectionString = @"Integrated Security=SSPI;";
@@ -167,15 +161,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         }
 
         /// <summary>
-        /// Simple helper to obtain the SqlCredential to use in running our tests.
-        /// </summary>
-        /// <returns>The test username and password packaged up into a SqlCredential object.</returns>
-        internal static SqlCredential GetTestSqlCredential()
-        {
-            return s_testCredential;
-        }
-
-        /// <summary>
         /// Helper method that alters the column name on one of our test tables in one of our test databases.
         /// Useful for inducing a schema mismatch to test our failure handling.
         /// </summary>
@@ -249,26 +234,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             Assert.IsNotNull(database, "null database");
             ShardLocation rVal = new ShardLocation(s_serverLocation, database);
             return rVal;
-        }
-
-        /// <summary>
-        /// Static helper that populates our defualt password into a SecureString.
-        /// </summary>
-        /// <returns>The default password encoded in a SecureString.</returns>
-        private static SqlCredential GenerateDefaultSqlCredential()
-        {
-            SecureString ss = new SecureString();
-            char[] pwdChars = s_testPassword.ToCharArray();
-            for (int i = 0; i < pwdChars.Length; i++)
-            {
-                ss.AppendChar(pwdChars[i]);
-            }
-
-            // Need to mark it as read only to avoid an ArgumentException in the SqlCredential c-tor.
-            //
-            ss.MakeReadOnly();
-
-            return new SqlCredential(s_testUserId, ss);
         }
 
         /// <summary>

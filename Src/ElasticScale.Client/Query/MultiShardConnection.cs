@@ -26,7 +26,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Multi")]
     public sealed class MultiShardConnection : IDisposable
     {
-        #region Global Vars
+#region Global Vars
 
         /// <summary>
         /// The suffix to append to each shard's ApplicationName
@@ -44,9 +44,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         private bool _disposed = false;
 
-        #endregion
+#endregion
 
-        #region Ctors
+#region Ctors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MultiShardConnection"/> class.
@@ -135,9 +135,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             this.ShardConnections = shardConnections;
         }
 
-        #endregion
+#endregion
 
-        #region Properties
+#region Properties
 
         /// <summary>
         /// Gets the collection of <see cref="Shard"/>s associated with this connection.
@@ -165,9 +165,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             private set;
         }
 
-        #endregion
+#endregion
 
-        #region Public Methods
+#region Public Methods
 
         /// <summary>
         /// Creates and returns a <see cref="MultiShardCommand"/> object. 
@@ -203,9 +203,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion
+#endregion
 
-        #region Helpers
+#region Helpers
 
         private static void ValidateNotEmpty<T>(
             IEnumerable<T> namedCollection,
@@ -276,6 +276,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion
+#endregion
     }
 }

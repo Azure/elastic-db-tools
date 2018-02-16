@@ -243,9 +243,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             int h;
 
-            h = ShardKey.QPHash(this.Protocol.GetHashCode(), this.DataSource.ToUpper(CultureInfo.InvariantCulture).GetHashCode());
+            h = ShardKey.QPHash(this.Protocol.GetHashCode(), this.DataSource.ToUpperInvariant().GetHashCode());
             h = ShardKey.QPHash(h, this.Port.GetHashCode());
-            h = ShardKey.QPHash(h, this.Database.ToUpper(CultureInfo.InvariantCulture).GetHashCode());
+            h = ShardKey.QPHash(h, this.Database.ToUpperInvariant().GetHashCode());
 
             return h;
         }

@@ -8,7 +8,6 @@
     <AssemblyName>ElasticDapper</AssemblyName>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Build.props))\Build.props" />
   <!--
     BUILD PROCESS FOR SAMPLES GALLERY
   -->
@@ -19,9 +18,9 @@
     <SamplesGallerySolutionInput Include="ElasticDapper.sln.SamplesGallery" />
   </ItemGroup>
   <Import Project="..\SamplesGallery.targets" />
-  <!-- 
+  <!--
     Any changes below must be copied to ShardSqlCmd.csproj.SamplesGallery, except:
-    - $(NugetPack) must be replaced with ..\packages 
+    - $(NugetPack) must be replaced with ..\packages
   -->
   <ItemGroup>
     <Reference Include="$(NugetPack)\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll">

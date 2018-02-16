@@ -492,6 +492,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="mappingTarget">Updated mapping.</param>
         /// <param name="patternForKill">Pattern for kill commands.</param>
         /// <param name="lockOwnerId">Id of lock owner.</param>
+        /// <param name="killConnection">Whether to kill open connections.</param>
         /// <returns>The store operation.</returns>
         IStoreOperation CreateUpdateMappingOperation(
             ShardMapManager shardMapManager,
@@ -500,7 +501,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             IStoreMapping mappingSource,
             IStoreMapping mappingTarget,
             string patternForKill,
-            Guid lockOwnerId);
+            Guid lockOwnerId,
+            bool killConnection);
 
         /// <summary>
         /// Creates request to replace mappings within shard map.

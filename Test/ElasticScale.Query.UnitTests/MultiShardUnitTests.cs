@@ -14,12 +14,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
+using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
@@ -570,9 +569,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
             MultiShardAggregateException aggEx = new MultiShardAggregateException(exList);
 
-            TestSerialization<MultiShardException>(innerEx1);
-            TestSerialization<MultiShardException>(innerEx2);
-            TestSerialization<MultiShardAggregateException>(aggEx);
+            MultiShardException deserialized1 = CommonTestUtils.SerializeDeserialize(innerEx1);
+            CompareForEquality(innerEx1, deserialized1);
+
+            MultiShardException deserialized2 = CommonTestUtils.SerializeDeserialize(innerEx2);
+            CompareForEquality(innerEx2, deserialized2);
+
+            MultiShardAggregateException deserialized3 = CommonTestUtils.SerializeDeserialize(aggEx);
+            CompareForEquality(aggEx, deserialized3);
         }
 
         /// <summary>
@@ -736,20 +740,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         }
 
         #endregion
-
-        private void TestSerialization<T>(T originalException) where T : Exception
-        {
-            MemoryStream memStream = new MemoryStream();
-            BinaryFormatter formatter = new BinaryFormatter();
-
-            formatter.Serialize(memStream, originalException);
-            memStream.Seek(0, SeekOrigin.Begin);
-
-            T deserializedException = (T)formatter.Deserialize(memStream);
-            memStream.Close();
-
-            CompareForEquality(originalException, deserializedException);
-        }
 
         private void CompareForEquality(Exception first, Exception second)
         {

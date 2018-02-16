@@ -1344,6 +1344,7 @@ end", s_testUser);
         [TestCategory("ExcludeFromGatedCheckin")]
         public void ListShardMapPerformanceCounterValidation()
         {
+#if NETFRAMEWORK
             if (PerfCounterInstance.HasCreatePerformanceCategoryPermissions())
             {
                 string shardMapName = "PerTenantShardMap";
@@ -1454,8 +1455,10 @@ end", s_testUser);
             {
                 Assert.Inconclusive("Do not have permissions to create performance counter category, test skipped");
             }
+#endif
         }
 
+#if NETFRAMEWORK
         private bool ValidateNonZeroCounterValue(string instanceName, PerformanceCounterName counterName)
         {
             string counterdisplayName = (from c in PerfCounterInstance.counterList
@@ -1486,6 +1489,7 @@ end", s_testUser);
         {
             return PerformanceCounterCategory.InstanceExists(instanceName, PerformanceCounters.ShardManagementPerformanceCounterCategory);
         }
+#endif
 
         private RangeMapping<T> MarkMappingOfflineAndUpdateShard<T>(RangeShardMap<T> map, RangeMapping<T> mapping, Shard newShard)
         {

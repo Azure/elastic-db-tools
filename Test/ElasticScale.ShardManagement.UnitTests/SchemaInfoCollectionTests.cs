@@ -328,6 +328,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             Assert.AreEqual(3, i);
         }
 
+        [TestMethod]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void TestSchemaInfoExceptionSerializability()
+        {
+            SchemaInfoException ex = new SchemaInfoException(SchemaInfoErrorCode.SchemaInfoNameConflict, "message");
+            SchemaInfoException deserialized = CommonTestUtils.SerializeDeserialize(ex);
+
+            // Validate
+            Assert.AreEqual(ex.ErrorCode, deserialized.ErrorCode, "ErrorCode");
+            Assert.AreEqual(ex.ToString(), deserialized.ToString(), "ToString()");
+        }
+
         /// <summary>
         /// Verifies that the serialization format of <see cref="SchemaInfo"/> matches the serialization format
         /// from v1.0.0. If this fails, then an older version of EDCL v1.0.0 will not be able to successfully 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.SqlDatabase.ElasticScale;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Recovery;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -8,8 +9,6 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
-using Microsoft.Practices.EnterpriseLibrary.WindowsAzure.TransientFaultHandling.SqlAzure;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
@@ -114,7 +113,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Retry policy used for DDR in unit tests.
         /// </summary>
-        private static RetryPolicy<SqlAzureTransientErrorDetectionStrategy> s_retryPolicy;
+        private static TransientFaultHandling.RetryPolicy<TransientFaultHandling.SqlDatabaseTransientErrorDetectionStrategy> s_retryPolicy;
 
         #region CommonMethods
 
@@ -215,8 +214,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
 
             // Initialize retry policy
-            s_retryPolicy = new RetryPolicy<SqlAzureTransientErrorDetectionStrategy>(
-                new ExponentialBackoff(5, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(5), TimeSpan.FromMilliseconds(100)));
+            s_retryPolicy = new TransientFaultHandling.RetryPolicy<TransientFaultHandling.SqlDatabaseTransientErrorDetectionStrategy>(
+                new TransientFaultHandling.ExponentialBackoff(5, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(5), TimeSpan.FromMilliseconds(100)));
         }
 
         /// <summary>

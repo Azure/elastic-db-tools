@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Fakes;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stubs;
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException smme)
             {
-                Assert.IsTrue(smme.ErrorCode == ShardManagementErrorCode.ShardMapLookupFailure);
+                Assert.AreEqual(ShardManagementErrorCode.ShardMapLookupFailure, smme.ErrorCode);
             }
         }
 
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
             catch (ShardManagementException smme)
             {
-                Assert.IsTrue(smme.ErrorCode == ShardManagementErrorCode.ShardMapLookupFailure);
+                Assert.AreEqual(ShardManagementErrorCode.ShardMapLookupFailure, smme.ErrorCode);
             }
         }
 
@@ -364,24 +364,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             var errorCode = ShardManagementErrorCode.ShardMapDoesNotExist;
 
             ShardManagementException ex = new ShardManagementException(errorCategory, errorCode, "Testing");
-            string exceptionToString = ex.ToString();
-
-            // Serialize and de-serialize with a BinaryFormatter
-            BinaryFormatter bf = new BinaryFormatter();
-            using (MemoryStream ms = new MemoryStream())
-            {
-                // Serialize
-                bf.Serialize(ms, ex);
-
-                // Deserialize
-                ms.Seek(0, 0);
-                ex = (ShardManagementException)bf.Deserialize(ms);
-            }
+            ShardManagementException deserialized = CommonTestUtils.SerializeDeserialize(ex);
 
             // Validate
-            Assert.AreEqual(ex.ErrorCode, errorCode, "ErrorCode");
-            Assert.AreEqual(ex.ErrorCategory, errorCategory, "ErrorCategory");
-            Assert.AreEqual(exceptionToString, ex.ToString(), "ToString()");
+            Assert.AreEqual(ex.ErrorCode, deserialized.ErrorCode, "ErrorCode");
+            Assert.AreEqual(ex.ErrorCategory, deserialized.ErrorCategory, "ErrorCategory");
+            Assert.AreEqual(ex.ToString(), deserialized.ToString(), "ToString()");
         }
 
         #region GsmAbortTests

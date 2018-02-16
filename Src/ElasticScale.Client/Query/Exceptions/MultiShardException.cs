@@ -142,7 +142,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             info.AddValue("ShardLocation", _shardLocation);
         }
 
-        #endregion Serialization Methods
+#endregion Serialization Methods
 
         /// <summary>
         /// The shard associated with this exception

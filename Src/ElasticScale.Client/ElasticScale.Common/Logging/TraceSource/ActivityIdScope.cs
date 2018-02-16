@@ -26,8 +26,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
         /// <param name="activityId"></param>
         public ActivityIdScope(Guid activityId)
         {
-            _previousActivityId = Trace.CorrelationManager.ActivityId;
-            Trace.CorrelationManager.ActivityId = activityId;
+            _previousActivityId = CorrelationManager.ActivityId;
+            CorrelationManager.ActivityId = activityId;
         }
 
         /// <summary>
@@ -35,7 +35,39 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
         /// </summary>
         public void Dispose()
         {
-            Trace.CorrelationManager.ActivityId = _previousActivityId;
+            CorrelationManager.ActivityId = _previousActivityId;
         }
+    }
+
+    internal static class CorrelationManager
+    {
+#if NETFRAMEWORK
+        public static Guid ActivityId
+        {
+            get
+            {
+                return Trace.CorrelationManager.ActivityId;
+            }
+            set
+            {
+                Trace.CorrelationManager.ActivityId = value;
+            }
+        }
+#else
+        [ThreadStatic]
+        private static Guid _activityId;
+
+        public static Guid ActivityId
+        {
+            get
+            {
+                return _activityId;
+            }
+            set
+            {
+                _activityId = value;
+            }
+        }
+#endif
     }
 }

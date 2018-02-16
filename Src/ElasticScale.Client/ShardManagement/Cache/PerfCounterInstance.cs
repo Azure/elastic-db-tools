@@ -31,6 +31,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
     /// </summary>
     internal struct PerfCounterCreationData
     {
+#if NETFRAMEWORK
         private PerformanceCounterName counterName;
         private PerformanceCounterType counterType;
         private string counterDisplayName;
@@ -63,6 +64,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             get { return counterHelpText; }
         }
+#endif
     }
 
     /// <summary>
@@ -70,6 +72,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
     /// </summary>
     internal class PerfCounterInstance : IDisposable
     {
+#if NETFRAMEWORK
         private static object _lockObject = new object();
 
         private static ILogger Tracer
@@ -96,6 +99,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         private bool _initialized;
 
         private string _instanceName;
+#endif
 
         /// <summary>
         /// Initialize perf counter instance based on shard map name
@@ -103,6 +107,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="shardMapName"></param>
         public PerfCounterInstance(string shardMapName)
         {
+#if NETFRAMEWORK
             _initialized = false;
 
             _instanceName = string.Concat(Process.GetCurrentProcess().Id.ToString(), "-", shardMapName);
@@ -125,7 +130,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     {
                         // We are not creating performance counter category here as per recommendation in documentation, copying note from
                         // https://msdn.microsoft.com/en-us/library/sb32hxtc(v=vs.110).aspx
-                        // It is strongly recommended that new performance counter categories be created 
+                        // It is strongly recommended that new performance counter categories be created
                         // during the installation of the application, not during the execution of the application.
                         // This allows time for the operating system to refresh its list of registered performance counter categories.
                         // If the list has not been refreshed, the attempt to use the category will fail.
@@ -180,6 +185,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     "Exception caught while creating performance counter instance, no performance data will be collected. Exception: {0}",
                     e.ToString());
             }
+#endif
         }
 
         /// <summary>
@@ -188,6 +194,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="counterName">Counter to increment.</param>
         internal void IncrementCounter(PerformanceCounterName counterName)
         {
+#if NETFRAMEWORK
             if (_initialized)
             {
                 PerformanceCounterWrapper pc;
@@ -196,6 +203,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     pc.Increment();
                 }
             }
+#endif
         }
 
         /// <summary>
@@ -205,6 +213,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="value">New value.</param>
         internal void SetCounter(PerformanceCounterName counterName, long value)
         {
+#if NETFRAMEWORK
             if (_initialized)
             {
                 PerformanceCounterWrapper pc;
@@ -213,12 +222,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     pc.SetRawValue(value);
                 }
             }
+#endif
         }
+
         /// <summary>
         /// Static method to recreate Shard Management performance counter catagory with given counter list.
         /// </summary>
         internal static void CreatePerformanceCategoryAndCounters()
         {
+#if NETFRAMEWORK
             // Creation of performance counters need Administrator privilege
             if (HasCreatePerformanceCategoryPermissions())
             {
@@ -248,8 +260,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     "createCategory",
                     "User does not have permissions to create performance counter category");
             }
+#endif
         }
 
+#if NETFRAMEWORK
         /// <summary>
         /// Check if caller has permissions to create performance counter catagory.
         /// </summary>
@@ -272,12 +286,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             WindowsPrincipal wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
             return wp.IsInRole(WindowsBuiltInRole.Administrator) || wp.IsInRole(PerformanceCounters.PerformanceMonitorUsersGroupName);
         }
+#endif
 
         /// <summary>
         /// Dispose performance counter instance
         /// </summary>
         public void Dispose()
         {
+#if NETFRAMEWORK
             if (_initialized)
             {
                 lock (_lockObject)
@@ -300,6 +316,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     _initialized = false;
                 }
             }
+#endif
         }
     }
 }

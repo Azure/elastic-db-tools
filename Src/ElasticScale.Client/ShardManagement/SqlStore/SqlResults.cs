@@ -104,7 +104,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 if (reader.FieldCount > 0)
                 {
-                    SqlResultType resultType = SqlResults.SqlResultTypeFromColumnName(reader.GetSchemaTable().Rows[1]["ColumnName"].ToString());
+                    SqlResultType resultType = SqlResults.SqlResultTypeFromColumnName(reader.GetName(1));
 
                     switch (resultType)
                     {
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 if (reader.FieldCount > 0)
                 {
-                    SqlResultType resultType = SqlResults.SqlResultTypeFromColumnName(reader.GetSchemaTable().Rows[1]["ColumnName"].ToString());
+                    SqlResultType resultType = SqlResults.SqlResultTypeFromColumnName(reader.GetName(1));
 
                     switch (resultType)
                     {
