@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Build.props))\Build.props" />
-  <ItemGroup>
-    <ProjectFile Include="ElasticScale.Client\ElasticScale.Client.csproj" />
-  </ItemGroup>
-  <Import Project="$(BuildExtensionsPath)\Traversal.targets" />
-</Project>

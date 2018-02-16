@@ -23,7 +23,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             }
         }
 
+#if NETFRAMEWORK
         private PerformanceCounter _counter;
+#endif
 
         internal bool _isValid;
 
@@ -47,6 +49,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             this._instanceName = instanceName;
             this._counterName = counterName;
 
+#if NETFRAMEWORK
             // Check if counter exists in the specified category and then create its instance
             if (PerformanceCounterCategory.CounterExists(_counterName, _categoryName))
             {
@@ -75,6 +78,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 "initialize",
                 "Performance counter {0} does not exist in shard management catagory.", counterName);
             }
+#endif
         }
 
         /// <summary>
@@ -82,10 +86,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         public void Close()
         {
+#if NETFRAMEWORK
             if (_isValid)
             {
                 _counter.Close();
             }
+#endif
         }
 
         /// <summary>
@@ -94,6 +100,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public void Increment()
         {
+#if NETFRAMEWORK
             if (_isValid)
             {
                 try
@@ -105,6 +112,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     PerformanceCounterWrapper.TraceException("increment", "counter increment failed.", e);
                 }
             }
+#endif
         }
 
         /// <summary>
@@ -114,6 +122,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public void SetRawValue(long value)
         {
+#if NETFRAMEWORK
             if (_isValid)
             {
                 try
@@ -125,6 +134,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     PerformanceCounterWrapper.TraceException("SetRawValue", "failed to set raw value", e);
                 }
             }
+#endif
         }
 
         /// <summary>
@@ -146,7 +156,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         public void Dispose()
         {
+#if NETFRAMEWORK
             _counter.Dispose();
+#endif
         }
     }
 }

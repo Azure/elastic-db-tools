@@ -1,3 +1,14 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
+{
+    /// <summary>
+    /// Utility properties and methods used for managing scripts and errors.
+    /// </summary>
+    internal static partial class Scripts
+    {
+        internal const string DropShardMapManagerLocal = @"
 -- Copyright (c) Microsoft. All rights reserved.
 -- Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
@@ -118,7 +129,7 @@ go
 
 if object_id(N'__ShardManagement.ucShardMappingsLocal_ShardMapId_MinValue', N'UQ') is not null
 begin
-	alter table __ShardManagement.ShardMappingsLocal 
+	alter table __ShardManagement.ShardMappingsLocal
 		drop constraint ucShardMappingsLocal_ShardMapId_MinValue
 end
 go
@@ -170,3 +181,6 @@ begin
 	drop schema __ShardManagement
 end
 go
+";
+    }
+}
