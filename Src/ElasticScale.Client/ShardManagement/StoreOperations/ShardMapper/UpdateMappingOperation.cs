@@ -4,7 +4,6 @@
 using System;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Linq;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {
@@ -580,10 +579,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             SqlUtils.WithSqlExceptionHandling(() =>
             {
                 string sourceShardConnectionString = this.GetConnectionStringForShardLocation(_mappingSource.StoreShard.Location);
+                SqlCredential sourceShardSecureCredential = this.GetSecureCredentialForShardLocation(_mappingSource.StoreShard.Location);
 
                 IStoreResults result;
 
-                using (IStoreConnection connectionForKill = this.Manager.StoreConnectionFactory.GetConnection(StoreConnectionKind.LocalSource, sourceShardConnectionString))
+                using (IStoreConnection connectionForKill = this.Manager.StoreConnectionFactory.GetConnection(
+                    StoreConnectionKind.LocalSource, 
+                    sourceShardConnectionString, 
+                    sourceShardSecureCredential))
                 {
                     connectionForKill.Open();
 

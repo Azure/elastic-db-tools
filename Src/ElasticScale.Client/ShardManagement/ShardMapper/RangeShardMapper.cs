@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -41,11 +40,37 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             string connectionString,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
+            return this.OpenConnectionForKey(
+                key,
+                connectionString,
+                null,
+                options);
+        }
+
+        /// <summary>
+        /// Given a key value, obtains a SqlConnection to the shard in the mapping
+        /// that contains the key value.
+        /// </summary>
+        /// <param name="key">Input key value.</param>
+        /// <param name="connectionString">
+        /// Connection string with credential information, the DataSource and Database are 
+        /// obtained from the results of the lookup operation for key.
+        /// </param>
+        /// <param name="secureCredential">Secure SQL Credential.</param>
+        /// <param name="options">Options for validation operations to perform on opened connection.</param>
+        /// <returns>An opened SqlConnection.</returns>
+        public SqlConnection OpenConnectionForKey(
+            TKey key,
+            string connectionString,
+            SqlCredential secureCredential,
+            ConnectionOptions options = ConnectionOptions.Validate)
+        {
             return this.OpenConnectionForKey<RangeMapping<TKey>, TKey>(
                 key,
                 (smm, sm, ssm) => new RangeMapping<TKey>(smm, sm, ssm),
                 ShardManagementErrorCategory.RangeShardMap,
                 connectionString,
+                secureCredential,
                 options);
         }
 
@@ -65,12 +90,38 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             string connectionString,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
-            return await this.OpenConnectionForKeyAsync<RangeMapping<TKey>, TKey>(
+            return await this.OpenConnectionForKeyAsync(
                 key,
-                (smm, sm, ssm) => new RangeMapping<TKey>(smm, sm, ssm),
-                ShardManagementErrorCategory.RangeShardMap,
                 connectionString,
+                null,
                 options).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
+        /// that contains the key value.
+        /// </summary>
+        /// <param name="key">Input key value.</param>
+        /// <param name="connectionString">
+        /// Connection string with credential information, the DataSource and Database are 
+        /// obtained from the results of the lookup operation for key.
+        /// </param>
+        /// <param name="secureCredential">Secure SQL Credential.</param>
+        /// <param name="options">Options for validation operations to perform on opened connection.</param>
+        /// <returns>A Task encapsulating an opened SqlConnection.</returns>
+        public async Task<SqlConnection> OpenConnectionForKeyAsync(
+            TKey key,
+            string connectionString,
+            SqlCredential secureCredential,
+            ConnectionOptions options = ConnectionOptions.Validate)
+        {
+            return await this.OpenConnectionForKeyAsync<RangeMapping<TKey>, TKey>(
+                       key,
+                       (smm, sm, ssm) => new RangeMapping<TKey>(smm, sm, ssm),
+                       ShardManagementErrorCategory.RangeShardMap,
+                       connectionString,
+                       secureCredential,
+                       options).ConfigureAwait(false);
         }
 
         /// <summary>

@@ -19,7 +19,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Errors {
@@ -390,6 +390,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement {
         internal static string _ShardRange_LowGreaterThanOrEqualToHigh {
             get {
                 return ResourceManager.GetString("_ShardRange_LowGreaterThanOrEqualToHigh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The required property &apos;{0}&apos; must not be set in the connection string..
+        /// </summary>
+        internal static string _SqlShardMapManagerCredentials_ConnectionStringPropertyNotAllowed {
+            get {
+                return ResourceManager.GetString("_SqlShardMapManagerCredentials_ConnectionStringPropertyNotAllowed", resourceCulture);
             }
         }
         

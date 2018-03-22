@@ -11,6 +11,8 @@ using System.Linq;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
+    using ClientTestCommon;
+
     /// <summary>
     /// Tests based on scenarios which cover various aspects of the
     /// ShardMapManager library.
@@ -43,12 +45,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         {
             "MultiTenantDB1", "MultiTenantDB2", "MultiTenantDB3", "MultiTenantDB4", "MultiTenantDB5"
         };
-
-        // Test user to create for Sql Login tests.
-        private static string s_testUser = "TestUser";
-
-        // Password for test user.
-        private static string s_testPassword = "dogmat1C";
 
         #region Common Methods
 
@@ -307,6 +303,38 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                 Assert.AreEqual(validationFailed, true);
 
+                var sqlAuthLogin = new SqlAuthenticationLogin(Globals.ShardMapManagerConnectionString, Globals.SqlLoginTestUser, Globals.SqlLoginTestPassword);
+
+                if (sqlAuthLogin.Create())
+                {
+                    // Also verify we can connect to the shard with Sql Auth, and Sql Auth using a secure credential
+                    using (shardForConnection.OpenConnectionAsync(
+                        string.Empty,
+                        Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
+                        ConnectionOptions.None).Result)
+                    {
+                    }
+
+                    using (shardForConnection.OpenConnectionAsync(
+                        string.Empty,
+                        Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName)).Result)
+                    {
+                    }
+
+                    // Drop test login
+                    sqlAuthLogin.Drop();
+                }
+                else
+                {
+                    Assert.Inconclusive("Failed to create sql login, test skipped");
+                }
+
+                // Ensure code coverage of other overloads
+                using (shardForConnection.OpenConnectionAsync(
+                    Globals.ShardUserConnectionString).Result)
+                {
+                }
+
                 #endregion OpenConnectionAsync with Validation
 
 #if FUTUREWORK
@@ -355,26 +383,28 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         public void BasicScenarioListShardMapsWithSqlAuthentication()
         {
             // Try to create a test login
-            if (CreateTestLogin())
+            var sqlAuthLogin = new SqlAuthenticationLogin(Globals.ShardMapManagerConnectionString, Globals.SqlLoginTestUser, Globals.SqlLoginTestPassword);
+
+            if (sqlAuthLogin.Create())
             {
                 SqlConnectionStringBuilder gsmSb = new SqlConnectionStringBuilder(Globals.ShardMapManagerConnectionString)
                 {
                     IntegratedSecurity = false,
-                    UserID = s_testUser,
-                    Password = s_testPassword,
+                    UserID = sqlAuthLogin.UniquifiedUserName,
+                    Password = Globals.SqlLoginTestPassword,
                 };
 
                 SqlConnectionStringBuilder lsmSb = new SqlConnectionStringBuilder(Globals.ShardUserConnectionString)
                 {
                     IntegratedSecurity = false,
-                    UserID = s_testUser,
-                    Password = s_testPassword,
+                    UserID = sqlAuthLogin.UniquifiedUserName,
+                    Password = Globals.SqlLoginTestPassword,
                 };
 
                 BasicScenarioListShardMapsInternal(gsmSb.ConnectionString, lsmSb.ConnectionString);
 
                 // Drop test login
-                DropTestLogin();
+                sqlAuthLogin.Drop();
             }
             else
             {
@@ -382,67 +412,45 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
         }
 
-        bool CreateTestLogin()
+        [TestMethod()]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void BasicScenarioListShardMapsWithSecureSqlAuthentication()
         {
-            try
+            // Try to create a test login
+            var sqlAuthLogin = new SqlAuthenticationLogin(Globals.ShardMapManagerConnectionString, Globals.SqlLoginTestUser, Globals.SqlLoginTestPassword);
+
+            if (sqlAuthLogin.Create())
             {
-                using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerConnectionString))
-                {
-                    conn.Open();
-                    conn.ChangeDatabase("master");
-                    using (SqlCommand cmd = new SqlCommand())
-                    {
-                        cmd.Connection = conn;
-                        cmd.CommandText = string.Format(@"
-if exists (select name from syslogins where name = '{0}')
-begin
-	drop login {0}
-end
-create login {0} with password = '{1}'", s_testUser, s_testPassword);
-                        cmd.ExecuteNonQuery();
+                SqlConnectionStringBuilder gsmSb = new SqlConnectionStringBuilder(Globals.ShardMapManagerConnectionString)
+                                                       {
+                                                           IntegratedSecurity = false,
+                                                       };
 
-                        cmd.CommandText = string.Format("SP_ADDSRVROLEMEMBER  '{0}', 'sysadmin'", s_testUser);
-                        cmd.ExecuteNonQuery();
+                SqlConnectionStringBuilder lsmSb = new SqlConnectionStringBuilder(Globals.ShardUserConnectionString)
+                                                       {
+                                                           IntegratedSecurity = false,
+                                                       };
 
-                        return true;
-                    }
-                }
+                BasicScenarioListShardMapsInternal(
+                    gsmSb.ConnectionString,
+                    lsmSb.ConnectionString,
+                    Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
+                    Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName));
+
+                // Drop test login
+                sqlAuthLogin.Drop();
             }
-            catch (Exception e)
+            else
             {
-                Trace.WriteLine(string.Format("Exception caught in CreateTestLogin(): {0}", e.ToString()));
-            }
-
-            return false;
-        }
-
-        void DropTestLogin()
-        {
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerConnectionString))
-                {
-                    conn.Open();
-                    conn.ChangeDatabase("master");
-                    using (SqlCommand cmd = new SqlCommand())
-                    {
-                        cmd.Connection = conn;
-                        cmd.CommandText = string.Format(@"
-if exists (select name from syslogins where name = '{0}')
-begin
-	drop login {0}
-end", s_testUser);
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Trace.WriteLine(string.Format("Exception caught in DropTestLogin(): {0}", e.ToString()));
+                Assert.Inconclusive("Failed to create sql login, test skipped");
             }
         }
 
-        private void BasicScenarioListShardMapsInternal(string shardMapManagerConnectionString, string shardUserConnectionString)
+        private void BasicScenarioListShardMapsInternal(
+            string shardMapManagerConnectionString, 
+            string shardUserConnectionString, 
+            SqlCredential shardMapManagerSqlCredential = null, 
+            SqlCredential shardUserSqlCredential = null)
         {
             bool success = true;
             string shardMapName = "PerTenantShardMap";
@@ -452,18 +460,34 @@ end", s_testUser);
                 #region DeployShardMapManager
 
                 // Deploy shard map manager.
-                ShardMapManagerFactory.CreateSqlShardMapManager(
-                    shardMapManagerConnectionString,
-                    ShardMapManagerCreateMode.ReplaceExisting);
+                if (shardMapManagerSqlCredential == null)
+                {
+                    ShardMapManagerFactory.CreateSqlShardMapManager(
+                        shardMapManagerConnectionString,
+                        ShardMapManagerCreateMode.ReplaceExisting);
+                }
+                else
+                {
+                    ShardMapManagerFactory.CreateSqlShardMapManager(
+                        shardMapManagerConnectionString,
+                        shardMapManagerSqlCredential,
+                        ShardMapManagerCreateMode.ReplaceExisting);
+                }
 
                 #endregion DeployShardMapManager
 
                 #region GetShardMapManager
 
                 // Obtain shard map manager.
-                ShardMapManager shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    shardMapManagerConnectionString,
-                ShardMapManagerLoadPolicy.Lazy);
+                ShardMapManager shardMapManager = (shardMapManagerSqlCredential == null) ? 
+                    ShardMapManagerFactory.GetSqlShardMapManager(
+                        shardMapManagerConnectionString,
+                        ShardMapManagerLoadPolicy.Lazy) :
+                    ShardMapManagerFactory.GetSqlShardMapManager(
+                        shardMapManagerConnectionString,
+                        shardMapManagerSqlCredential,
+                        ShardMapManagerLoadPolicy.Lazy);
+
 
                 #endregion GetShardMapManager
 
@@ -585,10 +609,16 @@ end", s_testUser);
 
                 #region OpenConnection without Validation
 
-                using (SqlConnection conn = perTenantShardMap.OpenConnectionForKey(
-                    2,
-                    shardUserConnectionString,
-                    ConnectionOptions.None))
+                using (SqlConnection conn = (shardUserSqlCredential == null) ?
+                    perTenantShardMap.OpenConnectionForKey(
+                        2,
+                        shardUserConnectionString,
+                        ConnectionOptions.None) :
+                    perTenantShardMap.OpenConnectionForKey(
+                        2,
+                        shardUserConnectionString,
+                        shardUserSqlCredential,
+                        ConnectionOptions.None))
                 {
                 }
 
@@ -600,10 +630,16 @@ end", s_testUser);
                 bool validationFailed = false;
                 try
                 {
-                    using (SqlConnection conn = perTenantShardMap.OpenConnection(
-                        mappingToDelete,
-                        shardUserConnectionString,
-                        ConnectionOptions.Validate))
+                    using (SqlConnection conn = (shardUserSqlCredential == null) ?
+                        perTenantShardMap.OpenConnection(
+                            mappingToDelete,
+                            shardUserConnectionString,
+                            ConnectionOptions.Validate) :
+                        perTenantShardMap.OpenConnection(
+                            mappingToDelete,
+                            shardUserConnectionString,
+                            shardUserSqlCredential,
+                            ConnectionOptions.Validate))
                     {
                     }
                 }
@@ -620,17 +656,28 @@ end", s_testUser);
                 #region OpenConnection without Validation and Empty Cache
 
                 // Obtain a new ShardMapManager instance
-                ShardMapManager newShardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    shardMapManagerConnectionString,
-                ShardMapManagerLoadPolicy.Lazy);
+                ShardMapManager newShardMapManager = (shardMapManagerSqlCredential == null) ? 
+                    ShardMapManagerFactory.GetSqlShardMapManager(
+                        shardMapManagerConnectionString,
+                        ShardMapManagerLoadPolicy.Lazy) :
+                    ShardMapManagerFactory.GetSqlShardMapManager(
+                        shardMapManagerConnectionString,
+                        shardMapManagerSqlCredential,
+                        ShardMapManagerLoadPolicy.Lazy);
 
                 // Get the ShardMap
                 ListShardMap<int> newPerTenantShardMap = newShardMapManager.GetListShardMap<int>(shardMapName);
 
-                using (SqlConnection conn = newPerTenantShardMap.OpenConnectionForKey(
-                    2,
-                    shardUserConnectionString,
-                    ConnectionOptions.None))
+                using (SqlConnection conn = (shardUserSqlCredential == null) ?
+                    newPerTenantShardMap.OpenConnectionForKey(
+                        2,
+                        shardUserConnectionString,
+                        ConnectionOptions.None) :
+                    newPerTenantShardMap.OpenConnectionForKey(
+                        2,
+                        shardUserConnectionString,
+                        shardUserSqlCredential,
+                        ConnectionOptions.None))
                 {
                 }
 
@@ -642,9 +689,14 @@ end", s_testUser);
                 validationFailed = false;
 
                 // Obtain a new ShardMapManager instance
-                newShardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    shardMapManagerConnectionString,
-                ShardMapManagerLoadPolicy.Lazy);
+                newShardMapManager = (shardMapManagerSqlCredential == null) ? 
+                    ShardMapManagerFactory.GetSqlShardMapManager(
+                        shardMapManagerConnectionString,
+                        ShardMapManagerLoadPolicy.Lazy) :
+                    ShardMapManagerFactory.GetSqlShardMapManager(
+                        shardMapManagerConnectionString,
+                        shardMapManagerSqlCredential,
+                        ShardMapManagerLoadPolicy.Lazy);
 
                 // Get the ShardMap
                 newPerTenantShardMap = newShardMapManager.GetListShardMap<int>(shardMapName);
@@ -665,10 +717,16 @@ end", s_testUser);
 
                 try
                 {
-                    using (SqlConnection conn = newPerTenantShardMap.OpenConnection(
-                        newMappingToDelete,
-                        shardUserConnectionString,
-                        ConnectionOptions.Validate))
+                    using (SqlConnection conn = (shardUserSqlCredential == null) ?
+                        newPerTenantShardMap.OpenConnection(
+                            newMappingToDelete,
+                            shardUserConnectionString,
+                            ConnectionOptions.Validate) :
+                        newPerTenantShardMap.OpenConnection(
+                            newMappingToDelete,
+                            shardUserConnectionString,
+                            shardUserSqlCredential,
+                            ConnectionOptions.Validate))
                     {
                     }
                 }
@@ -684,10 +742,16 @@ end", s_testUser);
 
                 #region OpenConnectionAsync without Validation
 
-                using (SqlConnection conn = perTenantShardMap.OpenConnectionForKeyAsync(
-                    2,
-                    shardUserConnectionString,
-                    ConnectionOptions.None).Result)
+                using (SqlConnection conn = (shardUserSqlCredential == null) ?
+                    perTenantShardMap.OpenConnectionForKeyAsync(
+                        2,
+                        shardUserConnectionString,
+                        ConnectionOptions.None).Result :
+                    perTenantShardMap.OpenConnectionForKeyAsync(
+                        2,
+                        shardUserConnectionString,
+                        shardUserSqlCredential,
+                        ConnectionOptions.None).Result)
                 {
                 }
 
@@ -699,10 +763,16 @@ end", s_testUser);
                 validationFailed = false;
                 try
                 {
-                    using (SqlConnection conn = perTenantShardMap.OpenConnectionAsync(
-                        mappingToDelete,
-                        shardUserConnectionString,
-                        ConnectionOptions.Validate).Result)
+                    using (SqlConnection conn = (shardUserSqlCredential == null) ?
+                        perTenantShardMap.OpenConnectionAsync(
+                            mappingToDelete,
+                            shardUserConnectionString,
+                            ConnectionOptions.Validate).Result :
+                        perTenantShardMap.OpenConnectionAsync(
+                            mappingToDelete,
+                            shardUserConnectionString,
+                            shardUserSqlCredential,
+                            ConnectionOptions.Validate).Result)
                     {
                     }
                 }
@@ -723,16 +793,27 @@ end", s_testUser);
                 #region OpenConnectionAsync without Validation and Empty Cache
 
                 // Obtain a new ShardMapManager instance
-                newShardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    shardMapManagerConnectionString,
-                ShardMapManagerLoadPolicy.Lazy);
+                newShardMapManager = (shardMapManagerSqlCredential == null) ? 
+                    ShardMapManagerFactory.GetSqlShardMapManager(
+                        shardMapManagerConnectionString,
+                        ShardMapManagerLoadPolicy.Lazy) :
+                    ShardMapManagerFactory.GetSqlShardMapManager(
+                        shardMapManagerConnectionString,
+                        shardMapManagerSqlCredential,
+                        ShardMapManagerLoadPolicy.Lazy);
 
                 // Get the ShardMap
                 newPerTenantShardMap = newShardMapManager.GetListShardMap<int>(shardMapName);
-                using (SqlConnection conn = newPerTenantShardMap.OpenConnectionForKeyAsync(
-                    2,
-                    shardUserConnectionString,
-                    ConnectionOptions.None).Result)
+                using (SqlConnection conn = (shardUserSqlCredential == null) ?
+                    newPerTenantShardMap.OpenConnectionForKeyAsync(
+                        2,
+                        shardUserConnectionString,
+                        ConnectionOptions.None).Result :
+                    newPerTenantShardMap.OpenConnectionForKeyAsync(
+                        2,
+                        shardUserConnectionString,
+                        shardUserSqlCredential,
+                        ConnectionOptions.None).Result)
                 {
                 }
 
@@ -744,9 +825,14 @@ end", s_testUser);
                 validationFailed = false;
 
                 // Obtain a new ShardMapManager instance
-                newShardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    shardMapManagerConnectionString,
-                ShardMapManagerLoadPolicy.Lazy);
+                newShardMapManager = (shardMapManagerSqlCredential == null) ? 
+                    ShardMapManagerFactory.GetSqlShardMapManager(
+                        shardMapManagerConnectionString,
+                        ShardMapManagerLoadPolicy.Lazy) :
+                    ShardMapManagerFactory.GetSqlShardMapManager(
+                        shardMapManagerConnectionString,
+                        shardMapManagerSqlCredential,
+                        ShardMapManagerLoadPolicy.Lazy);
 
                 // Get the ShardMap
                 newPerTenantShardMap = newShardMapManager.GetListShardMap<int>(shardMapName);
@@ -767,10 +853,16 @@ end", s_testUser);
 
                 try
                 {
-                    using (SqlConnection conn = newPerTenantShardMap.OpenConnectionAsync(
-                        newMappingToDelete,
-                        shardUserConnectionString,
-                        ConnectionOptions.Validate).Result)
+                    using (SqlConnection conn = (shardUserSqlCredential == null) ?
+                        newPerTenantShardMap.OpenConnectionAsync(
+                            newMappingToDelete,
+                            shardUserConnectionString,
+                            ConnectionOptions.Validate).Result :
+                        newPerTenantShardMap.OpenConnectionAsync(
+                            newMappingToDelete,
+                            shardUserConnectionString,
+                            shardUserSqlCredential,
+                            ConnectionOptions.Validate).Result)
                     {
                     }
                 }
@@ -1039,159 +1131,190 @@ end", s_testUser);
                 {
                 }
 
-                #endregion
+                // Try to create a test login
+                var sqlAuthLogin = new SqlAuthenticationLogin(Globals.ShardMapManagerConnectionString, Globals.SqlLoginTestUser, Globals.SqlLoginTestPassword);
 
-                #region OpenConnection with Validation and Empty Cache
-
-                // Obtain new shard map manager instance
-                newShardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    Globals.ShardMapManagerConnectionString,
-                ShardMapManagerLoadPolicy.Lazy);
-
-                // Get the Range Shard Map
-                newMultiTenantShardMap = newShardMapManager.GetRangeShardMap<int>(rangeShardMapName);
-
-                // Create a new mapping
-                RangeMapping<int> newMappingToDelete = newMultiTenantShardMap.CreateRangeMapping(
-                    new Range<int>(70, 80),
-                    newMultiTenantShardMap.GetMappingForKey(23).Shard);
-
-                // Delete the mapping
-                newMappingToDelete = newMultiTenantShardMap.UpdateMapping(
-                    newMappingToDelete,
-                    new RangeMappingUpdate
-                    {
-                        Status = MappingStatus.Offline,
-                    });
-
-                newMultiTenantShardMap.DeleteMapping(newMappingToDelete);
-
-                // Use the stale state of "shardToUpdate" shard & see if validation works.
-                validationFailed = false;
-
-                try
+                if (sqlAuthLogin.Create())
                 {
-                    using (SqlConnection conn = newMultiTenantShardMap.OpenConnection(
+                    // Cover the OpenConnectionForKey overloads
+                    using (SqlConnection conn = newMultiTenantShardMap.OpenConnectionForKey(
+                        20,
+                        string.Empty,
+                        Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName)))
+                    {
+                    }
+
+                    #endregion
+
+                    #region OpenConnection with Validation and Empty Cache
+
+                    // Obtain new shard map manager instance
+                    newShardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
+                        Globals.ShardMapManagerConnectionString,
+                        ShardMapManagerLoadPolicy.Lazy);
+
+                    // Get the Range Shard Map
+                    newMultiTenantShardMap = newShardMapManager.GetRangeShardMap<int>(rangeShardMapName);
+
+                    // Create a new mapping
+                    RangeMapping<int> newMappingToDelete = newMultiTenantShardMap.CreateRangeMapping(
+                        new Range<int>(70, 80),
+                        newMultiTenantShardMap.GetMappingForKey(23).Shard);
+
+                    // Delete the mapping
+                    newMappingToDelete = newMultiTenantShardMap.UpdateMapping(
                         newMappingToDelete,
-                        Globals.ShardUserConnectionString,
-                        ConnectionOptions.Validate))
+                        new RangeMappingUpdate
+                        {
+                            Status = MappingStatus.Offline,
+                        });
+
+                    newMultiTenantShardMap.DeleteMapping(newMappingToDelete);
+
+                    // Use the stale state of "shardToUpdate" shard & see if validation works.
+                    validationFailed = false;
+
+                    try
                     {
+                        using (SqlConnection conn = newMultiTenantShardMap.OpenConnection(
+                            newMappingToDelete,
+                            Globals.ShardUserConnectionString,
+                            ConnectionOptions.Validate))
+                        {
+                        }
                     }
-                }
-                catch (ShardManagementException smme)
-                {
-                    validationFailed = true;
-                    Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
-                }
-
-                Assert.AreEqual(validationFailed, true);
-
-                #endregion
-
-                #region OpenConnectionAsync without Validation
-
-                using (SqlConnection conn = multiTenantShardMap.OpenConnectionForKeyAsync(
-                    20,
-                    Globals.ShardUserConnectionString,
-                    ConnectionOptions.None).Result)
-                {
-                }
-
-                #endregion
-
-                #region OpenConnectionAsync with Validation
-
-                // Use the stale state of "shardToUpdate" shard & see if validation works.
-                validationFailed = false;
-                try
-                {
-                    using (SqlConnection conn = multiTenantShardMap.OpenConnectionAsync(
-                        mappingToDelete,
-                        Globals.ShardUserConnectionString,
-                        ConnectionOptions.Validate).Result)
-                    {
-                    }
-                }
-                catch (AggregateException ex)
-                {
-                    ShardManagementException smme = ex.InnerException as ShardManagementException;
-                    if (smme != null)
+                    catch (ShardManagementException smme)
                     {
                         validationFailed = true;
                         Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
                     }
-                }
 
-                Assert.AreEqual(validationFailed, true);
+                    Assert.AreEqual(validationFailed, true);
 
-                #endregion
+                    #endregion
 
-                #region OpenConnectionAsync without Validation and Empty Cache
+                    #region OpenConnectionAsync without Validation
 
-                // Obtain new shard map manager instance
-                newShardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    Globals.ShardMapManagerConnectionString,
-                ShardMapManagerLoadPolicy.Lazy);
-
-                // Get the Range Shard Map
-                newMultiTenantShardMap = newShardMapManager.GetRangeShardMap<int>(rangeShardMapName);
-
-                using (SqlConnection conn = newMultiTenantShardMap.OpenConnectionForKeyAsync(
-                    20,
-                    Globals.ShardUserConnectionString,
-                    ConnectionOptions.None).Result)
-                {
-                }
-
-                #endregion
-
-                #region OpenConnectionAsync with Validation and Empty Cache
-
-                // Obtain new shard map manager instance
-                newShardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    Globals.ShardMapManagerConnectionString,
-                ShardMapManagerLoadPolicy.Lazy);
-
-                // Get the Range Shard Map
-                newMultiTenantShardMap = newShardMapManager.GetRangeShardMap<int>(rangeShardMapName);
-
-                // Create a new mapping
-                newMappingToDelete = newMultiTenantShardMap.CreateRangeMapping(
-                    new Range<int>(70, 80),
-                    newMultiTenantShardMap.GetMappingForKey(23).Shard);
-
-                // Delete the mapping
-                newMappingToDelete = newMultiTenantShardMap.UpdateMapping(
-                    newMappingToDelete,
-                    new RangeMappingUpdate
-                    {
-                        Status = MappingStatus.Offline,
-                    });
-
-                newMultiTenantShardMap.DeleteMapping(newMappingToDelete);
-
-                // Use the stale state of "shardToUpdate" shard & see if validation works.
-                validationFailed = false;
-                try
-                {
-                    using (SqlConnection conn = newMultiTenantShardMap.OpenConnectionAsync(
-                        newMappingToDelete,
+                    using (SqlConnection conn = multiTenantShardMap.OpenConnectionForKeyAsync(
+                        20,
                         Globals.ShardUserConnectionString,
-                        ConnectionOptions.Validate).Result)
+                        ConnectionOptions.None).Result)
                     {
                     }
-                }
-                catch (AggregateException ex)
-                {
-                    ShardManagementException smme = ex.InnerException as ShardManagementException;
-                    if (smme != null)
-                    {
-                        validationFailed = true;
-                        Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
-                    }
-                }
 
-                Assert.AreEqual(validationFailed, true);
+                    #endregion
+
+                    #region OpenConnectionAsync with Validation
+
+                    // Use the stale state of "shardToUpdate" shard & see if validation works.
+                    validationFailed = false;
+                    try
+                    {
+                        using (SqlConnection conn = multiTenantShardMap.OpenConnectionAsync(
+                            mappingToDelete,
+                            Globals.ShardUserConnectionString,
+                            ConnectionOptions.Validate).Result)
+                        {
+                        }
+                    }
+                    catch (AggregateException ex)
+                    {
+                        ShardManagementException smme = ex.InnerException as ShardManagementException;
+                        if (smme != null)
+                        {
+                            validationFailed = true;
+                            Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
+                        }
+                    }
+
+                    Assert.AreEqual(validationFailed, true);
+
+                    #endregion
+
+                    // Cover the OpenConnectionForKeyAsync overloads
+                    using (SqlConnection conn = multiTenantShardMap.OpenConnectionForKeyAsync(
+                        20,
+                        string.Empty,
+                        Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
+                        ConnectionOptions.None).Result)
+                    {
+                    }
+
+                    using (SqlConnection conn = multiTenantShardMap.OpenConnectionForKeyAsync(
+                        20,
+                        string.Empty,
+                        Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName)).Result)
+                    {
+                    }
+
+
+                    #region OpenConnectionAsync without Validation and Empty Cache
+
+                    // Obtain new shard map manager instance
+                    newShardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
+                        Globals.ShardMapManagerConnectionString,
+                        ShardMapManagerLoadPolicy.Lazy);
+
+                    // Get the Range Shard Map
+                    newMultiTenantShardMap = newShardMapManager.GetRangeShardMap<int>(rangeShardMapName);
+
+                    using (SqlConnection conn = newMultiTenantShardMap.OpenConnectionForKeyAsync(
+                        20,
+                        Globals.ShardUserConnectionString,
+                        ConnectionOptions.None).Result)
+                    {
+                    }
+
+                    #endregion
+
+                    #region OpenConnectionAsync with Validation and Empty Cache
+
+                    // Obtain new shard map manager instance
+                    newShardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
+                        Globals.ShardMapManagerConnectionString,
+                        ShardMapManagerLoadPolicy.Lazy);
+
+                    // Get the Range Shard Map
+                    newMultiTenantShardMap = newShardMapManager.GetRangeShardMap<int>(rangeShardMapName);
+
+                    // Create a new mapping
+                    newMappingToDelete = newMultiTenantShardMap.CreateRangeMapping(
+                        new Range<int>(70, 80),
+                        newMultiTenantShardMap.GetMappingForKey(23).Shard);
+
+                    // Delete the mapping
+                    newMappingToDelete = newMultiTenantShardMap.UpdateMapping(
+                        newMappingToDelete,
+                        new RangeMappingUpdate
+                        {
+                            Status = MappingStatus.Offline,
+                        });
+
+                    newMultiTenantShardMap.DeleteMapping(newMappingToDelete);
+
+                    // Use the stale state of "shardToUpdate" shard & see if validation works.
+                    validationFailed = false;
+                    try
+                    {
+                        using (SqlConnection conn = newMultiTenantShardMap.OpenConnectionAsync(
+                            newMappingToDelete,
+                            Globals.ShardUserConnectionString,
+                            ConnectionOptions.Validate).Result)
+                        {
+                        }
+                    }
+                    catch (AggregateException ex)
+                    {
+                        ShardManagementException smme = ex.InnerException as ShardManagementException;
+                        if (smme != null)
+                        {
+                            validationFailed = true;
+                            Assert.AreEqual(smme.ErrorCode, ShardManagementErrorCode.MappingDoesNotExist);
+                        }
+                    }
+
+                    Assert.AreEqual(validationFailed, true);
+                }
 
                 #endregion
 

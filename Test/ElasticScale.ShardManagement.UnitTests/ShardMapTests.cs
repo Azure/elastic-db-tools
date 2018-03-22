@@ -10,6 +10,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
+    using ClientTestCommon;
+
     /// <summary>
     /// Test related to ShardMap class and it's methods.
     /// </summary>
@@ -196,11 +198,65 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             Assert.AreEqual(sl, sNew.Location);
             Assert.AreEqual(sl, sm.GetShard(sl).Location);
 
+            // Validate that we can connect to the shard (using all the overloads OpenConnection available)
+            using (sNew.OpenConnection(
+                Globals.ShardUserConnectionString))
+            {
+            }
+
             // Validate that we can connect to the shard
-            using (SqlConnection conn = sNew.OpenConnection(
+            using (sNew.OpenConnection(
                     Globals.ShardUserConnectionString,
                     ConnectionOptions.Validate))
             {
+            }
+
+            var sqlAuthLogin = new SqlAuthenticationLogin(Globals.ShardMapManagerConnectionString, Globals.SqlLoginTestUser, Globals.SqlLoginTestPassword);
+
+            if (sqlAuthLogin.Create())
+            {
+                // Validate that we can connect to the shard using Sql Auth
+                using (sNew.OpenConnection(Globals.ShardUserConnectionStringForSqlAuth(sqlAuthLogin.UniquifiedUserName), ConnectionOptions.Validate))
+                {
+                }
+
+                // Validate that we can connect to the shard using a secure Sql Auth Credential
+                using (sNew.OpenConnection(string.Empty, Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName)))
+                {
+                }
+
+                using (sNew.OpenConnection(
+                    string.Empty,
+                    Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
+                    ConnectionOptions.Validate))
+                {
+                }
+
+                // Validate that we can connect to the shard using Sql Auth and a secure credential
+                // This should fail with an ArgumentException (because you can't pass in both a SqlAuth connection string
+                // and a secure credential.
+                try
+                {
+                    using (sNew.OpenConnection(
+                        Globals.ShardUserConnectionStringForSqlAuth(sqlAuthLogin.UniquifiedUserName),
+                        Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
+                        ConnectionOptions.Validate))
+                    {
+                    }
+
+                    Assert.Fail("This should have thrown, ");
+                }
+                catch (ArgumentException)
+                {
+                    // Expected failure. you can't pass in both a SqlAuth connection string and a secure credential
+                }
+
+                // Drop test login
+                sqlAuthLogin.Drop();
+            }
+            else
+            {
+                Assert.Inconclusive("Failed to create sql login, test skipped");
             }
         }
 

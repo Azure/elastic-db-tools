@@ -8,6 +8,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
+    using ClientTestCommon;
+
     /// <summary>
     /// Tests related to ShardMapManagerFactory class and it's methods.
     /// </summary>
@@ -103,9 +105,85 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         [TestCategory("ExcludeFromGatedCheckin")]
         public void CreateShardMapManager_Overwrite()
         {
-            ShardMapManagerFactory.CreateSqlShardMapManager(
+            var sqlAuthLogin = new SqlAuthenticationLogin(Globals.ShardMapManagerConnectionString, Globals.SqlLoginTestUser, Globals.SqlLoginTestPassword);
+
+            if (sqlAuthLogin.Create())
+            {
+                ShardMapManagerFactory.CreateSqlShardMapManager(
                 Globals.ShardMapManagerConnectionString,
                 ShardMapManagerCreateMode.ReplaceExisting);
+
+                // Cover all the CreateSqlShardMapManager overloads
+                ShardMapManagerFactory.CreateSqlShardMapManager(
+                    Globals.ShardMapManagerConnectionStringForSqlAuth,
+                    Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
+                    ShardMapManagerCreateMode.ReplaceExisting);
+
+                // This overload should fail with a ShardManagementException, because the manager already exists (but the Auth should work) 
+                try
+                {
+                    ShardMapManagerFactory.CreateSqlShardMapManager(
+                        Globals.ShardMapManagerConnectionStringForSqlAuth,
+                        Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName));
+                    Assert.Fail("This should have thrown, because the manager already exists");
+                }
+                catch (ShardManagementException)
+                {
+                }
+
+                // This overload should fail with a ShardManagementException, because the manager already exists (but the Auth should work) 
+                try
+                {
+                    ShardMapManagerFactory.CreateSqlShardMapManager(Globals.ShardMapManagerConnectionString);
+                    Assert.Fail("This should have thrown, because the manager already exists");
+                }
+                catch (ShardManagementException)
+                {
+                }
+
+                // This overload should fail with a ShardManagementException, because the manager already exists (but the Auth should work) 
+                try
+                {
+                    ShardMapManagerFactory.CreateSqlShardMapManager(
+                        Globals.ShardMapManagerConnectionString,
+                        RetryBehavior.DefaultRetryBehavior);
+                    Assert.Fail("This should have thrown, because the manager already exists");
+                }
+                catch (ShardManagementException)
+                {
+                }
+
+                ShardMapManagerFactory.CreateSqlShardMapManager(
+                    Globals.ShardMapManagerConnectionString,
+                    ShardMapManagerCreateMode.ReplaceExisting,
+                    RetryBehavior.DefaultRetryBehavior);
+
+                ShardMapManagerFactory.CreateSqlShardMapManager(
+                    Globals.ShardMapManagerConnectionStringForSqlAuth,
+                    Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
+                    ShardMapManagerCreateMode.ReplaceExisting,
+                    RetryBehavior.DefaultRetryBehavior);
+
+                ShardMapManagerFactory.CreateSqlShardMapManager(
+                    Globals.ShardMapManagerConnectionString,
+                    ShardMapManagerCreateMode.ReplaceExisting,
+                    RetryBehavior.DefaultRetryBehavior,
+                    null);
+
+                ShardMapManagerFactory.CreateSqlShardMapManager(
+                    Globals.ShardMapManagerConnectionStringForSqlAuth,
+                    Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
+                    ShardMapManagerCreateMode.ReplaceExisting,
+                    RetryBehavior.DefaultRetryBehavior,
+                    null);
+
+                // Drop test login
+                sqlAuthLogin.Drop();
+            }
+            else
+            {
+                Assert.Inconclusive("Failed to create sql login, test skipped");
+            }
         }
 
         /// <summary>
@@ -151,6 +229,40 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     loadPolicy,
                     RetryBehavior.DefaultRetryBehavior);
                 Assert.IsNotNull(smm2);
+
+                var sqlAuthLogin = new SqlAuthenticationLogin(Globals.ShardMapManagerConnectionString, Globals.SqlLoginTestUser, Globals.SqlLoginTestPassword);
+
+                if (sqlAuthLogin.Create())
+                {
+                    // Cover all the GetSqlShardMapManager overloads
+                    ShardMapManager smm3 = ShardMapManagerFactory.GetSqlShardMapManager(
+                    Globals.ShardMapManagerConnectionStringForSqlAuth,
+                    Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
+                    loadPolicy,
+                    RetryBehavior.DefaultRetryBehavior);
+                    Assert.IsNotNull(smm3);
+
+                    ShardMapManager smm4 = ShardMapManagerFactory.GetSqlShardMapManager(
+                        Globals.ShardMapManagerConnectionStringForSqlAuth,
+                        Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
+                        loadPolicy,
+                        RetryBehavior.DefaultRetryBehavior,
+                        null);
+                    Assert.IsNotNull(smm4);
+
+                    ShardMapManager smm5 = ShardMapManagerFactory.GetSqlShardMapManager(
+                        Globals.ShardMapManagerConnectionStringForSqlAuth,
+                        Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
+                        loadPolicy);
+                    Assert.IsNotNull(smm5);
+
+                    // Drop test login
+                    sqlAuthLogin.Drop();
+                }
+                else
+                {
+                    Assert.Inconclusive("Failed to create sql login, test skipped");
+                }
             }
         }
 
@@ -184,6 +296,35 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     out smm);
                 Assert.IsTrue(success);
                 Assert.IsNotNull(smm);
+
+                // Cover all the overloads
+                var sqlAuthLogin = new SqlAuthenticationLogin(Globals.ShardMapManagerConnectionString, Globals.SqlLoginTestUser, Globals.SqlLoginTestPassword);
+
+                if (sqlAuthLogin.Create())
+                {
+                    success = ShardMapManagerFactory.TryGetSqlShardMapManager(
+                    Globals.ShardMapManagerConnectionStringForSqlAuth,
+                    Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
+                    loadPolicy,
+                    RetryBehavior.DefaultRetryBehavior,
+                    out smm);
+                    Assert.IsTrue(success);
+                    Assert.IsNotNull(smm);
+
+                    success = ShardMapManagerFactory.TryGetSqlShardMapManager(
+                        Globals.ShardMapManagerConnectionStringForSqlAuth,
+                        Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
+                        loadPolicy,
+                        RetryBehavior.DefaultRetryBehavior,
+                        null,
+                        out smm);
+                    Assert.IsTrue(success);
+                    Assert.IsNotNull(smm);
+                }
+                else
+                {
+                    Assert.Inconclusive("Failed to create sql login, test skipped");
+                }
             }
         }
 

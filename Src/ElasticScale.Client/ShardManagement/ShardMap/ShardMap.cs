@@ -150,6 +150,31 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
         /// <summary>
         /// Opens a regular <see cref="SqlConnection"/> to the shard 
+        /// to which the specified key value is mapped, with <see cref="ConnectionOptions.Validate"/>.
+        /// </summary>
+        /// <typeparam name="TKey">Type of the key.</typeparam>
+        /// <param name="key">Input key value.</param>
+        /// <param name="connectionString">
+        /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+        /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+        /// </param>
+        /// <param name="secureCredential">Secure SQL Credential.</param>
+        /// <returns>An opened SqlConnection.</returns>
+        /// <remarks>
+        /// Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults. 
+        /// Callers should follow best practices to protect the connection against transient faults 
+        /// in their application code, e.g., by using the transient fault handling 
+        /// functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+        /// This call only works if there is a single default mapping.
+        /// </remarks>
+        public SqlConnection OpenConnectionForKey<TKey>(
+            TKey key, string connectionString, SqlCredential secureCredential)
+        {
+            return this.OpenConnectionForKey(key, connectionString, secureCredential, ConnectionOptions.Validate);
+        }
+
+        /// <summary>
+        /// Opens a regular <see cref="SqlConnection"/> to the shard 
         /// to which the specified key value is mapped.
         /// </summary>
         /// <typeparam name="TKey">Type of the key.</typeparam>
@@ -170,6 +195,35 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         public SqlConnection OpenConnectionForKey<TKey>(
             TKey key,
             string connectionString,
+            ConnectionOptions options)
+        {
+            return this.OpenConnectionForKey(key, connectionString, null, options);
+        }
+
+        /// <summary>
+        /// Opens a regular <see cref="SqlConnection"/> to the shard 
+        /// to which the specified key value is mapped.
+        /// </summary>
+        /// <typeparam name="TKey">Type of the key.</typeparam>
+        /// <param name="key">Input key value.</param>
+        /// <param name="connectionString">
+        /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+        /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+        /// </param>
+        /// <param name="secureCredential">Secure SQL Credential.</param>
+        /// <param name="options">Options for validation operations to perform on opened connection.</param>
+        /// <returns>An opened SqlConnection.</returns>
+        /// <remarks>
+        /// Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults. 
+        /// Callers should follow best practices to protect the connection against transient faults 
+        /// in their application code, e.g., by using the transient fault handling 
+        /// functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+        /// This call only works if there is a single default mapping.
+        /// </remarks>
+        public SqlConnection OpenConnectionForKey<TKey>(
+            TKey key,
+            string connectionString,
+            SqlCredential secureCredential,
             ConnectionOptions options)
         {
             ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
@@ -193,7 +247,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 Debug.Assert(mapper != null);
 
-                return mapper.OpenConnectionForKey(key, connectionString, options);
+                return mapper.OpenConnectionForKey(key, connectionString, secureCredential, options);
             }
         }
 
@@ -223,6 +277,31 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
         /// <summary>
         /// Asynchronously opens a regular <see cref="SqlConnection"/> to the shard 
+        /// to which the specified key value is mapped, with <see cref="ConnectionOptions.Validate"/>.
+        /// </summary>
+        /// <typeparam name="TKey">Type of the key.</typeparam>
+        /// <param name="key">Input key value.</param>
+        /// <param name="connectionString">
+        /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+        /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+        /// </param>
+        /// <param name="secureCredential">Secure SQL Credential.</param>
+        /// <returns>A Task encapsulating an opened SqlConnection.</returns>
+        /// <remarks>
+        /// Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults. 
+        /// Callers should follow best practices to protect the connection against transient faults 
+        /// in their application code, e.g., by using the transient fault handling 
+        /// functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+        /// This call only works if there is a single default mapping.
+        /// </remarks>
+        public Task<SqlConnection> OpenConnectionForKeyAsync<TKey>(
+            TKey key, string connectionString, SqlCredential secureCredential)
+        {
+            return this.OpenConnectionForKeyAsync(key, connectionString, secureCredential, ConnectionOptions.Validate);
+        }
+
+        /// <summary>
+        /// Asynchronously opens a regular <see cref="SqlConnection"/> to the shard 
         /// to which the specified key value is mapped.
         /// </summary>
         /// <typeparam name="TKey">Type of the key.</typeparam>
@@ -243,6 +322,35 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         public Task<SqlConnection> OpenConnectionForKeyAsync<TKey>(
             TKey key,
             string connectionString,
+            ConnectionOptions options)
+        {
+            return OpenConnectionForKeyAsync(key, connectionString, null, options);
+        }
+
+        /// <summary>
+        /// Asynchronously opens a regular <see cref="SqlConnection"/> to the shard 
+        /// to which the specified key value is mapped.
+        /// </summary>
+        /// <typeparam name="TKey">Type of the key.</typeparam>
+        /// <param name="key">Input key value.</param>
+        /// <param name="connectionString">
+        /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+        /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+        /// </param>
+        /// <param name="secureCredential">Secure SQL Credential.</param>
+        /// <param name="options">Options for validation operations to perform on opened connection.</param>
+        /// <returns>A Task encapsulating an opened SqlConnection.</returns>
+        /// <remarks>
+        /// Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults. 
+        /// Callers should follow best practices to protect the connection against transient faults 
+        /// in their application code, e.g., by using the transient fault handling 
+        /// functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+        /// This call only works if there is a single default mapping.
+        /// </remarks>
+        public Task<SqlConnection> OpenConnectionForKeyAsync<TKey>(
+            TKey key,
+            string connectionString,
+            SqlCredential secureCredential,
             ConnectionOptions options)
         {
             ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
@@ -266,7 +374,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 Debug.Assert(mapper != null);
 
-                return mapper.OpenConnectionForKeyAsync(key, connectionString, options);
+                return mapper.OpenConnectionForKeyAsync(key, connectionString, secureCredential, options);
             }
         }
 
@@ -531,10 +639,26 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="shardProvider">Shard provider containing shard to be connected to.</param>
         /// <param name="connectionString">Connection string for connection. Must have credentials.</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
+        internal SqlConnection OpenConnection(
+            IShardProvider shardProvider,
+            string connectionString,
+            ConnectionOptions options = ConnectionOptions.Validate)
+        {
+            return this.OpenConnection(shardProvider, connectionString, null, options);
+        }
+
+        /// <summary>
+        /// Opens a connection to the given shard provider.
+        /// </summary>
+        /// <param name="shardProvider">Shard provider containing shard to be connected to.</param>
+        /// <param name="connectionString">Connection string for connection. Must have credentials.</param>
+        /// <param name="secureCredential">Secure SQL Credential.</param>
+        /// <param name="options">Options for validation operations to perform on opened connection.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller will be responsible for disposal")]
         internal SqlConnection OpenConnection(
             IShardProvider shardProvider,
             string connectionString,
+            SqlCredential secureCredential,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
             Debug.Assert(shardProvider != null, "Expecting IShardProvider.");
@@ -542,7 +666,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             string connectionStringFinal = this.ValidateAndPrepareConnectionString(
                 shardProvider,
-                connectionString);
+                connectionString,
+                secureCredential);
 
             ExceptionUtils.EnsureShardBelongsToShardMap(
                 this.Manager,
@@ -551,7 +676,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 "OpenConnection",
                 "Shard");
 
-            IUserStoreConnection conn = this.Manager.StoreConnectionFactory.GetUserConnection(connectionStringFinal);
+            IUserStoreConnection conn = this.Manager.StoreConnectionFactory.GetUserConnection(connectionStringFinal, secureCredential);
 
             Tracer.TraceInfo(
                 TraceSourceConstants.ComponentNames.ShardMap,
@@ -595,10 +720,32 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>A task encapsulating the SqlConnection</returns>
         /// <remarks>All exceptions are reported via the returned task.</remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Microsoft.Reliability",
+            "CA2000:Dispose objects before losing scope",
+            Justification = "Caller will be responsible for disposal")]
+        internal async Task<SqlConnection> OpenConnectionAsync(
+            IShardProvider shardProvider,
+            string connectionString,
+            ConnectionOptions options = ConnectionOptions.Validate)
+        {
+            return await this.OpenConnectionAsync(shardProvider, connectionString, null, options);
+        }
+
+        /// <summary>
+        /// Asynchronously opens a connection to the given shard provider.
+        /// </summary>
+        /// <param name="shardProvider">Shard provider containing shard to be connected to.</param>
+        /// <param name="connectionString">Connection string for connection. Must have credentials.</param>
+        /// <param name="secureCredential">Secure Sql credential information.</param>
+        /// <param name="options">Options for validation operations to perform on opened connection.</param>
+        /// <returns>A task encapsulating the SqlConnection</returns>
+        /// <remarks>All exceptions are reported via the returned task.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller will be responsible for disposal")]
         internal async Task<SqlConnection> OpenConnectionAsync(
             IShardProvider shardProvider,
             string connectionString,
+            SqlCredential secureCredential,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
             Debug.Assert(shardProvider != null, "Expecting IShardProvider.");
@@ -606,7 +753,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             string connectionStringFinal = this.ValidateAndPrepareConnectionString(
                 shardProvider,
-                connectionString);
+                connectionString,
+                secureCredential);
 
             ExceptionUtils.EnsureShardBelongsToShardMap(
                 this.Manager,
@@ -615,7 +763,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 "OpenConnectionAsync",
                 "Shard");
 
-            IUserStoreConnection conn = this.Manager.StoreConnectionFactory.GetUserConnection(connectionStringFinal);
+            IUserStoreConnection conn = this.Manager.StoreConnectionFactory.GetUserConnection(connectionStringFinal, secureCredential);
 
             Tracer.TraceInfo(
                 TraceSourceConstants.ComponentNames.ShardMap,
@@ -683,8 +831,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="shardProvider">Shard provider containing shard to be connected to.</param>
         /// <param name="connectionString">Input connection string.</param>
+        /// <param name="secureCredential"></param>
         /// <returns>Connection string for DDR connection.</returns>
-        private string ValidateAndPrepareConnectionString(IShardProvider shardProvider, string connectionString)
+        private string ValidateAndPrepareConnectionString(
+            IShardProvider shardProvider,
+            string connectionString,
+            SqlCredential secureCredential)
         {
             Debug.Assert(shardProvider != null);
             Debug.Assert(connectionString != null);
@@ -724,7 +876,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             }
 
             // Verify that either UserID/Password or provided or integrated authentication is enabled.
-            SqlShardMapManagerCredentials.EnsureCredentials(connectionStringBuilder, "connectionString");
+            SqlShardMapManagerCredentials.EnsureCredentials(connectionStringBuilder, "connectionString", secureCredential);
 
             Shard s = shardProvider.ShardInfo;
 

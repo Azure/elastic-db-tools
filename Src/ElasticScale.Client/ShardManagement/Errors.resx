@@ -213,6 +213,9 @@
   <data name="_SqlShardMapManagerCredentials_ConnectionStringPropertyRequired" xml:space="preserve">
     <value>The required property '{0}' must be set in the connection string.</value>
   </data>
+  <data name="_SqlShardMapManagerCredentials_ConnectionStringPropertyNotAllowed" xml:space="preserve">
+    <value>The required property '{0}' must not be set in the connection string.</value>
+  </data>
   <data name="_Shard_DifferentShardMap" xml:space="preserve">
     <value>Shard '{0}' provided for the given '{1}' is not associated with current shard map '{2}'. The '{3}' operations required the shard to be associated with the current shard map.</value>
   </data>

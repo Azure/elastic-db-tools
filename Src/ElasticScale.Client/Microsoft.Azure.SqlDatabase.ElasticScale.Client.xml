@@ -2332,6 +2332,11 @@
               Looks up a localized string similar to The low value {0} is greater than or equal to the high value {1}. Lower value must be less than the higher value..
             </summary>
         </member>
+        <member name="P:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyNotAllowed">
+            <summary>
+              Looks up a localized string similar to The required property &apos;{0}&apos; must not be set in the connection string..
+            </summary>
+        </member>
         <member name="P:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired">
             <summary>
               Looks up a localized string similar to The required property &apos;{0}&apos; must be set in the connection string..
@@ -4165,10 +4170,28 @@
         </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStoreConnection.#ctor(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreConnectionKind,System.String)">
             <summary>
-            Constructs an instance of Sql Store Connection.
+            Initializes a new instance of the <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStoreConnection"/> class. 
             </summary>
-            <param name="kind">Type of store connection.</param>
-            <param name="connectionString"></param>
+            <param name="kind">
+            Type of store connection.
+            </param>
+            <param name="connectionString">
+            The SQL connection string
+            </param>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStoreConnection.#ctor(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreConnectionKind,System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStoreConnection"/> class. 
+            </summary>
+            <param name="kind">
+            Type of store connection.
+            </param>
+            <param name="connectionString">
+            The SQL connection string
+            </param>
+            <param name="secureCredential">
+            The secure SQL Credential.
+            </param>
         </member>
         <member name="P:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStoreConnection.Kind">
             <summary>
@@ -4251,11 +4274,28 @@
             <param name="connectionString">Connection string for store.</param>
             <returns>An unopened instance of the store connection.</returns>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStoreConnectionFactory.GetConnection(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreConnectionKind,System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Constructs a new instance of store connection.
+            </summary>
+            <param name="kind">Type of store connection.</param>
+            <param name="connectionString">Connection string for store.</param>
+            <param name="secureCredential">Secure Credential for store.</param>
+            <returns>An unopened instance of the store connection.</returns>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStoreConnectionFactory.GetUserConnection(System.String)">
             <summary>
             Constructs a new instance of user connection.
             </summary>
             <param name="connectionString">Connection string of user.</param>
+            <returns>An unopened instance of the user connection.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStoreConnectionFactory.GetUserConnection(System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Constructs a new instance of user connection.
+            </summary>
+            <param name="connectionString">Connection string of user.</param>
+            <param name="secureCredential">Secure Credential of user</param>
             <returns>An unopened instance of the user connection.</returns>
         </member>
         <member name="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlUserStoreConnection">
@@ -4268,11 +4308,12 @@
             Underlying connection.
             </summary>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlUserStoreConnection.#ctor(System.String)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlUserStoreConnection.#ctor(System.String,System.Data.SqlClient.SqlCredential)">
             <summary>
             Creates a new instance of user store connection.
             </summary>
             <param name="connectionString">Connection string.</param>
+            <param name="secureCredential">Secure SQL Credential.</param>
         </member>
         <member name="P:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlUserStoreConnection.Connection">
             <summary>
@@ -8109,6 +8150,12 @@
             </summary>
             <returns>Connection string for LSM given its location.</returns>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperation.GetSecureCredentialForShardLocation(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardLocation)">
+            <summary>
+            Obtains the Secure Credential for an LSM location.
+            </summary>
+            <returns>Connection string for LSM given its location.</returns>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperation.UndoStateForDoState(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreOperationState)">
             <summary>
             Given a state of the Do operation progress, gets the corresponding starting point
@@ -9667,16 +9714,40 @@
             Connection string for individual shards.
             </summary>
         </member>
+        <member name="F:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlShardMapManagerCredentials._secureCredential">
+            <summary>
+            Secure credential for shard map manager data source.
+            </summary>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlShardMapManagerCredentials.#ctor(System.String)">
             <summary>
             Instantiates the object that holds the credentials for accessing SQL Servers 
             containing the shard map manager data.
             </summary>
-            <param name="connectionString">Connection string for Shard map manager data source.</param>
+            <param name="connectionString">
+            Connection string for shard map manager data source.
+            </param>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlShardMapManagerCredentials.#ctor(System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Instantiates the object that holds the credentials for accessing SQL Servers 
+            containing the shard map manager data.
+            </summary>
+            <param name="connectionString">
+            Connection string for shard map manager data source.
+            </param>
+            <param name="secureCredential">
+             Secure credential for shard map manager data source.
+            </param>
         </member>
         <member name="P:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlShardMapManagerCredentials.ConnectionStringShardMapManager">
             <summary>
             Connection string for shard map manager database.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlShardMapManagerCredentials.SecureCredentialShardMapManager">
+            <summary>
+            Secure Credential for shard map manager database.
             </summary>
         </member>
         <member name="P:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlShardMapManagerCredentials.ConnectionStringShard">
@@ -9689,12 +9760,19 @@
             Location of Shard Map Manager used for logging purpose.
             </summary>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlShardMapManagerCredentials.EnsureCredentials(System.Data.SqlClient.SqlConnectionStringBuilder,System.String)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlShardMapManagerCredentials.EnsureCredentials(System.Data.SqlClient.SqlConnectionStringBuilder,System.String,System.Data.SqlClient.SqlCredential)">
             <summary>
             Ensures that credentials are provided for the given connection string object.
             </summary>
-            <param name="connectionString">Input connection string object.</param>
-            <param name="parameterName">Parameter name of the connection string object.</param>
+            <param name="connectionString">
+            Input connection string object.
+            </param>
+            <param name="parameterName">
+            Parameter name of the connection string object.
+            </param>
+            <param name="secureCredential">
+            Input secure SQL credential object.
+            </param>
         </member>
         <member name="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.BaseShardMapper">
             <summary>
@@ -9759,6 +9837,24 @@
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>An opened SqlConnection.</returns>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.BaseShardMapper.OpenConnectionForKey``2(``1,System.Func{Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,``0},Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardManagementErrorCategory,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Given a key value, obtains a SqlConnection to the shard in the mapping
+            that contains the key value.
+            </summary>
+            <typeparam name="TMapping">Mapping type.</typeparam>
+            <typeparam name="TKey">Key type.</typeparam>
+            <param name="key">Input key value.</param>
+            <param name="constructMapping">Delegate to construct a mapping object.</param>
+            <param name="errorCategory">Error category.</param>
+            <param name="connectionString">
+            Connection string with credential information, the DataSource and Database are 
+            obtained from the results of the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure Sql credential information</param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>An opened SqlConnection.</returns>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.BaseShardMapper.OpenConnectionForKeyAsync``2(``1,System.Func{Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,``0},Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardManagementErrorCategory,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
             <summary>
             Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
@@ -9773,6 +9869,24 @@
             Connection string with credential information, the DataSource and Database are 
             obtained from the results of the lookup operation for key.
             </param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>A task encapsulating an opened SqlConnection as the result.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.BaseShardMapper.OpenConnectionForKeyAsync``2(``1,System.Func{Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreMapping,``0},Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardManagementErrorCategory,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
+            that contains the key value.
+            </summary>
+            <typeparam name="TMapping">Mapping type.</typeparam>
+            <typeparam name="TKey">Key type.</typeparam>
+            <param name="key">Input key value.</param>
+            <param name="constructMapping">Delegate to construct a mapping object.</param>
+            <param name="errorCategory">Error category.</param>
+            <param name="connectionString">
+            Connection string with credential information, the DataSource and Database are 
+            obtained from the results of the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>A task encapsulating an opened SqlConnection as the result.</returns>
         </member>
@@ -9898,6 +10012,19 @@
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>An opened SqlConnection.</returns>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.DefaultShardMapper.OpenConnectionForKey(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Shard,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Given a shard, obtains a SqlConnection to the shard. The shard must exist in the mapper.
+            </summary>
+            <param name="key">Input shard.</param>
+            <param name="connectionString">
+            Connection string with credential information, the DataSource and Database are 
+            obtained from the results of the lookup operation.
+            </param>
+            <param name="secureCredential">Secure SQL credential.</param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>An opened SqlConnection.</returns>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.DefaultShardMapper.OpenConnectionForKeyAsync(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Shard,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
             <summary>
             Given a shard, asynchronously obtains a SqlConnection to the shard. The shard must exist in the mapper.
@@ -9907,6 +10034,19 @@
             Connection string with credential information, the DataSource and Database are 
             obtained from the results of the lookup operation.
             </param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>An opened SqlConnection.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.DefaultShardMapper.OpenConnectionForKeyAsync(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Shard,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Given a shard, asynchronously obtains a SqlConnection to the shard. The shard must exist in the mapper.
+            </summary>
+            <param name="key">Input shard.</param>
+            <param name="connectionString">
+            Connection string with credential information, the DataSource and Database are 
+            obtained from the results of the lookup operation.
+            </param>
+            <param name="secureCredential">Secure SQL credential.</param>
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>An opened SqlConnection.</returns>
         </member>
@@ -10025,6 +10165,20 @@
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>An opened SqlConnection.</returns>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IShardMapper`1.OpenConnectionForKey(`0,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Given a key value, obtains a SqlConnection to the shard in the mapping
+            that contains the key value.
+            </summary>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information, the DataSource and Database are 
+            obtained from the results of the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>An opened SqlConnection.</returns>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IShardMapper`1.OpenConnectionForKeyAsync(`0,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
             <summary>
             Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
@@ -10035,6 +10189,20 @@
             Connection string with credential information, the DataSource and Database are 
             obtained from the results of the lookup operation for key.
             </param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>An opened SqlConnection.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IShardMapper`1.OpenConnectionForKeyAsync(`0,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
+            that contains the key value.
+            </summary>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information, the DataSource and Database are 
+            obtained from the results of the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>An opened SqlConnection.</returns>
         </member>
@@ -10102,6 +10270,20 @@
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>An opened SqlConnection.</returns>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMapper`1.OpenConnectionForKey(`0,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Given a key value, obtains a SqlConnection to the shard in the mapping
+            that contains the key value.
+            </summary>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information, the DataSource and Database are 
+            obtained from the results of the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure Sql Credential.</param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>An opened SqlConnection.</returns>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMapper`1.OpenConnectionForKeyAsync(`0,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
             <summary>
             Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
@@ -10109,6 +10291,21 @@
             </summary>
             <param name="key">Input key value.</param>
             <param name="connectionString">
+            Connection string with credential information, the DataSource and Database are 
+            obtained from the results of the lookup operation for key.
+            </param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>A Task encapsulating an opened SqlConnection.</returns>
+            <remarks>All non usage-error exceptions will be reported via the returned Task</remarks>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMapper`1.OpenConnectionForKeyAsync(`0,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
+            that contains the key value.
+            </summary>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            <param name="secureCredential">Secure SQL Credential.</param>
             Connection string with credential information, the DataSource and Database are 
             obtained from the results of the lookup operation for key.
             </param>
@@ -10224,6 +10421,20 @@
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>An opened SqlConnection.</returns>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMapper`1.OpenConnectionForKey(`0,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Given a key value, obtains a SqlConnection to the shard in the mapping
+            that contains the key value.
+            </summary>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information, the DataSource and Database are 
+            obtained from the results of the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>An opened SqlConnection.</returns>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMapper`1.OpenConnectionForKeyAsync(`0,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
             <summary>
             Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
@@ -10234,6 +10445,20 @@
             Connection string with credential information, the DataSource and Database are 
             obtained from the results of the lookup operation for key.
             </param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>A Task encapsulating an opened SqlConnection.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMapper`1.OpenConnectionForKeyAsync(`0,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
+            that contains the key value.
+            </summary>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information, the DataSource and Database are 
+            obtained from the results of the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>A Task encapsulating an opened SqlConnection.</returns>
         </member>
@@ -11559,6 +11784,21 @@
             functionality in the Enterprise Library from Microsoft Patterns and Practices team.
             </remarks>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Shard.OpenConnection(System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the specified shard, with <see cref="F:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions.Validate"/>.
+            </summary>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure Sql credential information.</param>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            </remarks>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Shard.OpenConnection(System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
             <summary>
             Opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the specified shard.
@@ -11567,6 +11807,22 @@
             Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
             The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
             </param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Shard.OpenConnection(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the specified shard.
+            </summary>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL credential information.</param>
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <remarks>
             Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
@@ -11590,6 +11846,23 @@
             All non-usage errors will be propagated via the returned Task.
             </remarks>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Shard.OpenConnectionAsync(System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Asynchronously opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the specified shard, with <see cref="F:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions.Validate"/>.
+            </summary>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
+            <returns>A Task encapsulating an opened SqlConnection</returns>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            All non-usage errors will be propagated via the returned Task.
+            </remarks>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Shard.OpenConnectionAsync(System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
             <summary>
             Asynchronously a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the specified shard.
@@ -11598,6 +11871,24 @@
             Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
             The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
             </param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>A Task encapsulating an opened SqlConnection</returns>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            All non-usage errors will be propagated via the returned Task.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Shard.OpenConnectionAsync(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Asynchronously a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the specified shard.
+            </summary>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>A Task encapsulating an opened SqlConnection</returns>
             <remarks>
@@ -11965,12 +12256,37 @@
             shard maps, shards and shard mappings.
             </returns>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.CreateSqlShardMapManager(System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Creates a <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database,
+            with <see cref="F:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerCreateMode.KeepExisting"/> and <see cref="P:Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior.DefaultRetryBehavior"/>.
+            </summary>
+            <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+            <param name="secureCredential">Secure credential used for creating shard map manager database.</param>
+            <returns>
+            A shard map manager object used for performing management and read operations for
+            shard maps, shards and shard mappings.
+            </returns>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.CreateSqlShardMapManager(System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerCreateMode)">
             <summary>
             Creates a <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database, 
             with <see cref="P:Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior.DefaultRetryBehavior"/>.
             </summary>
             <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+            <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
+            <returns>
+            A shard map manager object used for performing management and read operations for
+            shard maps, shards and shard mappings.
+            </returns>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.CreateSqlShardMapManager(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerCreateMode)">
+            <summary>
+            Creates a <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database, 
+            with <see cref="P:Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior.DefaultRetryBehavior"/>.
+            </summary>
+            <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+            <param name="secureCredential">Secure credential used for creating shard map manager database.</param>
             <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
             <returns>
             A shard map manager object used for performing management and read operations for
@@ -11986,6 +12302,16 @@
             <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
             <param name="targetVersion">Target version of store to create.</param>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.CreateSqlShardMapManager(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerCreateMode,System.Version)">
+            <summary>
+            Creates a <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database, 
+            with <see cref="P:Microsoft.Azure.SqlDatabase.ElasticScale.RetryPolicy.DefaultRetryPolicy"/>.
+            </summary>
+            <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+            <param name="secureCredential">Secure credential used for creating shard map manager database.</param>
+            <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
+            <param name="targetVersion">Target version of store to create.</param>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.CreateSqlShardMapManager(System.String,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior)">
             <summary>
             Creates a <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database,
@@ -11998,11 +12324,37 @@
             shard maps, shards and shard mappings.
             </returns>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.CreateSqlShardMapManager(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior)">
+            <summary>
+            Creates a <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database,
+            with <see cref="F:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerCreateMode.KeepExisting"/>.
+            </summary>
+            <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+            <param name="secureCredential">Secure credential used for creating shard map manager database.</param>
+            <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
+            <returns>
+            A shard map manager object used for performing management and read operations for
+            shard maps, shards and shard mappings.
+            </returns>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.CreateSqlShardMapManager(System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerCreateMode,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior)">
             <summary>
             Creates a <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database.
             </summary>
             <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+            <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
+            <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
+            <returns>
+            A shard map manager object used for performing management and read operations for
+            shard maps, shards and shard mappings.
+            </returns>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.CreateSqlShardMapManager(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerCreateMode,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior)">
+            <summary>
+            Creates a <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database.
+            </summary>
+            <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+            <param name="secureCredential">Secure credential used for creating shard map manager database.</param>
             <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
             <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
             <returns>
@@ -12023,15 +12375,30 @@
             shard maps, shards and shard mappings.
             </returns>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.CreateSqlShardMapManagerImpl(System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerCreateMode,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior,System.EventHandler{Microsoft.Azure.SqlDatabase.ElasticScale.RetryingEventArgs},System.Version)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.CreateSqlShardMapManager(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerCreateMode,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior,System.EventHandler{Microsoft.Azure.SqlDatabase.ElasticScale.RetryingEventArgs})">
             <summary>
             Creates a <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database.
             </summary>
             <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+            <param name="secureCredential">Secure credential used for creating shard map manager database.</param>
+            <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
+            <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
+            <param name="retryEventHandler">Event handler for store operation retry events.</param>
+            <returns>
+            A shard map manager object used for performing management and read operations for
+            shard maps, shards and shard mappings.
+            </returns>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.CreateSqlShardMapManagerImpl(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerCreateMode,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior,System.EventHandler{Microsoft.Azure.SqlDatabase.ElasticScale.RetryingEventArgs},System.Version)">
+            <summary>
+            Creates a <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database.
+            </summary>
+            <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+            <param name="secureCredential">Secure credential used for creating shard map manager database.</param>
             <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
             <param name="retryBehavior">Behavior for performing retries on connections to shard map manager database.</param>
-            <param name="targetVersion">Target version of Store to deploy, this is mainly used for upgrade testing.</param>
             <param name="retryEventHandler">Event handler for store operation retry events.</param>
+            <param name="targetVersion">Target version of Store to deploy, this is mainly used for upgrade testing.</param>
             <returns>
             A shard map manager object used for performing management and read operations for
             shard maps, shards and shard mappings.
@@ -12049,29 +12416,57 @@
             <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
             </returns>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.TryGetSqlShardMapManager(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerLoadPolicy,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager@)">
+            <summary>
+            Gets <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> from persisted state in a SQL Server database.
+            </summary>
+            <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
+            <param name="secureCredential">Secure credential used for performing operations against shard map manager database(s).</param>
+            <param name="loadPolicy">Initialization policy.</param>
+            <param name="shardMapManager">Shard map manager object used for performing management and read operations for shard maps, 
+                shards and shard mappings or <c>null</c> in case shard map manager does not exist.</param>
+            <returns>
+            <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
+            </returns>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.TryGetSqlShardMapManager(System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerLoadPolicy,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager@)">
             <summary>
             Gets <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> from persisted state in a SQL Server database.
             </summary>
             <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
             <param name="loadPolicy">Initialization policy.</param>
-            <param name="shardMapManager">Shard map manager object used for performing management and read operations for shard maps, 
-            shards and shard mappings or <c>null</c> in case shard map manager does not exist.</param>
             <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
+            <param name="shardMapManager">Shard map manager object used for performing management and read operations for shard maps, 
+                shards and shard mappings or <c>null</c> in case shard map manager does not exist.</param>
             <returns>
             <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
             </returns>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.TryGetSqlShardMapManager(System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerLoadPolicy,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior,System.EventHandler{Microsoft.Azure.SqlDatabase.ElasticScale.RetryingEventArgs},Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager@)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.TryGetSqlShardMapManager(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerLoadPolicy,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager@)">
             <summary>
             Gets <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> from persisted state in a SQL Server database.
             </summary>
             <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
+            <param name="secureCredential">Secure credential used for performing operations against shard map manager database(s).</param>
             <param name="loadPolicy">Initialization policy.</param>
+            <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
             <param name="shardMapManager">Shard map manager object used for performing management and read operations for shard maps, 
-            shards and shard mappings or <c>null</c> in case shard map manager does not exist.</param>
+                shards and shard mappings or <c>null</c> in case shard map manager does not exist.</param>
+            <returns>
+            <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
+            </returns>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.TryGetSqlShardMapManager(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerLoadPolicy,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior,System.EventHandler{Microsoft.Azure.SqlDatabase.ElasticScale.RetryingEventArgs},Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager@)">
+            <summary>
+            Gets <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> from persisted state in a SQL Server database.
+            </summary>
+            <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
+            <param name="secureCredential">Secure credential used for performing operations against shard map manager database(s).</param>
+            <param name="loadPolicy">Initialization policy.</param>
             <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
             <param name="retryEventHandler">Event handler for store operation retry events.</param>
+            <param name="shardMapManager">Shard map manager object used for performing management and read operations for shard maps, 
+                shards and shard mappings or <c>null</c> in case shard map manager does not exist.</param>
             <returns>
             <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
             </returns>
@@ -12081,6 +12476,18 @@
             Gets <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> from persisted state in a SQL Server database, with <see cref="P:Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior.DefaultRetryBehavior"/>. 
             </summary>
             <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
+            <param name="loadPolicy">Initialization policy.</param>
+            <returns>
+            A shard map manager object used for performing management and read operations for
+            shard maps, shards and shard mappings.
+            </returns>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.GetSqlShardMapManager(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerLoadPolicy)">
+            <summary>
+            Gets <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> from persisted state in a SQL Server database, with <see cref="P:Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior.DefaultRetryBehavior"/>. 
+            </summary>
+            <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
+            <param name="secureCredential">Secure credential used for performing operations against shard map manager database(s).</param>
             <param name="loadPolicy">Initialization policy.</param>
             <returns>
             A shard map manager object used for performing management and read operations for
@@ -12099,16 +12506,30 @@
             shard maps, shards and shard mappings.
             </returns>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.GetSqlShardMapManager(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerLoadPolicy,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior)">
+            <summary>
+            Gets <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> from persisted state in a SQL Server database.
+            </summary>
+            <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
+            <param name="secureCredential">Secure credential used for performing operations against shard map manager database(s).</param>
+            <param name="loadPolicy">Initialization policy.</param>
+            <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
+            <returns>
+            A shard map manager object used for performing management and read operations for
+            shard maps, shards and shard mappings.
+            </returns>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.CreatePerformanceCategoryAndCounters">
             <summary>
             Create shard management performance counter category and counters
             </summary>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.GetSqlShardMapManager(System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerLoadPolicy,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior,System.EventHandler{Microsoft.Azure.SqlDatabase.ElasticScale.RetryingEventArgs})">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.GetSqlShardMapManager(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerLoadPolicy,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior,System.EventHandler{Microsoft.Azure.SqlDatabase.ElasticScale.RetryingEventArgs})">
             <summary>
             Gets <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> from persisted state in a SQL Server database.
             </summary>
             <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
+            <param name="secureCredential">Secure credential used for performing operations against shard map manager database(s).</param>
             <param name="loadPolicy">Initialization policy.</param>
             <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
             <param name="retryEventHandler">Event handler for store operation retry events.</param>
@@ -12117,11 +12538,12 @@
             shard maps, shards and shard mappings.
             </returns>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.GetSqlShardMapManager(System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerLoadPolicy,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior,System.EventHandler{Microsoft.Azure.SqlDatabase.ElasticScale.RetryingEventArgs},System.Boolean)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerFactory.GetSqlShardMapManager(System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManagerLoadPolicy,Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior,System.EventHandler{Microsoft.Azure.SqlDatabase.ElasticScale.RetryingEventArgs},System.Boolean)">
             <summary>
             Gets <see cref="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapManager"/> from persisted state in a SQL Server database.
             </summary>
             <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
+            <param name="secureCredential">Secure credential used for performing operations against shard map manager database(s).</param>
             <param name="loadPolicy">Initialization policy.</param>
             <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
             <param name="retryEventHandler">Event handler for store operation retry events.</param>
@@ -13020,6 +13442,25 @@
             functionality in the Enterprise Library from Microsoft Patterns and Practices team.
             </remarks>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMap`1.OpenConnectionForKey(`0,System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
+            to which the specified key value is mapped, with <see cref="F:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions.Validate"/>.
+            </summary>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
+            <returns>An opened SqlConnection.</returns>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults 
+            in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            </remarks>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMap`1.OpenConnectionForKey(`0,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
             <summary>
             Opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
@@ -13030,6 +13471,26 @@
             Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
             The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
             </param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>An opened SqlConnection.</returns>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults 
+            in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMap`1.OpenConnectionForKey(`0,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
+            to which the specified key value is mapped.
+            </summary>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>An opened SqlConnection.</returns>
             <remarks>
@@ -13058,6 +13519,26 @@
             All non-usage error related exceptions are reported via the returned Task.
             </remarks>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMap`1.OpenConnectionForKeyAsync(`0,System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Asynchronously opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
+            to which the specified key value is mapped, with <see cref="F:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions.Validate"/>.
+            </summary>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
+            <returns>A Task encapsulating an open SqlConnection as the result</returns>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults 
+            in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            All non-usage error related exceptions are reported via the returned Task.
+            </remarks>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMap`1.OpenConnectionForKeyAsync(`0,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
             <summary>
             Asynchronously opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
@@ -13068,6 +13549,27 @@
             Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
             The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
             </param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>A Task encapsulating an opened SqlConnection.</returns>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults 
+            in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            All non-usage error related exceptions are reported via the returned Task.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ListShardMap`1.OpenConnectionForKeyAsync(`0,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Asynchronously opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
+            to which the specified key value is mapped.
+            </summary>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>A Task encapsulating an opened SqlConnection.</returns>
             <remarks>
@@ -13277,6 +13779,25 @@
             functionality in the Enterprise Library from Microsoft Patterns and Practices team.
             </remarks>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMap`1.OpenConnectionForKey(`0,System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
+            to which the specified key value is mapped, with <see cref="F:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions.Validate"/>.
+            </summary>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
+            <returns>An opened SqlConnection.</returns>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults 
+            in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            </remarks>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMap`1.OpenConnectionForKey(`0,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
             <summary>
             Opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
@@ -13287,6 +13808,26 @@
             Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
             The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
             </param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>An opened SqlConnection.</returns>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults 
+            in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMap`1.OpenConnectionForKey(`0,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
+            to which the specified key value is mapped.
+            </summary>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>An opened SqlConnection.</returns>
             <remarks>
@@ -13315,6 +13856,26 @@
             All non-usage errors will be propagated via the returned Task.
             </remarks>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMap`1.OpenConnectionForKeyAsync(`0,System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Asynchronously opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
+            to which the specified key value is mapped, with <see cref="F:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions.Validate"/>.
+            </summary>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
+            <returns>A Task encapsulating an opened SqlConnection.</returns>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults 
+            in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            All non-usage errors will be propagated via the returned Task.
+            </remarks>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMap`1.OpenConnectionForKeyAsync(`0,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
             <summary>
             Asynchronously opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
@@ -13325,6 +13886,27 @@
             Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
             The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
             </param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>A Task encapsulating an opened SqlConnection.</returns>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults 
+            in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            All non-usage errors will be propagated via the returned Task.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.RangeShardMap`1.OpenConnectionForKeyAsync(`0,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Asynchronously opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
+            to which the specified key value is mapped.
+            </summary>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>A Task encapsulating an opened SqlConnection.</returns>
             <remarks>
@@ -13646,6 +14228,27 @@
             This call only works if there is a single default mapping.
             </remarks>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap.OpenConnectionForKey``1(``0,System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
+            to which the specified key value is mapped, with <see cref="F:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions.Validate"/>.
+            </summary>
+            <typeparam name="TKey">Type of the key.</typeparam>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
+            <returns>An opened SqlConnection.</returns>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults 
+            in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            This call only works if there is a single default mapping.
+            </remarks>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap.OpenConnectionForKey``1(``0,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
             <summary>
             Opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
@@ -13657,6 +14260,28 @@
             Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
             The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
             </param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>An opened SqlConnection.</returns>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults 
+            in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            This call only works if there is a single default mapping.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap.OpenConnectionForKey``1(``0,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
+            to which the specified key value is mapped.
+            </summary>
+            <typeparam name="TKey">Type of the key.</typeparam>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>An opened SqlConnection.</returns>
             <remarks>
@@ -13687,6 +14312,27 @@
             This call only works if there is a single default mapping.
             </remarks>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap.OpenConnectionForKeyAsync``1(``0,System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Asynchronously opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
+            to which the specified key value is mapped, with <see cref="F:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions.Validate"/>.
+            </summary>
+            <typeparam name="TKey">Type of the key.</typeparam>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
+            <returns>A Task encapsulating an opened SqlConnection.</returns>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults 
+            in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            This call only works if there is a single default mapping.
+            </remarks>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap.OpenConnectionForKeyAsync``1(``0,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
             <summary>
             Asynchronously opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
@@ -13698,6 +14344,28 @@
             Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
             The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
             </param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>A Task encapsulating an opened SqlConnection.</returns>
+            <remarks>
+            Note that the <see cref="T:System.Data.SqlClient.SqlConnection"/> object returned by this call is not protected against transient faults. 
+            Callers should follow best practices to protect the connection against transient faults 
+            in their application code, e.g., by using the transient fault handling 
+            functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+            This call only works if there is a single default mapping.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap.OpenConnectionForKeyAsync``1(``0,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Asynchronously opens a regular <see cref="T:System.Data.SqlClient.SqlConnection"/> to the shard 
+            to which the specified key value is mapped.
+            </summary>
+            <typeparam name="TKey">Type of the key.</typeparam>
+            <param name="key">Input key value.</param>
+            <param name="connectionString">
+            Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+            The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+            </param>
+            <param name="secureCredential">Secure SQL Credential.</param>
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>A Task encapsulating an opened SqlConnection.</returns>
             <remarks>
@@ -13765,12 +14433,32 @@
             <param name="connectionString">Connection string for connection. Must have credentials.</param>
             <param name="options">Options for validation operations to perform on opened connection.</param>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap.OpenConnection(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IShardProvider,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Opens a connection to the given shard provider.
+            </summary>
+            <param name="shardProvider">Shard provider containing shard to be connected to.</param>
+            <param name="connectionString">Connection string for connection. Must have credentials.</param>
+            <param name="secureCredential">Secure SQL Credential.</param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap.OpenConnectionAsync(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IShardProvider,System.String,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
             <summary>
             Asynchronously opens a connection to the given shard provider.
             </summary>
             <param name="shardProvider">Shard provider containing shard to be connected to.</param>
             <param name="connectionString">Connection string for connection. Must have credentials.</param>
+            <param name="options">Options for validation operations to perform on opened connection.</param>
+            <returns>A task encapsulating the SqlConnection</returns>
+            <remarks>All exceptions are reported via the returned task.</remarks>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap.OpenConnectionAsync(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IShardProvider,System.String,System.Data.SqlClient.SqlCredential,Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ConnectionOptions)">
+            <summary>
+            Asynchronously opens a connection to the given shard provider.
+            </summary>
+            <param name="shardProvider">Shard provider containing shard to be connected to.</param>
+            <param name="connectionString">Connection string for connection. Must have credentials.</param>
+            <param name="secureCredential">Secure Sql credential information.</param>
             <param name="options">Options for validation operations to perform on opened connection.</param>
             <returns>A task encapsulating the SqlConnection</returns>
             <remarks>All exceptions are reported via the returned task.</remarks>
@@ -13794,13 +14482,14 @@
             </summary>
             <returns>Cloned shard map instance.</returns>
         </member>
-        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap.ValidateAndPrepareConnectionString(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IShardProvider,System.String)">
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMap.ValidateAndPrepareConnectionString(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IShardProvider,System.String,System.Data.SqlClient.SqlCredential)">
             <summary>
             Ensures that the provided connection string is valid and builds the connection string
             to be used for DDR connection to the given shard provider.
             </summary>
             <param name="shardProvider">Shard provider containing shard to be connected to.</param>
             <param name="connectionString">Input connection string.</param>
+            <param name="secureCredential"></param>
             <returns>Connection string for DDR connection.</returns>
         </member>
         <member name="T:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardMapExtensions">
@@ -14102,6 +14791,15 @@
             Factory for store connections.
             </summary>
         </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreConnectionFactory.GetConnection(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreConnectionKind,System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Constructs a new instance of store connection.
+            </summary>
+            <param name="kind">Type of store connection.</param>
+            <param name="connectionString">Connection string for store.</param>
+            <param name="secureCredential">Secure credential for store.</param>
+            <returns>An unopened instance of the store connection.</returns>
+        </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreConnectionFactory.GetConnection(Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.StoreConnectionKind,System.String)">
             <summary>
             Constructs a new instance of store connection.
@@ -14109,6 +14807,14 @@
             <param name="kind">Type of store connection.</param>
             <param name="connectionString">Connection string for store.</param>
             <returns>An unopened instance of the store connection.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreConnectionFactory.GetUserConnection(System.String,System.Data.SqlClient.SqlCredential)">
+            <summary>
+            Constructs a new instance of user connection.
+            </summary>
+            <param name="connectionString">Connection string of user.</param>
+            <param name="secureCredential">Secure credential of user.</param>
+            <returns>An unopened instance of the user connection.</returns>
         </member>
         <member name="M:Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.IStoreConnectionFactory.GetUserConnection(System.String)">
             <summary>
