@@ -394,7 +394,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The required property &apos;{0}&apos; must not be set in the connection string..
+        ///   Looks up a localized string similar to The property &apos;{0}&apos; must not be set in the connection string..
         /// </summary>
         internal static string _SqlShardMapManagerCredentials_ConnectionStringPropertyNotAllowed {
             get {
