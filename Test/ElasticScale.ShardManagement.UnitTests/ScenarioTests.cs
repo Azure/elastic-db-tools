@@ -1467,6 +1467,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         [TestCategory("ExcludeFromGatedCheckin")]
         public void ListShardMapPerformanceCounterValidation()
         {
+#if NETFRAMEWORK
             if (PerfCounterInstance.HasCreatePerformanceCategoryPermissions())
             {
                 string shardMapName = "PerTenantShardMap";
@@ -1577,8 +1578,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             {
                 Assert.Inconclusive("Do not have permissions to create performance counter category, test skipped");
             }
+#endif
         }
 
+#if NETFRAMEWORK
         private bool ValidateNonZeroCounterValue(string instanceName, PerformanceCounterName counterName)
         {
             string counterdisplayName = (from c in PerfCounterInstance.counterList
@@ -1609,6 +1612,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         {
             return PerformanceCounterCategory.InstanceExists(instanceName, PerformanceCounters.ShardManagementPerformanceCounterCategory);
         }
+#endif
 
         private RangeMapping<T> MarkMappingOfflineAndUpdateShard<T>(RangeShardMap<T> map, RangeMapping<T> mapping, Shard newShard)
         {

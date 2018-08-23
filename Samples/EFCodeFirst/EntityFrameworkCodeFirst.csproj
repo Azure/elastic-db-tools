@@ -10,7 +10,6 @@
     <!-- Disable FxCop - fixing these warnings is low priority -->
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Build.props))\Build.props" />
   <!--
     BUILD PROCESS FOR SAMPLES GALLERY
   -->
@@ -21,7 +20,7 @@
     <SamplesGallerySolutionInput Include="EntityFrameworkCodeFirst.sln.SamplesGallery" />
   </ItemGroup>
   <Import Project="..\SamplesGallery.targets" />
-  <!-- 
+  <!--
     Any changes below must be copied to EntityFrameworkCodeFirst.csproj.SamplesGallery, except:
     - $(NugetPack) must be replaced with ..\packages
   -->

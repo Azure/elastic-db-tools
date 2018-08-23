@@ -8,7 +8,6 @@
     <RootNamespace>ElasticScaleStarterKit</RootNamespace>
     <AssemblyName>ElasticScaleStarterKit</AssemblyName>
   </PropertyGroup>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Build.props))\Build.props" />
   <!--
     BUILD PROCESS FOR SAMPLES GALLERY
   -->
@@ -19,7 +18,7 @@
     <SamplesGallerySolutionInput Include="ElasticScaleStarterKit.sln.SamplesGallery" />
   </ItemGroup>
   <Import Project="..\SamplesGallery.targets" />
-  <!-- 
+  <!--
     Any changes below must be copied to ElasticScaleStarterKit.csproj.SamplesGallery except:
     - "$(NugetPack)" must be replaced with "..\packages"
   -->

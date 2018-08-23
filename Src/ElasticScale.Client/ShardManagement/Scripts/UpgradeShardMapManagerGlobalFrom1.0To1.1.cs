@@ -1,3 +1,14 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
+{
+    /// <summary>
+    /// Utility properties and methods used for managing scripts and errors.
+    /// </summary>
+    internal static partial class Scripts
+    {
+        internal static readonly UpgradeScript UpgradeShardMapManagerGlobalFrom1_0To1_1 = new UpgradeScript(1, 0, @"
 -- Copyright (c) Microsoft. All rights reserved.
 -- Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
@@ -5,7 +16,7 @@
 -- Script to upgrade Global Shard Map from version 1.0 to 1.1
 ---------------------------------------------------------------------------------------------------
 
--- drop ShardMapManagerGlobal table 
+-- drop ShardMapManagerGlobal table
 drop table __ShardManagement.ShardMapManagerGlobal
 
 -- create ShardMapManagerGlobal table with new column names
@@ -46,7 +57,7 @@ if object_id(N'__ShardManagement.spFindShardMapByNameGlobal', N'P') is not null
 begin
 	drop procedure __ShardManagement.spFindShardMapByNameGlobal
 end
-	
+
 if object_id(N'__ShardManagement.spGetAllDistinctShardLocationsGlobal', N'P') is not null
 begin
 	drop procedure __ShardManagement.spGetAllDistinctShardLocationsGlobal
@@ -57,7 +68,7 @@ begin
 	drop procedure __ShardManagement.spAddShardMapGlobal
 end
 go
-	
+
 if object_id(N'__ShardManagement.spRemoveShardMapGlobal', N'P') is not null
 begin
 	drop procedure __ShardManagement.spRemoveShardMapGlobal
@@ -199,7 +210,7 @@ as
 begin
 	select
 		5, StoreVersionMajor, StoreVersionMinor
-	from 
+	from
 		__ShardManagement.ShardMapManagerGlobal
 end
 go
@@ -232,7 +243,7 @@ begin
 	if (@gsmVersionMajorClient <> __ShardManagement.fnGetStoreVersionMajorGlobal())
 		goto Error_GSMVersionMismatch;
 
-	update 
+	update
 		__ShardManagement.OperationsLogGlobal
 	set
 		UndoStartState = @undoStartState
@@ -242,7 +253,7 @@ begin
 	set @result = 1
 	exec __ShardManagement.spGetOperationLogEntryGlobalHelper @operationId
 	goto Exit_Procedure;
-	
+
 Error_MissingParameters:
 	set @result = 50
 	exec __ShardManagement.spGetStoreVersionGlobalHelper
@@ -269,10 +280,10 @@ begin
 	declare @gsmVersionMajorClient int,
 			@gsmVersionMinorClient int
 
-	select 
+	select
 		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int')
-	from 
+	from
 		@input.nodes('/GetAllShardMapsGlobal') as t(x)
 
 	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null)
@@ -281,9 +292,9 @@ begin
 	if (@gsmVersionMajorClient <> __ShardManagement.fnGetStoreVersionMajorGlobal())
 		goto Error_GSMVersionMismatch;
 
-	select 
-		1, ShardMapId, Name, ShardMapType, KeyType 
-	from 
+	select
+		1, ShardMapId, Name, ShardMapType, KeyType
+	from
 		__ShardManagement.ShardMapsGlobal
 
 	set @result = 1
@@ -320,7 +331,7 @@ declare @gsmVersionMajorClient int,
 		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@name = x.value('(ShardMap/Name)[1]', ' nvarchar(50)')
-	from 
+	from
 		@input.nodes('/FindShardMapByNameGlobal') as t(x)
 
 	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @name is null)
@@ -333,7 +344,7 @@ declare @gsmVersionMajorClient int,
 		1, ShardMapId, Name, ShardMapType, KeyType
 	from
 		__ShardManagement.ShardMapsGlobal
-	where 
+	where
 		Name = @name
 
 	set @result = 1
@@ -365,10 +376,10 @@ begin
 	declare @gsmVersionMajorClient int,
 			@gsmVersionMinorClient int
 
-	select 
+	select
 		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int')
-	from 
+	from
 		@input.nodes('/GetAllDistinctShardLocationsGlobal') as t(x)
 
 	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null)
@@ -377,9 +388,9 @@ begin
 	if (@gsmVersionMajorClient <> __ShardManagement.fnGetStoreVersionMajorGlobal())
 		goto Error_GSMVersionMismatch;
 
-	select distinct 
-		4, Protocol, ServerName, Port, DatabaseName 
-	from 
+	select distinct
+		4, Protocol, ServerName, Port, DatabaseName
+	from
 		__ShardManagement.ShardsGlobal
 	where
 		Readable = 1
@@ -417,14 +428,14 @@ begin
 			@mapType int,
 			@keyType int
 
-	select 
+	select
 		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier'),
 		@name = x.value('(ShardMap/Name)[1]', 'nvarchar(50)'),
 		@mapType = x.value('(ShardMap/Kind)[1]', 'int'),
 		@keyType = x.value('(ShardMap/KeyKind)[1]', 'int')
-	from 
+	from
 		@input.nodes('/AddShardMapGlobal') as t(x)
 
 	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @shardMapId is null or @name is null or @mapType is null or @keyType is null)
@@ -432,15 +443,15 @@ begin
 
 	if (@gsmVersionMajorClient <> __ShardManagement.fnGetStoreVersionMajorGlobal())
 		goto Error_GSMVersionMismatch;
-		
+
 	-- try to insert the row for the shard map, duplicate violation will be detected by the
 	-- uniqueness constraint on the Name
 	begin try
-		insert into 
-			__ShardManagement.ShardMapsGlobal 
+		insert into
+			__ShardManagement.ShardMapsGlobal
 			(ShardMapId, Name, ShardMapType, KeyType)
-		values 
-			(@shardMapId, @name, @mapType, @keyType) 
+		values
+			(@shardMapId, @name, @mapType, @keyType)
 	end try
 	begin catch
 		if (error_number() = 2627)
@@ -455,17 +466,17 @@ begin
 					@errorProcedure nvarchar(128) = isnull(error_procedure(), '-');
 
 			select @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
-			
+
 			raiserror (@errorMessage, @errorSeverity, 1, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
-			
+
 			rollback transaction; -- To avoid extra error message in response.
 			goto Error_UnexpectedError;
 		end
 	end catch
-		
+
 	set @result = 1
 	goto Exit_Procedure;
-		
+
 Error_ShardMapAlreadyExists:
 	set @result = 101
 	goto Exit_Procedure;
@@ -501,11 +512,11 @@ begin
 			@gsmVersionMinorClient int,
 			@shardMapId uniqueidentifier
 
-	select 
+	select
 		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@shardMapId = x.value('(ShardMap/Id)[1]', ' uniqueidentifier')
-	from 
+	from
 		@input.nodes('/RemoveShardMapGlobal') as t(x)
 
 	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @shardMapId is null)
@@ -516,7 +527,7 @@ begin
 
 	declare @currentShardMapId uniqueidentifier
 
-	select 
+	select
 		@currentShardMapId = ShardMapId
 	from
 		__ShardManagement.ShardMapsGlobal with (updlock)
@@ -527,18 +538,18 @@ begin
 		goto Error_ShardMapNotFound;
 
 	if exists (
-		select 
-			ShardId 
-		from 
-			__ShardManagement.ShardsGlobal 
-		where 
+		select
+			ShardId
+		from
+			__ShardManagement.ShardsGlobal
+		where
 			ShardMapId = @shardMapId)
 		goto Error_ShardMapHasShards;
 
-	delete from 
-		__ShardManagement.ShardMapsGlobal 
-	where 
-		ShardMapId = @shardMapId 
+	delete from
+		__ShardManagement.ShardMapsGlobal
+	where
+		ShardMapId = @shardMapId
 
 	set @result = 1
 	goto Exit_Procedure;
@@ -578,11 +589,11 @@ begin
 			@gsmVersionMinorClient int,
 			@shardMapId uniqueidentifier
 
-	select 
+	select
 		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier')
-	from 
+	from
 		@input.nodes('/GetAllShardsGlobal') as t(x)
 
 	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @shardMapId is null)
@@ -592,19 +603,19 @@ begin
 		goto Error_GSMVersionMismatch;
 
 	if not exists (
-		select 
-			ShardMapId 
-		from 
-			__ShardManagement.ShardMapsGlobal 
-		where 
+		select
+			ShardMapId
+		from
+			__ShardManagement.ShardMapsGlobal
+		where
 			ShardMapId = @shardMapId)
 		goto Error_ShardMapNotFound;
 
-	select 
+	select
 		2, ShardId, Version, ShardMapId, Protocol, ServerName, Port, DatabaseName, Status
-	from 
-		__ShardManagement.ShardsGlobal 
-	where 
+	from
+		__ShardManagement.ShardsGlobal
+	where
 		ShardMapId = @shardMapId and Readable = 1
 
 	set @result = 1
@@ -645,7 +656,7 @@ begin
 			@port int,
 			@databaseName nvarchar(128)
 
-	select 
+	select
 		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier'),
@@ -656,7 +667,7 @@ begin
 	from
 		@input.nodes('/FindShardByLocationGlobal') as t(x)
 
-	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @shardMapId is null or 
+	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @shardMapId is null or
 		@protocol is null or @serverName is null or @port is null or @databaseName is null)
 		goto Error_MissingParameters;
 
@@ -664,21 +675,21 @@ begin
 		goto Error_GSMVersionMismatch;
 
 	if not exists (
-	select 
-		ShardMapId 
+	select
+		ShardMapId
 	from
 		__ShardManagement.ShardMapsGlobal
 	where
 		ShardMapId = @shardMapId)
 		goto Error_ShardMapNotFound;
 
-	select 
+	select
 		2, ShardId, Version, ShardMapId, Protocol, ServerName, Port, DatabaseName, Status
-	from 
-		__ShardManagement.ShardsGlobal 
+	from
+		__ShardManagement.ShardsGlobal
 	where
 		ShardMapId = @shardMapId and
-		Protocol = @protocol and ServerName = @serverName and Port = @port and DatabaseName = @databaseName and 
+		Protocol = @protocol and ServerName = @serverName and Port = @port and DatabaseName = @databaseName and
 		Readable = 1
 
 	set @result = 1
@@ -719,8 +730,8 @@ begin
 			@shardMapId uniqueidentifier
 
 	-- get operation information as well as number of steps
-	select 
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+	select
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@operationId = x.value('(@OperationId)[1]', 'uniqueidentifier'),
 		@operationCode = x.value('(@OperationCode)[1]', 'int'),
@@ -729,7 +740,7 @@ begin
 	from
 		@input.nodes('/BulkOperationShardsGlobal') as t(x)
 
-	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @operationId is null or @operationCode is null or 
+	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @operationId is null or @operationCode is null or
 		@stepsCount is null or @shardMapId is null)
 		goto Error_MissingParameters;
 
@@ -738,9 +749,9 @@ begin
 
 	-- check if shard map exists
 	if not exists (
-		select 
-			ShardMapId 
-		from 
+		select
+			ShardMapId
+		from
 			__ShardManagement.ShardMapsGlobal with (updlock)
 		where
 			ShardMapId = @shardMapId)
@@ -773,9 +784,9 @@ begin
 					@errorProcedure nvarchar(128) = isnull(error_procedure(), '-');
 
 			select @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
-			
+
 			raiserror (@errorMessage, @errorSeverity, 1, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
-			
+
 			rollback transaction; -- To avoid extra error message in response.
 			goto Error_UnexpectedError;
 		end
@@ -799,17 +810,17 @@ begin
 
 	while (@stepIndex <= @stepsCount)
 	begin
-		select 
-			@currentStep = x.query('(./Step[@Id = sql:variable("@stepIndex")])[1]') 
+		select
+			@currentStep = x.query('(./Step[@Id = sql:variable(""@stepIndex"")])[1]')
 		from
 			@input.nodes('/BulkOperationShardsGlobal/Steps') as t(x)
 
 		-- Identify the step type.
-		select 
+		select
 			@stepType = x.value('(@Kind)[1]', 'int'),
 			@stepShardId = x.value('(Shard/Id)[1]', 'uniqueidentifier'),
 			@stepShardVersion = x.value('(Shard/Version)[1]', 'uniqueidentifier')
-		from 
+		from
 			@currentStep.nodes('./Step') as t(x)
 
 		if (@stepType is null or @stepShardId is null or @stepShardVersion is null)
@@ -846,17 +857,17 @@ begin
 			if (@stepType = 1)
 			begin
 			if exists (
-				select 
-					ShardId 
-				from 
-					__ShardManagement.ShardMappingsGlobal 
-				where 
+				select
+					ShardId
+				from
+					__ShardManagement.ShardMappingsGlobal
+				where
 					ShardMapId = @shardMapId and ShardId = @stepShardId)
 				goto Error_ShardHasMappings;
 			end
 
 			-- mark pending operation on current shard
-			update 
+			update
 				__ShardManagement.ShardsGlobal
 			set
 				OperationId = @operationId
@@ -882,7 +893,7 @@ begin
 				goto Error_MissingParameters;
 
 			-- Check re-entrancy or pending operations
-			select 
+			select
 				@currentShardVersion = Version,
 				@currentShardOperationId = OperationId
 			from
@@ -897,7 +908,7 @@ begin
 			-- pending operation
 			if (@currentShardOperationId is not null)
 				goto Error_ShardPendingOperation;
-	
+
 			if (@currentShardVersion is not null)
 				goto Error_ShardAlreadyExists;
 
@@ -905,14 +916,14 @@ begin
 			set @currentShardVersion = null
 			set @currentShardOperationId = null
 
-			select 
-				@currentShardVersion = Version, 
+			select
+				@currentShardVersion = Version,
 				@currentShardOperationId = OperationId
-			from  
-				__ShardManagement.ShardsGlobal 
+			from
+				__ShardManagement.ShardsGlobal
 			where
 				ShardMapId = @shardMapId and
-				Protocol = @stepProtocol and 
+				Protocol = @stepProtocol and
 				ServerName = @stepServerName and
 				Port = @stepPort and
 				DatabaseName = @stepDatabaseName
@@ -922,35 +933,35 @@ begin
 			if (@currentShardOperationId is not null)
 				goto Error_ShardPendingOperation;
 
-			-- Another shard with same location already exists.		
+			-- Another shard with same location already exists.
 			if (@currentShardVersion is not null)
 				goto Error_ShardLocationAlreadyExists;
 
 			-- perform the add/update
 			begin try
-				insert into 
+				insert into
 					__ShardManagement.ShardsGlobal(
-					ShardId, 
-					Readable, 
-					Version, 
-					ShardMapId, 
-					OperationId, 
-					Protocol, 
-					ServerName, 
-					Port, 
-					DatabaseName, 
+					ShardId,
+					Readable,
+					Version,
+					ShardMapId,
+					OperationId,
+					Protocol,
+					ServerName,
+					Port,
+					DatabaseName,
 					Status)
 				values (
-					@stepShardId, 
+					@stepShardId,
 					0,
-					@stepShardVersion, 
+					@stepShardVersion,
 					@shardMapId,
-					@operationId, 
-					@stepProtocol, 
-					@stepServerName, 
-					@stepPort, 
-					@stepDatabaseName, 
-					@stepShardStatus) 
+					@operationId,
+					@stepProtocol,
+					@stepServerName,
+					@stepPort,
+					@stepDatabaseName,
+					@stepShardStatus)
 			end try
 			begin catch
 				if (error_number() = 2627)
@@ -965,9 +976,9 @@ begin
 					set @errorProcedure = isnull(error_procedure(), '-')
 
 					select @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
-			
+
 					raiserror (@errorMessage, @errorSeverity, 2, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
-			
+
 					rollback transaction; -- To avoid extra error message in response.
 					goto Error_UnexpectedError;
 				end
@@ -1053,7 +1064,7 @@ create procedure __ShardManagement.spBulkOperationShardsGlobalEnd
 @result int output
 as
 begin
-	declare @gsmVersionMajorClient int, 
+	declare @gsmVersionMajorClient int,
 			@gsmVersionMinorClient int,
 			@operationId uniqueidentifier,
 			@operationCode int,
@@ -1063,7 +1074,7 @@ begin
 
 	-- get operation information as well as number of steps
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@operationId = x.value('(@OperationId)[1]', 'uniqueidentifier'),
 		@operationCode = x.value('(@OperationCode)[1]', 'int'),
@@ -1082,9 +1093,9 @@ begin
 
 	-- check if shard map exists
 	if not exists (
-		select 
-			ShardMapId 
-		from 
+		select
+			ShardMapId
+		from
 			__ShardManagement.ShardMapsGlobal with (updlock)
 		where
 			ShardMapId = @shardMapId)
@@ -1095,19 +1106,19 @@ begin
 			@stepIndex int = 1,
 			@stepType int,
 			@stepShardId uniqueidentifier
-	
+
 	while (@stepIndex <= @stepsCount)
 	begin
-		select 
-			@currentStep = x.query('(./Step[@Id = sql:variable("@stepIndex")])[1]') 
+		select
+			@currentStep = x.query('(./Step[@Id = sql:variable(""@stepIndex"")])[1]')
 		from
 			@input.nodes('/BulkOperationShardsGlobal/Steps') as t(x)
 
 		-- Identify the step type.
-		select 
+		select
 			@stepType = x.value('(@Kind)[1]', 'int'),
 			@stepShardId = x.value('(Shard/Id)[1]', 'uniqueidentifier')
-		from 
+		from
 			@currentStep.nodes('./Step') as t(x)
 
 		if (@stepType is null or @stepShardId is null)
@@ -1118,17 +1129,17 @@ begin
 			if (@undo = 1)
 			begin
 				-- keep the Readable row as is
-				update 
+				update
 					__ShardManagement.ShardsGlobal
 				set
 					OperationId = null
 				where
-					ShardMapId = @shardMapId and ShardId = @stepShardId and OperationId = @operationId 
+					ShardMapId = @shardMapId and ShardId = @stepShardId and OperationId = @operationId
 			end
 			else
 			begin
 				-- remove the row to be deleted
-				delete from 
+				delete from
 					__ShardManagement.ShardsGlobal
 				where
 					ShardMapId = @shardMapId and ShardId = @stepShardId and OperationId = @operationId
@@ -1143,30 +1154,30 @@ begin
 			if (@undo = 1)
 			begin
 				-- keep the Readable row as is
-				update 
+				update
 					__ShardManagement.ShardsGlobal
 				set
 					OperationId = null
 				where
-					ShardMapId = @shardMapId and ShardId = @stepShardId and OperationId = @operationId 
+					ShardMapId = @shardMapId and ShardId = @stepShardId and OperationId = @operationId
 			end
 			else
 			begin
 				-- Update the row with new Version/Status information
-				select 
+				select
 					@newShardVersion = x.value('(Update/Shard/Version)[1]', 'uniqueidentifier'),
 					@newStatus = x.value('(Update/Shard/Status)[1]', 'int')
-				from 
+				from
 					@currentStep.nodes('./Step') as t(x)
 
-				update 
+				update
 					__ShardManagement.ShardsGlobal
 				set
 					Version = @newShardVersion,
 					Status = @newStatus,
 					OperationId = null
 				where
-					ShardMapId = @shardMapId and ShardId = @stepShardId and OperationId = @operationId 
+					ShardMapId = @shardMapId and ShardId = @stepShardId and OperationId = @operationId
 			end
 
 			set @newShardVersion = null
@@ -1178,7 +1189,7 @@ begin
 			if (@undo = 1)
 			begin
 				-- remove the row that we tried to add
-				delete from 
+				delete from
 					__ShardManagement.ShardsGlobal
 				where
 					ShardMapId = @shardMapId and ShardId = @stepShardId and OperationId = @operationId
@@ -1186,13 +1197,13 @@ begin
 			else
 			begin
 				-- mark the new row Readable
-				update 
+				update
 					__ShardManagement.ShardsGlobal
 				set
 					Readable = 1,
 					OperationId = null
 				where
-					ShardMapId = @shardMapId and ShardId = @stepShardId and OperationId = @operationId 
+					ShardMapId = @shardMapId and ShardId = @stepShardId and OperationId = @operationId
 			end
 		end
 
@@ -1205,7 +1216,7 @@ begin
 	-- remove log record
 	delete from
 		__ShardManagement.OperationsLogGlobal
-	where 
+	where
 		OperationId = @operationId
 
 	set @result = 1
@@ -1238,7 +1249,7 @@ create procedure __ShardManagement.spGetAllShardMappingsGlobal
 @result int output
 as
 begin
-	declare @gsmVersionMajorClient int, 
+	declare @gsmVersionMajorClient int,
 			@gsmVersionMinorClient int,
 			@shardMapId uniqueidentifier,
 			@shardId uniqueidentifier,
@@ -1247,13 +1258,13 @@ begin
 			@maxValue varbinary(128)
 
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier'),
-		@shardId = x.value('(Shard[@Null="0"]/Id)[1]', 'uniqueidentifier'),
-		@shardVersion = x.value('(Shard[@Null="0"]/Version)[1]', 'uniqueidentifier'),
-		@minValue = convert(varbinary(128), x.value('(Range[@Null="0"]/MinValue)[1]', 'varchar(258)'), 1),
-		@maxValue = convert(varbinary(128), x.value('(Range[@Null="0"]/MaxValue[@Null="0"])[1]', 'varchar(258)'), 1)
+		@shardId = x.value('(Shard[@Null=""0""]/Id)[1]', 'uniqueidentifier'),
+		@shardVersion = x.value('(Shard[@Null=""0""]/Version)[1]', 'uniqueidentifier'),
+		@minValue = convert(varbinary(128), x.value('(Range[@Null=""0""]/MinValue)[1]', 'varchar(258)'), 1),
+		@maxValue = convert(varbinary(128), x.value('(Range[@Null=""0""]/MaxValue[@Null=""0""])[1]', 'varchar(258)'), 1)
 	from
 		@input.nodes('/GetAllShardMappingsGlobal') as t(x)
 
@@ -1265,7 +1276,7 @@ begin
 
 	declare @shardMapType int
 
-	select 
+	select
 		@shardMapType = ShardMapType
 	from
 		__ShardManagement.ShardMapsGlobal
@@ -1281,8 +1292,8 @@ begin
 	begin
 		if (@shardVersion is null)
 			goto Error_MissingParameters;
-			
-		select 
+
+		select
 			@currentShardVersion = Version
 		from
 			__ShardManagement.ShardsGlobal
@@ -1292,18 +1303,18 @@ begin
 		if (@currentShardVersion is null)
 			goto Error_ShardDoesNotExist;
 
-		-- DEVNOTE(wbasheer): Bring this back if we want to be strict.		
+		-- DEVNOTE(wbasheer): Bring this back if we want to be strict.
 		--if (@currentShardVersion <> @shardVersion)
 		--	goto Error_ShardVersionMismatch;
 	end
-			
+
 	declare @tvShards table (
-		ShardId uniqueidentifier not null, 
-		Version uniqueidentifier not null, 
+		ShardId uniqueidentifier not null,
+		Version uniqueidentifier not null,
 		Protocol int not null,
-		ServerName nvarchar(128) collate SQL_Latin1_General_CP1_CI_AS not null, 
+		ServerName nvarchar(128) collate SQL_Latin1_General_CP1_CI_AS not null,
 		Port int not null,
-		DatabaseName nvarchar(128) collate SQL_Latin1_General_CP1_CI_AS not null, 
+		DatabaseName nvarchar(128) collate SQL_Latin1_General_CP1_CI_AS not null,
 		Status int not null,
 		primary key (ShardId)
 	)
@@ -1322,7 +1333,7 @@ begin
 		__ShardManagement.ShardsGlobal s
 	where
 		(@shardId is null or s.ShardId = @shardId) and s.ShardMapId = @shardMapId
-		
+
 
 	declare @minValueCalculated varbinary(128) = 0x,
 			@maxValueCalculated varbinary(128) = null
@@ -1341,17 +1352,17 @@ begin
 			s.ShardId, s.Version, m.ShardMapId, s.Protocol, s.ServerName, s.Port, s.DatabaseName, s.Status -- fields for SqlShard, ShardMapId is repeated here
 		from
 			__ShardManagement.ShardMappingsGlobal m
-		join 
-			@tvShards s 
-		on 
+		join
+			@tvShards s
+		on
 			m.ShardId = s.ShardId
 		where
-			m.ShardMapId = @shardMapId and 
+			m.ShardMapId = @shardMapId and
 			m.Readable = 1 and
-			(@shardId is null or m.ShardId = @shardId) and 
-			MinValue >= @minValueCalculated and 
+			(@shardId is null or m.ShardId = @shardId) and
+			MinValue >= @minValueCalculated and
 			((@maxValueCalculated is null) or (MinValue < @maxValueCalculated))
-		order by 
+		order by
 			m.MinValue
 	end
 	else
@@ -1361,15 +1372,15 @@ begin
 			s.ShardId, s.Version, m.ShardMapId, s.Protocol, s.ServerName, s.Port, s.DatabaseName, s.Status -- fields for SqlShard, ShardMapId is repeated here
 		from
 			__ShardManagement.ShardMappingsGlobal m
-		join 
-			@tvShards s 
-		on 
+		join
+			@tvShards s
+		on
 			m.ShardId = s.ShardId
 		where
-			m.ShardMapId = @shardMapId and 
+			m.ShardMapId = @shardMapId and
 			m.Readable = 1 and
-			(@shardId is null or m.ShardId = @shardId) and 
-			((MaxValue is null) or (MaxValue > @minValueCalculated)) and 
+			(@shardId is null or m.ShardId = @shardId) and
+			((MaxValue is null) or (MaxValue > @minValueCalculated)) and
 			((@maxValueCalculated is null) or (MinValue < @maxValueCalculated))
 		order by
 			m.MinValue
@@ -1386,7 +1397,7 @@ Error_ShardDoesNotExist:
 	set @result = 202
 	goto Exit_Procedure;
 
--- DEVNOTE(wbasheer): Bring this back if we want to be strict.		
+-- DEVNOTE(wbasheer): Bring this back if we want to be strict.
 --Error_ShardVersionMismatch:
 --	set @result = 204
 --	goto Exit_Procedure;
@@ -1420,7 +1431,7 @@ begin
 			@keyValue varbinary(128)
 
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier'),
 		@keyValue = convert(varbinary(128), x.value('(Key/Value)[1]', 'varchar(258)'), 1)
@@ -1435,7 +1446,7 @@ begin
 
 	declare @shardMapType int
 
-	select 
+	select
 		@shardMapType = ShardMapType
 	from
 		__ShardManagement.ShardMapsGlobal
@@ -1444,7 +1455,7 @@ begin
 
 	if (@shardMapType is null)
 		goto Error_ShardMapNotFound;
-		
+
 	declare @currentMappingId uniqueidentifier,
 			@currentShardId uniqueidentifier,
 			@currentMinValue varbinary(128),
@@ -1453,7 +1464,7 @@ begin
 			@currentLockOwnerId uniqueidentifier
 
 	if (@shardMapType = 1)
-	begin	
+	begin
 		select
 			@currentMappingId = MappingId,
 			@currentShardId = ShardId,
@@ -1464,23 +1475,23 @@ begin
 		from
 			__ShardManagement.ShardMappingsGlobal
 		where
-			ShardMapId = @shardMapId and 
+			ShardMapId = @shardMapId and
 			Readable = 1 and
 			MinValue = @keyValue
 	end
 	else
 	begin
-		select 
+		select
 			@currentMappingId = MappingId,
 			@currentShardId = ShardId,
 			@currentMinValue = MinValue,
 			@currentMaxValue = MaxValue,
 			@currentStatus = Status,
 			@currentLockOwnerId = LockOwnerId
-		from 
+		from
 			__ShardManagement.ShardMappingsGlobal
 		where
-			ShardMapId = @shardMapId and 
+			ShardMapId = @shardMapId and
 			Readable = 1 and
 			MinValue <= @keyValue and (MaxValue is null or MaxValue > @keyValue)
 	end
@@ -1488,15 +1499,15 @@ begin
 	if (@@rowcount = 0)
 		goto Error_KeyNotFound;
 
-	select 
+	select
 		3, @currentMappingId as MappingId, ShardMapId, @currentMinValue, @currentMaxValue, @currentStatus, @currentLockOwnerId, -- fields for SqlMapping
 		ShardId, Version, ShardMapId, Protocol, ServerName, Port, DatabaseName, Status -- fields for SqlShard, ShardMapId is repeated here
-	from 
+	from
 		__ShardManagement.ShardsGlobal
 	where
 		ShardId = @currentShardId and
 		ShardMapId = @shardMapId
-	
+
 	if (@@rowcount = 0)
 		goto Error_KeyNotFound;
 
@@ -1540,7 +1551,7 @@ begin
 			@mappingId uniqueidentifier
 
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier'),
 		@mappingId = x.value('(Mapping/Id)[1]', 'uniqueidentifier')
@@ -1555,7 +1566,7 @@ begin
 
 	declare @shardMapType int
 
-	select 
+	select
 		@shardMapType = ShardMapType
 	from
 		__ShardManagement.ShardMapsGlobal
@@ -1564,7 +1575,7 @@ begin
 
 	if (@shardMapType is null)
 		goto Error_ShardMapNotFound;
-		
+
 	declare @currentShardId uniqueidentifier,
 			@currentMinValue varbinary(128),
 			@currentMaxValue varbinary(128),
@@ -1577,7 +1588,7 @@ begin
 	from
 		__ShardManagement.ShardMappingsGlobal
 	where
-		ShardMapId = @shardMapId and 
+		ShardMapId = @shardMapId and
 		Readable = 1 and
 		MappingId = @mappingId
 
@@ -1593,7 +1604,7 @@ begin
 	from
 		__ShardManagement.ShardMappingsGlobal
 	where
-		ShardMapId = @shardMapId and 
+		ShardMapId = @shardMapId and
 		MinValue = @currentMinValue
 
 	if (@@rowcount = 0)
@@ -1654,7 +1665,7 @@ begin
 
 	-- get operation information as well as number of steps information
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@operationId = x.value('(@OperationId)[1]', 'uniqueidentifier'),
 		@operationCode = x.value('(@OperationCode)[1]', 'int'),
@@ -1663,7 +1674,7 @@ begin
 	from
 		@input.nodes('/BulkOperationShardMappingsGlobal') as t(x)
 
-	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @operationId is null or @operationCode is null or 
+	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @operationId is null or @operationCode is null or
 		@stepsCount is null or @shardMapId is null)
 		goto Error_MissingParameters;
 
@@ -1673,7 +1684,7 @@ begin
 	-- check if shard map exists
 	declare @shardMapType int
 
-	select 
+	select
 		@shardMapType = ShardMapType
 	from
 		__ShardManagement.ShardMapsGlobal with (updlock)
@@ -1689,10 +1700,10 @@ begin
 			@originalShardVersionForAdds uniqueidentifier,
 			@currentShardOperationId uniqueidentifier
 
-	select 
+	select
 		@shardIdForRemoves = x.value('(Removes/Shard/Id)[1]', 'uniqueidentifier'),
 		@shardIdForAdds = x.value('(Adds/Shard/Id)[1]', 'uniqueidentifier')
-	from 
+	from
 		@input.nodes('/BulkOperationShardMappingsGlobal') as t(x)
 
 	if (@shardIdForRemoves is null or @shardIdForAdds is null)
@@ -1706,7 +1717,7 @@ begin
 		__ShardManagement.ShardsGlobal with (updlock)
 	where
 		ShardMapId = @shardMapId and ShardId = @shardIdForRemoves and Readable = 1
-	
+
 	-- re-entrancy
 	if (@currentShardOperationId = @operationId)
 		goto Success_Exit;
@@ -1737,7 +1748,7 @@ begin
 			__ShardManagement.ShardsGlobal with (updlock)
 		where
 			ShardMapId = @shardMapId and ShardId = @shardIdForAdds and Readable = 1
-	
+
 		-- re-entrancy
 		if (@currentShardOperationId = @operationId)
 			goto Success_Exit;
@@ -1760,7 +1771,7 @@ begin
 	begin
 		set @originalShardVersionForAdds = @originalShardVersionForRemoves
 	end
-	
+
 	-- add log record
 	begin try
 		insert into __ShardManagement.OperationsLogGlobal(
@@ -1788,9 +1799,9 @@ begin
 					@errorProcedure nvarchar(128) = isnull(error_procedure(), '-');
 
 			select @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
-			
+
 			raiserror (@errorMessage, @errorSeverity, 1, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
-			
+
 			rollback transaction; -- To avoid extra error message in response.
 			goto Error_UnexpectedError;
 		end
@@ -1815,9 +1826,9 @@ begin
 
 	while (@stepIndex <= @stepsCount)
 	begin
-		select 
-			@currentStep = x.query('(./Step[@Id = sql:variable("@stepIndex")])[1]') 
-		from 
+		select
+			@currentStep = x.query('(./Step[@Id = sql:variable(""@stepIndex"")])[1]')
+		from
 			@input.nodes('/BulkOperationShardMappingsGlobal/Steps') as t(x)
 
 		-- Identify the step type.
@@ -1826,7 +1837,7 @@ begin
 			@stepMappingId = x.value('(Mapping/Id)[1]', 'uniqueidentifier')
 		from
 			@currentStep.nodes('./Step') as t(x)
-	
+
 		if (@stepType is null or @stepMappingId is null)
 			goto Error_MissingParameters;
 
@@ -1835,15 +1846,15 @@ begin
 			-- Remove Mapping
 
 			-- Check for locks
-			select 
+			select
 				@stepLockOwnerId = x.value('(Lock/Id)[1]', 'uniqueidentifier')
-			from 
+			from
 				@currentStep.nodes('./Step') as t(x)
 
 			if (@stepLockOwnerId is null)
 				goto Error_MissingParameters;
 
-			select 
+			select
 				@currentLockOwnerId = LockOwnerId,
 				@currentStatus = Status
 			from
@@ -1851,21 +1862,21 @@ begin
 			where
 				ShardMapId = @shardMapId and MappingId = @stepMappingId and Readable = 1
 
-			if (@currentLockOwnerId is null)	
+			if (@currentLockOwnerId is null)
 				goto Error_MappingDoesNotExist;
 
 			if (@currentLockOwnerId <> @stepLockOwnerId)
 				goto Error_MappingLockOwnerIdMismatch;
 
 			-- removepoint/removerange/removerangefromrange cannot work on online mappings
-			if ((@currentStatus & 1) <> 0 and 
-				(@operationCode = 5 or 
-					@operationCode = 9 or 
+			if ((@currentStatus & 1) <> 0 and
+				(@operationCode = 5 or
+					@operationCode = 9 or
 					@operationCode = 13))
 				goto Error_MappingIsNotOffline;
 
 			-- mark pending operation on current mapping
-			update 
+			update
 				__ShardManagement.ShardMappingsGlobal
 			set
 				OperationId = @operationId
@@ -1882,10 +1893,10 @@ begin
 			-- UpdateMapping
 
 			-- Check for locks
-			select 
+			select
 				@stepLockOwnerId = x.value('(Lock/Id)[1]', 'uniqueidentifier'),
 				@stepStatus = x.value('(Update/Mapping/Status)[1]', 'int')
-			from 
+			from
 				@currentStep.nodes('./Step') as t(x)
 
 			if (@stepLockOwnerId is null or @stepStatus is null)
@@ -1899,7 +1910,7 @@ begin
 			where
 				ShardMapId = @shardMapId and MappingId = @stepMappingId and Readable = 1
 
-			if (@currentLockOwnerId is null)	
+			if (@currentLockOwnerId is null)
 				goto Error_MappingDoesNotExist;
 
 			if (@currentLockOwnerId <> @stepLockOwnerId)
@@ -1910,7 +1921,7 @@ begin
 				goto Error_MappingIsNotOffline;
 
 			-- mark pending operation on current mapping
-			update 
+			update
 				__ShardManagement.ShardMappingsGlobal
 			set
 				OperationId = @operationId
@@ -1927,11 +1938,11 @@ begin
 		if (@stepType = 3)
 		begin
 			-- AddMapping
-			select 
+			select
 				@stepShouldValidate = x.value('(@Validate)[1]', 'bit'),
 				@stepMappingId = x.value('(Mapping/Id)[1]', 'uniqueidentifier'),
 				@stepMinValue = convert(varbinary(128), x.value('(Mapping/MinValue)[1]', 'varchar(258)'), 1),
-				@stepMaxValue = convert(varbinary(128), x.value('(Mapping/MaxValue[@Null="0"])[1]', 'varchar(258)'), 1),
+				@stepMaxValue = convert(varbinary(128), x.value('(Mapping/MaxValue[@Null=""0""])[1]', 'varchar(258)'), 1),
 				@stepStatus = x.value('(Mapping/Status)[1]', 'int'),
 				@stepLockOwnerId = x.value('(Mapping/LockOwnerId)[1]', 'uniqueidentifier')
 			from
@@ -1945,7 +1956,7 @@ begin
 			begin
 				if (@shardMapType = 1)
 				begin
-					select 
+					select
 						@mappingIdFromValidate = MappingId,
 						@currentShardOperationId = OperationId
 					from
@@ -1964,14 +1975,14 @@ begin
 				end
 				else
 				begin
-					select 
+					select
 						@mappingIdFromValidate = MappingId,
 						@currentShardOperationId = OperationId
 					from
 						__ShardManagement.ShardMappingsGlobal
 					where
 						ShardMapId = @shardMapId and
-						(MaxValue is null or MaxValue > @stepMinValue) and 
+						(MaxValue is null or MaxValue > @stepMinValue) and
 						(@stepMaxValue is null or MinValue < @stepMaxValue)
 
 					if (@mappingIdFromValidate is not null)
@@ -1987,23 +1998,23 @@ begin
 			-- add mapping
 			insert into
 				__ShardManagement.ShardMappingsGlobal(
-				MappingId, 
+				MappingId,
 				Readable,
-				ShardId, 
-				ShardMapId, 
-				OperationId, 
-				MinValue, 
-				MaxValue, 
+				ShardId,
+				ShardMapId,
+				OperationId,
+				MinValue,
+				MaxValue,
 				Status,
 				LockOwnerId)
 			values (
-				@stepMappingId, 
+				@stepMappingId,
 				0,
-				@shardIdForAdds, 
-				@shardMapId, 
-				@operationId, 
-				@stepMinValue, 
-				@stepMaxValue, 
+				@shardIdForAdds,
+				@shardMapId,
+				@operationId,
+				@stepMinValue,
+				@stepMaxValue,
 				@stepStatus,
 				@stepLockOwnerId)
 
@@ -2100,7 +2111,7 @@ begin
 
 	-- get operation information as well as number of steps information
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@operationId = x.value('(@OperationId)[1]', 'uniqueidentifier'),
 		@operationCode = x.value('(@OperationCode)[1]', 'int'),
@@ -2119,9 +2130,9 @@ begin
 
 	-- check if shard map exists
 	if not exists (
-		select 
-			ShardMapId 
-		from 
+		select
+			ShardMapId
+		from
 			__ShardManagement.ShardMapsGlobal with (updlock)
 		where
 			ShardMapId = @shardMapId)
@@ -2132,12 +2143,12 @@ begin
 			@shardIdForAdds uniqueidentifier,
 			@shardVersionForAdds uniqueidentifier
 
-	select 
+	select
 		@shardIdForRemoves = x.value('(Removes/Shard/Id)[1]', 'uniqueidentifier'),
 		@shardIdForAdds = x.value('(Adds/Shard/Id)[1]', 'uniqueidentifier'),
 		@shardVersionForRemoves = x.value('(Removes/Shard/Version)[1]', 'uniqueidentifier'),
 		@shardVersionForAdds = x.value('(Adds/Shard/Version)[1]', 'uniqueidentifier')
-	from 
+	from
 		@input.nodes('/BulkOperationShardMappingsGlobal') as t(x)
 
 	if (@shardIdForRemoves is null or @shardIdForAdds is null or @shardVersionForRemoves is null or @shardVersionForAdds is null)
@@ -2147,7 +2158,7 @@ begin
 	if (@undo = 1)
 	begin
 		-- Unmark the pending operation
-		update 
+		update
 			__ShardManagement.ShardsGlobal
 		set
 			OperationId = null
@@ -2156,7 +2167,7 @@ begin
 
 		if (@shardIdForRemoves <> @shardIdForAdds)
 		begin
-			update 
+			update
 				__ShardManagement.ShardsGlobal
 			set
 				OperationId = null
@@ -2167,7 +2178,7 @@ begin
 	else
 	begin
 		-- update the source shard row with new Version
-		update 
+		update
 			__ShardManagement.ShardsGlobal
 		set
 			Version = @shardVersionForRemoves,
@@ -2178,7 +2189,7 @@ begin
 		-- update the target shard row with new Version
 		if (@shardIdForRemoves <> @shardIdForAdds)
 		begin
-		update 
+		update
 			__ShardManagement.ShardsGlobal
 		set
 			Version = @shardVersionForAdds,
@@ -2193,16 +2204,16 @@ begin
 			@stepIndex int = 1,
 			@stepType int,
 			@stepMappingId uniqueidentifier
-	
+
 	while (@stepIndex <= @stepsCount)
 	begin
-		select 
-			@currentStep = x.query('(./Step[@Id = sql:variable("@stepIndex")])[1]') 
+		select
+			@currentStep = x.query('(./Step[@Id = sql:variable(""@stepIndex"")])[1]')
 		from
 		@input.nodes('/BulkOperationShardMappingsGlobal/Steps') as t(x)
 
 		-- Identify the step type.
-		select 
+		select
 			@stepType = x.value('(@Kind)[1]', 'int'),
 			@stepMappingId = x.value('(Mapping/Id)[1]', 'uniqueidentifier')
 		from
@@ -2216,7 +2227,7 @@ begin
 			if (@undo = 1)
 			begin
 				-- keep the Readable row as is
-				update 
+				update
 					__ShardManagement.ShardMappingsGlobal
 				set
 					OperationId = null
@@ -2226,7 +2237,7 @@ begin
 			else
 			begin
 				-- remove the row to be deleted
-				delete from 
+				delete from
 					__ShardManagement.ShardMappingsGlobal
 				where
 					ShardMapId = @shardMapId and MappingId = @stepMappingId
@@ -2241,7 +2252,7 @@ begin
 			if (@undo = 1)
 			begin
 				-- keep the Readable row as is
-				update 
+				update
 					__ShardManagement.ShardMappingsGlobal
 				set
 					OperationId = null
@@ -2257,7 +2268,7 @@ begin
 				from
 					@currentStep.nodes('./Step') as t(x)
 
-				update 
+				update
 					__ShardManagement.ShardMappingsGlobal
 				set
 					MappingId = @newMappingId,
@@ -2277,7 +2288,7 @@ begin
 			if (@undo = 1)
 			begin
 				-- remove the row that we tried to add
-				delete from 
+				delete from
 					__ShardManagement.ShardMappingsGlobal
 				where
 					ShardMapId = @shardMapId and MappingId = @stepMappingId
@@ -2285,7 +2296,7 @@ begin
 			else
 			begin
 				-- mark the new row Readable
-				update 
+				update
 					__ShardManagement.ShardMappingsGlobal
 				set
 					Readable = 1,
@@ -2302,7 +2313,7 @@ begin
 	end
 
 	-- delete log record
-	delete from 
+	delete from
 		__ShardManagement.OperationsLogGlobal
 	where
 		OperationId = @operationId
@@ -2338,7 +2349,7 @@ create procedure __ShardManagement.spLockOrUnlockShardMappingsGlobal
 @result int output
 as
 begin
-	declare @gsmVersionMajorClient int, 
+	declare @gsmVersionMajorClient int,
 			@gsmVersionMinorClient int,
 			@shardMapId uniqueidentifier,
 			@mappingId uniqueidentifier,
@@ -2346,7 +2357,7 @@ begin
 			@lockOperationType int
 
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier'),
 		@mappingId = x.value('(Mapping/Id)[1]', 'uniqueidentifier'),
@@ -2365,9 +2376,9 @@ begin
 		goto Error_MissingParameters;
 
 	if not exists (
-		select 
-			ShardMapId 
-		from 
+		select
+			ShardMapId
+		from
 			__ShardManagement.ShardMapsGlobal with (updlock)
 		where
 			ShardMapId = @shardMapId)
@@ -2377,14 +2388,14 @@ begin
 			@currentOperationId uniqueidentifier
 
 	if (@lockOperationType <> 2)
-	begin			
+	begin
 		declare @ForceUnLockLockOwnerId uniqueidentifier = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF',
 				@currentLockOwnerId uniqueidentifier
 
-		select 
+		select
 			@currentOperationId = OperationId,
 			@currentLockOwnerId = LockOwnerId
-		from 
+		from
 			__ShardManagement.ShardMappingsGlobal with (updlock)
 		where
 			ShardMapId = @shardMapId and MappingId = @mappingId
@@ -2404,16 +2415,16 @@ begin
 
 	update
 		__ShardManagement.ShardMappingsGlobal
-	set 
-		LockOwnerId = case 
-		when 
-			@lockOperationType = 0 
-		then 
-			@lockOwnerId 
-		when  
+	set
+		LockOwnerId = case
+		when
+			@lockOperationType = 0
+		then
+			@lockOwnerId
+		when
 			@lockOperationType = 1 or @lockOperationType = 2
-		then 
-			@DefaultLockOwnerId 
+		then
+			@DefaultLockOwnerId
 		end
 		where
 			ShardMapId = @shardMapId and (@lockOperationType = 2 or MappingId = @mappingId)
@@ -2471,7 +2482,7 @@ begin
 	select
 		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int')
-	from 
+	from
 		@input.nodes('/GetAllShardingSchemaInfosGlobal') as t(x)
 
 	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null)
@@ -2515,10 +2526,10 @@ begin
 			@name nvarchar(128)
 
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@name = x.value('(SchemaInfo/Name)[1]', 'nvarchar(128)')
-	from 
+	from
 		@input.nodes('/FindShardingSchemaInfoGlobal') as t(x)
 
 	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @name is null)
@@ -2529,7 +2540,7 @@ begin
 
 	select
 		7, Name, SchemaInfo
-	from 
+	from
 		__ShardManagement.ShardedDatabaseSchemaInfosGlobal
 	where
 		Name = @name
@@ -2572,11 +2583,11 @@ begin
 			@schemaInfo xml
 
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@name = x.value('(SchemaInfo/Name)[1]', 'nvarchar(128)'),
 		@schemaInfo = x.query('SchemaInfo/Info/*')
-	from 
+	from
 		@input.nodes('/AddShardingSchemaInfoGlobal') as t(x)
 
 	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @name is null or @schemaInfo is null)
@@ -2586,14 +2597,14 @@ begin
 		goto Error_GSMVersionMismatch;
 
 	if exists (
-		select 
-			Name 
-		from 
-			__ShardManagement.ShardedDatabaseSchemaInfosGlobal 
-		where 
+		select
+			Name
+		from
+			__ShardManagement.ShardedDatabaseSchemaInfosGlobal
+		where
 			Name = @name)
 		goto Error_SchemaInfoAlreadyExists;
-	
+
 	insert into
 		__ShardManagement.ShardedDatabaseSchemaInfosGlobal
 		(Name, SchemaInfo)
@@ -2634,10 +2645,10 @@ begin
 			@name nvarchar(128)
 
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@name = x.value('(SchemaInfo/Name)[1]', 'nvarchar(128)')
-	from 
+	from
 		@input.nodes('/RemoveShardingSchemaInfoGlobal') as t(x)
 
 	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @name is null)
@@ -2689,11 +2700,11 @@ begin
 			@schemaInfo xml
 
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@name = x.value('(SchemaInfo/Name)[1]', 'nvarchar(128)'),
 		@schemaInfo = x.query('SchemaInfo/Info/*')
-	from 
+	from
 		@input.nodes('/UpdateShardingSchemaInfoGlobal') as t(x)
 
 	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @name is null or @schemaInfo is null)
@@ -2702,9 +2713,9 @@ begin
 	if (@gsmVersionMajorClient <> __ShardManagement.fnGetStoreVersionMajorGlobal())
 		goto Error_GSMVersionMismatch;
 
-	update 
-		__ShardManagement.ShardedDatabaseSchemaInfosGlobal 
-	set 
+	update
+		__ShardManagement.ShardedDatabaseSchemaInfosGlobal
+	set
 		SchemaInfo = @schemaInfo
 	where
 		Name = @name
@@ -2742,7 +2753,7 @@ create procedure __ShardManagement.spAttachShardGlobal
 @result int output
 as
 begin
-	declare @gsmVersionMajorClient int, 
+	declare @gsmVersionMajorClient int,
 			@gsmVersionMinorClient int,
 			@shardMapId uniqueidentifier,
 			@name nvarchar(50),
@@ -2757,7 +2768,7 @@ begin
 			@shardStatus int
 
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier'),
 		@name = x.value('(ShardMap/Name)[1]', 'nvarchar(50)'),
@@ -2775,7 +2786,7 @@ begin
 		@input.nodes('/AttachShardGlobal') as t(x)
 
 	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @shardMapId is null or @name is null or @mapType is null or @keyType is null or
-		@shardId is null or @shardVersion is null or @protocol is null or @serverName is null or 
+		@shardId is null or @shardVersion is null or @protocol is null or @serverName is null or
 		@port is null or @databaseName is null or @shardStatus is null)
 		goto Error_MissingParameters;
 
@@ -2783,21 +2794,21 @@ begin
 		goto Error_GSMVersionMismatch;
 
 	if exists (
-	select 
+	select
 		ShardMapId
 	from
-		__ShardManagement.ShardMapsGlobal 
+		__ShardManagement.ShardMapsGlobal
 	where
 		(ShardMapId = @shardMapId and Name <> @name) or (ShardMapId <> @shardMapId and Name = @name))
 		goto Error_ShardMapAlreadyExists;
 
 	-- ignore duplicate shard maps
 	begin try
-		insert into 
-			__ShardManagement.ShardMapsGlobal 
+		insert into
+			__ShardManagement.ShardMapsGlobal
 			(ShardMapId, Name, ShardMapType, KeyType)
-		values 
-			(@shardMapId, @name, @mapType, @keyType) 
+		values
+			(@shardMapId, @name, @mapType, @keyType)
 	end try
 	begin catch
 		if (error_number() <> 2627)
@@ -2810,9 +2821,9 @@ begin
 					@errorProcedure nvarchar(128) = isnull(error_procedure(), '-');
 
 			select @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
-			
+
 			raiserror (@errorMessage, @errorSeverity, 1, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
-			
+
 			rollback transaction; -- To avoid extra error message in response.
 			goto Error_UnexpectedError;
 		end
@@ -2820,29 +2831,29 @@ begin
 
 	-- attempt to add the shard
 	begin try
-		insert into 
+		insert into
 			__ShardManagement.ShardsGlobal (
-			ShardId, 
-			Readable, 
-			Version, 
-			ShardMapId, 
-			OperationId, 
-			Protocol, 
-			ServerName, 
-			Port, 
-			DatabaseName, 
+			ShardId,
+			Readable,
+			Version,
+			ShardMapId,
+			OperationId,
+			Protocol,
+			ServerName,
+			Port,
+			DatabaseName,
 			Status)
 		values (
-			@shardId, 
-			1, 
-			@shardVersion, 
-			@shardMapId, 
-			null, 
-			@protocol, 
-			@serverName, 
-			@port, 
-			@databaseName, 
-			@shardStatus) 
+			@shardId,
+			1,
+			@shardVersion,
+			@shardMapId,
+			null,
+			@protocol,
+			@serverName,
+			@port,
+			@databaseName,
+			@shardStatus)
 	end try
 	begin catch
 		if (error_number() = 2627)
@@ -2857,14 +2868,14 @@ begin
 			set @errorProcedure = isnull(error_procedure(), '-')
 
 			select @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
-			
+
 			raiserror (@errorMessage, @errorSeverity, 2, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
-			
+
 			rollback transaction; -- To avoid extra error message in response.
 			goto Error_UnexpectedError;
 		end
 	end catch
-	
+
 	set @result = 1
 	goto Exit_Procedure;
 
@@ -2903,22 +2914,22 @@ create procedure __ShardManagement.spDetachShardGlobal
 @result int output
 as
 begin
-	declare @gsmVersionMajorClient int, 
+	declare @gsmVersionMajorClient int,
 			@gsmVersionMinorClient int,
 			@protocol int,
 			@serverName nvarchar(128),
 			@port int,
 			@databaseName nvarchar(128),
 			@name nvarchar(50)
-	
+
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@protocol = x.value('(Location/Protocol)[1]', 'int'),
 		@serverName = x.value('(Location/ServerName)[1]', 'nvarchar(128)'),
 		@port = x.value('(Location/Port)[1]', 'int'),
 		@databaseName = x.value('(Location/DatabaseName)[1]', 'nvarchar(128)'),
-		@name = x.value('(Shardmap[@Null="0"]/Name)[1]', 'nvarchar(50)')
+		@name = x.value('(Shardmap[@Null=""0""]/Name)[1]', 'nvarchar(50)')
 	from
 		@input.nodes('/DetachShardGlobal') as t(x)
 
@@ -2931,41 +2942,41 @@ begin
 	declare @tvShardsToDetach table (ShardMapId uniqueidentifier, ShardId uniqueidentifier)
 
 	-- note the detached shards
-	insert into 
+	insert into
 		@tvShardsToDetach
-	select 
+	select
 		tShardMaps.ShardMapId, tShards.ShardId
 	from
-		__ShardManagement.ShardMapsGlobal tShardMaps 
+		__ShardManagement.ShardMapsGlobal tShardMaps
 		join
 		__ShardManagement.ShardsGlobal tShards
-		on 
-			tShards.ShardMapId = tShardMaps.ShardMapId and 
+		on
+			tShards.ShardMapId = tShardMaps.ShardMapId and
 			tShards.Protocol = @protocol and
-			tShards.ServerName = @serverName and 
+			tShards.ServerName = @serverName and
 			tShards.Port = @port and
 			tShards.DatabaseName = @databaseName
 	where
 		@name is null or tShardMaps.Name = @name
 
 	-- remove all mappings
-	delete 
-		tShardMappings 
+	delete
+		tShardMappings
 	from
-		__ShardManagement.ShardMappingsGlobal tShardMappings 
+		__ShardManagement.ShardMappingsGlobal tShardMappings
 		join
 		@tvShardsToDetach tShardsToDetach
-		on 
+		on
 		tShardsToDetach.ShardMapId = tShardMappings.ShardMapId and tShardsToDetach.ShardId = tShardMappings.ShardId
 
 	-- remove all shards
-	delete 
+	delete
 		tShards
 	from
-		__ShardManagement.ShardsGlobal tShards 
+		__ShardManagement.ShardsGlobal tShards
 		join
 		@tvShardsToDetach tShardsToDetach
-		on 
+		on
 		tShardsToDetach.ShardMapId = tShards.ShardMapId and tShardsToDetach.ShardId = tShards.ShardId
 
 	set @result = 1
@@ -2994,22 +3005,22 @@ create procedure __ShardManagement.spReplaceShardMappingsGlobal
 @result int output
 as
 begin
-	declare @gsmVersionMajorClient int, 
+	declare @gsmVersionMajorClient int,
 			@gsmVersionMinorClient int,
 			@removeStepsCount int,
 			@addStepsCount int,
 			@shardMapId uniqueidentifier
-	
+
 	-- get operation information as well as number of steps information
 	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
+		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
 		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
 		@removeStepsCount = x.value('(@RemoveStepsCount)[1]', 'int'),
 		@addStepsCount = x.value('(@AddStepsCount)[1]', 'int'),
 		@shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier')
 	from
 		@input.nodes('ReplaceShardMappingsGlobal') as t(x)
-	
+
 	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @removeStepsCount is null or @addStepsCount is null or @shardMapId is null)
 		goto Error_MissingParameters;
 
@@ -3018,9 +3029,9 @@ begin
 
 	-- check if shard map exists
 	if not exists (
-		select 
-			ShardMapId 
-		from 
+		select
+			ShardMapId
+		from
 			__ShardManagement.ShardMapsGlobal with (updlock)
 		where
 			ShardMapId = @shardMapId)
@@ -3033,26 +3044,26 @@ begin
 	if (@removeStepsCount > 0)
 	begin
 		-- read the shard information for removes
-		select 
+		select
 			@stepShardId = x.value('(Shard/Id)[1]', 'uniqueidentifier')
-		from 
+		from
 			@input.nodes('ReplaceShardMappingsGlobal/RemoveSteps') as t(x)
 
 		if (@stepShardId is null)
 			goto Error_MissingParameters;
-	
+
 		declare @currentRemoveStep xml,
 				@removeStepIndex int = 1
 
 		while (@removeStepIndex <= @removeStepsCount)
 		begin
-			select 
-				@currentRemoveStep = x.query('(./Step[@Id = sql:variable("@removeStepIndex")])[1]') 
+			select
+				@currentRemoveStep = x.query('(./Step[@Id = sql:variable(""@removeStepIndex"")])[1]')
 			from
 				@input.nodes('ReplaceShardMappingsGlobal/RemoveSteps') as t(x)
 
 			-- read the remove step
-			select 
+			select
 				@stepMappingId = x.value('(Mapping/Id)[1]', 'uniqueidentifier')
 			from
 				@currentRemoveStep.nodes('./Step') as t(x)
@@ -3060,7 +3071,7 @@ begin
 			if (@stepMappingId is null)
 				goto Error_MissingParameters;
 
-			delete from 
+			delete from
 				__ShardManagement.ShardMappingsGlobal
 			where
 				ShardMapId = @shardMapId and MappingId = @stepMappingId and ShardId = @stepShardId
@@ -3079,9 +3090,9 @@ begin
 	if (@addStepsCount > 0)
 	begin
 		-- read the shard information for removes
-		select 
+		select
 			@stepShardId = x.value('(Shard/Id)[1]', 'uniqueidentifier')
-		from 
+		from
 			@input.nodes('ReplaceShardMappingsGlobal/AddSteps') as t(x)
 
 		if (@stepShardId is null)
@@ -3092,44 +3103,44 @@ begin
 				@stepMinValue varbinary(128),
 				@stepMaxValue varbinary(128),
 				@stepStatus int
-		
+
 		while (@addStepIndex <= @addStepsCount)
 		begin
-			select 
-				@currentAddStep = x.query('(./Step[@Id = sql:variable("@addStepIndex")])[1]') 
+			select
+				@currentAddStep = x.query('(./Step[@Id = sql:variable(""@addStepIndex"")])[1]')
 			from
 				@input.nodes('ReplaceShardMappingsGlobal/AddSteps') as t(x)
-		
+
 			select
 				@stepMappingId = x.value('(Mapping/Id)[1]', 'uniqueidentifier'),
 				@stepMinValue = convert(varbinary(128), x.value('(Mapping/MinValue)[1]', 'varchar(258)'), 1),
-				@stepMaxValue = convert(varbinary(128), x.value('(Mapping/MaxValue[@Null="0"])[1]', 'varchar(258)'), 1),
+				@stepMaxValue = convert(varbinary(128), x.value('(Mapping/MaxValue[@Null=""0""])[1]', 'varchar(258)'), 1),
 				@stepStatus = x.value('(Mapping/Status)[1]', 'int')
 			from
 				@currentAddStep.nodes('./Step') as t(x)
-	
+
 			if (@stepMappingId is null or @stepMinValue is null or @stepStatus is null)
 				goto Error_MissingParameters;
 
 			-- add mapping
 			insert into
 				__ShardManagement.ShardMappingsGlobal(
-				MappingId, 
+				MappingId,
 				Readable,
-				ShardId, 
-				ShardMapId, 
-				OperationId, 
-				MinValue, 
-				MaxValue, 
+				ShardId,
+				ShardMapId,
+				OperationId,
+				MinValue,
+				MaxValue,
 				Status)
 			values (
-				@stepMappingId, 
+				@stepMappingId,
 				1,
-				@stepShardId, 
-				@shardMapId, 
-				null, 
-				@stepMinValue, 
-				@stepMaxValue, 
+				@stepShardId,
+				@shardMapId,
+				null,
+				@stepMinValue,
+				@stepMaxValue,
 				@stepStatus)
 
 			-- reset state for next iteration
@@ -3166,3 +3177,6 @@ go
 -- update version as 1.1
 insert into __ShardManagement.ShardMapManagerGlobal values (1, 1)
 go
+");
+    }
+}

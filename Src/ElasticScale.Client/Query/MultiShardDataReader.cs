@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 // Purpose:
-//  Logic that wraps multiple DbDataReader objects and aggregates them 
-//  (UNION ALL semantics) under the hood to provide the illusion that all 
+//  Logic that wraps multiple DbDataReader objects and aggregates them
+//  (UNION ALL semantics) under the hood to provide the illusion that all
 //  results came from a single DbDataReader.
 //
 // Notes:
@@ -22,7 +22,9 @@ using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
+#if NETFRAMEWORK
 using System.Runtime.Remoting;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -34,13 +36,13 @@ using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 {
-    // Suppression rationale:  
+    // Suppression rationale:
     //   MultiShardDataReader is not a collection.
     //   "Multi" is the spelling we want.
     //   We can't move the methods to other types because that would break the interface we are aiming to provide.
     //
     /// <summary>
-    /// Provides a way of reading a forward-only stream of rows that is retrieved from a shard set. 
+    /// Provides a way of reading a forward-only stream of rows that is retrieved from a shard set.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"),
      System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix"),
@@ -53,7 +55,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         private const String NameOfShardIdPseudoColumn = "$ShardName";
 
-        #region Private Fields
+#region Private Fields
 
         private readonly static ILogger s_tracer = TraceHelper.Tracer;
 
@@ -93,9 +95,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         private bool _closed;
         private bool _disposed;
 
-        #endregion Private Fields
+#endregion Private Fields
 
-        #region Constructors
+#region Constructors
 
         /// <summary>
         ///     Instantiates a MultiShardDataReader object that wraps DbDataReader objects.
@@ -106,9 +108,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <param name="inputReaders">The <see cref="LabeledDbDataReader"/> from each shard</param>
         /// <param name="executionPolicy">The execution policy to use</param>
         /// <param name="addShardNamePseudoColumn">True if we should add the $ShardName pseudo column, false if not.</param>
-        /// <param name="expectedReaderCount">(Optional) If a number greater than the length of inputReaders is 
+        /// <param name="expectedReaderCount">(Optional) If a number greater than the length of inputReaders is
         /// specified, the MultiShardDataReader is left open for additional calls to AddReader at a later time.</param>
-        /// <exception cref="MultiShardSchemaMismatchException">If the complete results execution policy is used and 
+        /// <exception cref="MultiShardSchemaMismatchException">If the complete results execution policy is used and
         /// the schema isn't the same across shards</exception>
         internal MultiShardDataReader(
             MultiShardCommand command,
@@ -142,9 +144,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion Constructors
+#endregion Constructors
 
-        #region Properties
+#region Properties
 
         /// <summary>
         /// Gets the <see cref="MultiShardConnection"/> associated with the MultiShardDataReader.
@@ -180,9 +182,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             private set;
         }
 
-        #endregion
+#endregion
 
-        #region Public Methods
+#region Public Methods
 
         /// <summary>
         /// Closes the MultiShardDataReader object.
@@ -222,7 +224,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     arbitraryClosedReader = currentReader;
                 }
 
-                // To avoid writing special case logic for when the queue is empty, we are going to 
+                // To avoid writing special case logic for when the queue is empty, we are going to
                 // add an arbitrary closed reader back to the queue, presuming we have any to choose from.
                 // If we don't, then default to the "No Data Reader" terminal state instead of introducing
                 // the possibility of a new NullReferenceException.
@@ -240,6 +242,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
+#if NETFRAMEWORK
         /// <summary>
         /// This method is currently not supported. Invoking the method will result in an exception.
         /// </summary>
@@ -248,6 +251,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             throw new RemotingException("MultiShardDataReader is not a valid remoting object.");
         }
+#endif
 
         /// <summary>
         /// Determines whether the specified object is equal to the current object. (Inherited from <see cref="Object"/>.)
@@ -283,7 +287,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         }
 
         /// <summary>
-        /// Reads a stream of bytes from the specified column, starting at location indicated by dataOffset, into the 
+        /// Reads a stream of bytes from the specified column, starting at location indicated by dataOffset, into the
         /// buffer, starting at the location indicated by bufferOffset.
         /// </summary>
         /// <param name="ordinal">The zero-based column ordinal.</param>
@@ -317,7 +321,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         }
 
         /// <summary>
-        /// Reads a stream of characters from the specified column, starting at location indicated by dataOffset, into 
+        /// Reads a stream of characters from the specified column, starting at location indicated by dataOffset, into
         /// the buffer, starting at the location indicated by bufferOffset.
         /// </summary>
         /// <param name="ordinal">The zero-based column ordinal.</param>
@@ -411,7 +415,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         }
 
         /// <summary>
-        /// Returns a DbDataReader object for the requested column ordinal that can be overridden with a 
+        /// Returns a DbDataReader object for the requested column ordinal that can be overridden with a
         /// provider-specific implementation.
         /// </summary>
         /// <param name="ordinal">The zero-based column ordinal.</param>
@@ -477,7 +481,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             if (this.IsPseudoColumnReference(ordinal))
             {
                 // It is a reference to our ShardName pseudo column.
-                // In this case, only a string type is valid for our T parameter, so check that, and 
+                // In this case, only a string type is valid for our T parameter, so check that, and
                 // either return properly or throw an InvalidCast.
                 //
 
@@ -500,8 +504,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <typeparam name="T">The type of the value to be returned.</typeparam>
         /// <param name="ordinal">The zero-based column ordinal.</param>
         /// <param name="cancellationToken">
-        /// The cancellation instruction, which propagates a notification that operations should be canceled. This does 
-        /// not guarantee the cancellation. A setting of CancellationToken.None makes this method equivalent to 
+        /// The cancellation instruction, which propagates a notification that operations should be canceled. This does
+        /// not guarantee the cancellation. A setting of CancellationToken.None makes this method equivalent to
         /// GetFieldValueAsync. The returned task must be marked as cancelled.
         /// </param>
         /// <returns>The value of the specified column.</returns>
@@ -801,7 +805,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         }
 
         /// <summary>
-        /// Returns the data value in the specified column as a native SQL Server type. 
+        /// Returns the data value in the specified column as a native SQL Server type.
         /// </summary>
         /// <param name="ordinal">The zero-based column ordinal.</param>
         /// <returns>The value of the column expressed as a SqlDbType.</returns>
@@ -811,7 +815,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         }
 
         /// <summary>
-        /// Fills an array of Object that contains the values for all the columns in the record, 
+        /// Fills an array of Object that contains the values for all the columns in the record,
         /// expressed as native SQL Server types.
         /// </summary>
         /// <param name="values">
@@ -929,17 +933,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             return ProcessPotentialPseudoColumnReference<bool>(ordinal, (null == GetCurrentShardLabel()), GetCurrentDataReader().IsDBNull);
         }
 
-        // Cannot override IsDBNullAsync(int ordinal).  should we use new? 
+        // Cannot override IsDBNullAsync(int ordinal).  should we use new?
         //
 
         /// <summary>
-        /// An asynchronous version of IsDBNull, which gets a value that indicates whether the column contains 
+        /// An asynchronous version of IsDBNull, which gets a value that indicates whether the column contains
         /// nonexistent or missing values (NULL values).
         /// </summary>
         /// <param name="ordinal">The zero-based column to be retrieved.</param>
         /// <param name="cancellationToken">
         /// The cancellation instruction, which propagates a notification that operations should be canceled. This does
-        /// not guarantee the cancellation. A setting of CancellationToken.None makes this method equivalent to 
+        /// not guarantee the cancellation. A setting of CancellationToken.None makes this method equivalent to
         /// IsDBNullAsync. The returned task must be marked as cancelled.
         /// </param>
         /// <returns>True if the specified column value is equivalent to DBNull otherwise false.</returns>
@@ -968,7 +972,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <summary>
         /// This method is currently not supported. Invoking the method will result in an exception.
         /// </summary>
-        /// DEVNOTE (VSTS: 2202747): For now we are only supporting single result set.  Need to do some more work if we want to 
+        /// DEVNOTE (VSTS: 2202747): For now we are only supporting single result set.  Need to do some more work if we want to
         /// handle the multiple result set case.  Especially if we attempt to move to a non "give me them all up front"
         /// approach. This comment applies to all the NextResult-related methods.
         public override bool NextResult()
@@ -992,7 +996,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
                     if (hasNextResult)
                     {
-                        // Invalidate this instance of the MultiShardDataReader and throw an exception. 
+                        // Invalidate this instance of the MultiShardDataReader and throw an exception.
                         // We currently do not support multiple result sets
                         this.Close();
 
@@ -1026,7 +1030,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <summary>
         /// An asynchronous version of Read, which advances the MultiShardDataReader to the next record.
         ///
-        /// The cancellation token can be used to request that the operation be abandoned before the command timeout elapses. 
+        /// The cancellation token can be used to request that the operation be abandoned before the command timeout elapses.
         /// Exceptions will be reported via the returned Task object.
         /// </summary>
         /// <param name="cancellationToken">The cancellation instruction.</param>
@@ -1114,9 +1118,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             return base.ToString();
         }
 
-        #endregion Public Methods
+#endregion Public Methods
 
-        #region Public Properties
+#region Public Properties
 
         /// <summary>
         /// Gets a value indicating the depth of nesting for the current row.
@@ -1130,7 +1134,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         }
 
         /// <summary>
-        /// Gets the number of columns in the current row. 
+        /// Gets the number of columns in the current row.
         /// </summary>
         public override int FieldCount
         {
@@ -1141,7 +1145,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         }
 
         /// <summary>
-        /// Gets a value that indicates whether this MultiShardDataReader contains one or more rows. 
+        /// Gets a value that indicates whether this MultiShardDataReader contains one or more rows.
         /// </summary>
         public override bool HasRows
         {
@@ -1206,9 +1210,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion Public Properties
+#endregion Public Properties
 
-        #region Internal Methods
+#region Internal Methods
 
         /// <summary>
         /// Cancels all the active commands executing for this reader.
@@ -1231,9 +1235,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion Internal Methods
+#endregion Internal Methods
 
-        #region Protected Methods
+#region Protected Methods
 
         /// <summary>
         /// Releases the managed resources used by the DbDataReader and optionally releases the unmanaged resources.
@@ -1285,9 +1289,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion Protected Methods
+#endregion Protected Methods
 
-        #region Internal Methods
+#region Internal Methods
 
         /// <summary>
         /// Method to add another DbDataReader to the set of underlying sources we are concatenating.
@@ -1305,12 +1309,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// expecting for the DbDataReader objects underlying this MultiShardDataReader object.
         /// </exception>
         /// <returns>Null if we added successfully.  The encountered exception if we hit an error.</returns>
-        /// 
+        ///
         internal void AddReader(LabeledDbDataReader toAdd)
         {
             if (toAdd != null)
             {
-                // Don't try to read from readers that encountered an exception 
+                // Don't try to read from readers that encountered an exception
                 if (toAdd.Exception != null)
                 {
                     // We tried adding a reader that we expected, but it was invalid. Let's expect one fewer inputReader as a result.
@@ -1389,8 +1393,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 // We tried adding a reader that we expected, but it was invalid. Let's expect one fewer inputReader as a result.
                 // Is this the correct logic when we have complete results turned on?  I understand that it is null so we
                 // don't know where it came from, but that seems like something that should cause us to throw anyway...
-                // Is it correct when we have partial turned on? We may not want to throw, but we should probably log this 
-                // somewhere.  
+                // Is it correct when we have partial turned on? We may not want to throw, but we should probably log this
+                // somewhere.
                 // Likely related to VSTS 2616238.  Philip will be modifying logic/augmenting tests in this area.
                 //
                 this.DecrementExpectedReaders();
@@ -1462,12 +1466,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        #endregion Internal Methods
+#endregion Internal Methods
 
-        #region Private Methods
+#region Private Methods
 
         /// <summary>
-        /// Checks the schema of the passed in DbDataReader against the schema we are expecting for our 
+        /// Checks the schema of the passed in DbDataReader against the schema we are expecting for our
         /// fan-out result set.
         /// </summary>
         /// <param name="labeledReader">The LabeledDbDataReader object to check against our expected schema.</param>
@@ -1490,7 +1494,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 throw new MultiShardDataReaderInternalException("Unexpected reader with null schema encountered among non-null readers");
             }
 
-            // The SchemaTable holds 1 *row* for each *column* of the actual output returned.  So in order to compare 
+            // The SchemaTable holds 1 *row* for each *column* of the actual output returned.  So in order to compare
             // column metadata for the inputDataReaders we need to compare row information contained in the schemaTable.
             //
             DataRowCollection currentRows = currentDataTable.Rows;
@@ -1501,7 +1505,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
             if (null == _schemaComparisonTemplate)
             {
-                // This is our first call to validate, so grab the table template off of this guy and use it as the 
+                // This is our first call to validate, so grab the table template off of this guy and use it as the
                 // expected schema for our results.  No need to validate since we are using this one as ground truth.
                 //
                 InitSchemaTemplate(reader);
@@ -1583,15 +1587,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         }
 
         /// <summary>
-        /// Checks all the column specifications (as encapsulated by a DataRow from a SchemaTable) for 
+        /// Checks all the column specifications (as encapsulated by a DataRow from a SchemaTable) for
         /// compatibility with the expected column specification.
         /// </summary>
         /// <param name="shardLocation">The shard being validated</param>
         /// <param name="toValidate">The DataRow representing the column specification we wish to validate.</param>
         /// <param name="expected">The DataRow representing the expectd column specification.</param>
         /// <remarks>
-        /// There are lot of opportunities in here for relaxed comparison semantics, but for now let's 
-        /// just be super strict. 
+        /// There are lot of opportunities in here for relaxed comparison semantics, but for now let's
+        /// just be super strict.
         /// DEVNOTE (2244709): Need to tighten up our schema checking!
         /// </remarks>
         /// <exception cref="MultiShardSchemaMismatchException">
@@ -1605,7 +1609,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             DataRowCollection rowsExpected = expected.Rows;
 
             // Eventually we may wish to be a bit more relaxed about the comparisons (e.g., if we expect bigint and we
-            // see int that may be ok) but for now let's just be super-strict and make the behavior different and/or 
+            // see int that may be ok) but for now let's just be super-strict and make the behavior different and/or
             // configurable later.
             //
             for (int curRowIndex = 0; curRowIndex < rowsExpected.Count; curRowIndex++)
@@ -1627,7 +1631,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
         /// <summary>
         /// Handles the case where a reader has a null schema table
-        /// 
+        ///
         /// Behavior-
         /// - Any exception will not be thrown if ALL readers have a null schema (regardless of execution
         /// policy). Otherwise, a <see cref="MultiShardDataReaderInternalException"/> will be thrown.
@@ -1684,7 +1688,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                     // let it slide.
                 }
 
-                // It should never be closed already if the top-level reader is not closed, but in case it 
+                // It should never be closed already if the top-level reader is not closed, but in case it
                 // happens we don't want to completely freeze the reader with no way to move forward and
                 // no way to close, so just ignore that it's already closed.
             }
@@ -1770,7 +1774,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
         /// <summary>
         /// Helper method that sets up the SchemaTemplate to use as our "Ground Truth" for
-        /// performing schema comparisons.  In addition to storing a copy of the schema 
+        /// performing schema comparisons.  In addition to storing a copy of the schema
         /// information, this method adds an additional row for the "ShardIdPseudoColumn".
         /// </summary>
         /// <param name="templateReader">
@@ -1820,7 +1824,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <typeparam name="T">The type of the column we wish to return.</typeparam>
         /// <param name="getterFunction">The function to use to pull the column value.</param>
         /// <param name="ordinal">The zero-based column ordinal.</param>
-        /// 
+        ///
         /// <returns>The desired column value.</returns>
         private T GetColumn<T>(Func<int, T> getterFunction, int ordinal)
         {
@@ -1963,7 +1967,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         /// <param name="token">The cancellation instruction.</param>
         /// <returns>
-        /// An async task to perform the read; when executed the task returns true 
+        /// An async task to perform the read; when executed the task returns true
         /// if we read another row from the current reader, false if we hit the end.
         /// </returns>
         private async Task<bool> PerformReadToFillBufferAsync(CancellationToken token)
@@ -2009,45 +2013,45 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
             DataRow theRow = _finalSchemaTable.NewRow();
 
-            #region Shard Id Pseudo Column Schema Table information
+#region Shard Id Pseudo Column Schema Table information
             theRow[SchemaTableColumn.ColumnName] = MultiShardDataReader.NameOfShardIdPseudoColumn;
             theRow[SchemaTableColumn.ColumnOrdinal] = _indexOfShardIdPseudoColumn;
             theRow[SchemaTableColumn.ColumnSize] = (Int32)4000;
             theRow[SchemaTableColumn.NumericPrecision] = (Int16)255;
             theRow[SchemaTableColumn.NumericScale] = (Int16)255;
             theRow[SchemaTableColumn.IsUnique] = (Boolean)false;
-            theRow[SchemaTableColumn.IsKey] = DBNull.Value; //Boolean 
-            theRow[SchemaTableOptionalColumn.BaseServerName] = null; //string 
-            theRow[SchemaTableOptionalColumn.BaseCatalogName] = null; //string 
+            theRow[SchemaTableColumn.IsKey] = DBNull.Value; //Boolean
+            theRow[SchemaTableOptionalColumn.BaseServerName] = null; //string
+            theRow[SchemaTableOptionalColumn.BaseCatalogName] = null; //string
             theRow[SchemaTableColumn.BaseColumnName] = MultiShardDataReader.NameOfShardIdPseudoColumn;
-            theRow[SchemaTableColumn.BaseSchemaName] = null; //string 
-            theRow[SchemaTableColumn.BaseTableName] = null; //string 
+            theRow[SchemaTableColumn.BaseSchemaName] = null; //string
+            theRow[SchemaTableColumn.BaseTableName] = null; //string
             theRow[SchemaTableColumn.DataType] = typeof(string); //System.Type
             theRow[SchemaTableColumn.AllowDBNull] = (Boolean)true;
             theRow[SchemaTableColumn.ProviderType] = (Int32)12;
-            theRow[SchemaTableColumn.IsAliased] = DBNull.Value; //Boolean 
-            theRow[SchemaTableColumn.IsExpression] = DBNull.Value; //Boolean 
+            theRow[SchemaTableColumn.IsAliased] = DBNull.Value; //Boolean
+            theRow[SchemaTableColumn.IsExpression] = DBNull.Value; //Boolean
             theRow["IsIdentity"] = (Boolean)false;
             theRow[SchemaTableOptionalColumn.IsAutoIncrement] = (Boolean)false;
             theRow[SchemaTableOptionalColumn.IsRowVersion] = (Boolean)false;
-            theRow[SchemaTableOptionalColumn.IsHidden] = DBNull.Value; //Boolean 
+            theRow[SchemaTableOptionalColumn.IsHidden] = DBNull.Value; //Boolean
             theRow[SchemaTableColumn.IsLong] = (Boolean)false;
             theRow[SchemaTableOptionalColumn.IsReadOnly] = (Boolean)false;
             theRow[SchemaTableOptionalColumn.ProviderSpecificDataType] = typeof(SqlString); //System.Type
             theRow["DataTypeName"] = "nvarchar"; //string
-            theRow["XmlSchemaCollectionDatabase"] = null; //string 
-            theRow["XmlSchemaCollectionOwningSchema"] = null; //string 
-            theRow["XmlSchemaCollectionName"] = null; //string 
-            theRow["UdtAssemblyQualifiedName"] = null; //string 
+            theRow["XmlSchemaCollectionDatabase"] = null; //string
+            theRow["XmlSchemaCollectionOwningSchema"] = null; //string
+            theRow["XmlSchemaCollectionName"] = null; //string
+            theRow["UdtAssemblyQualifiedName"] = null; //string
             theRow[SchemaTableColumn.NonVersionedProviderType] = (Int32)12;
             theRow["IsColumnSet"] = (Boolean)false;
 
-            #endregion Shard Id Pseudo Column Schema Table information
+#endregion Shard Id Pseudo Column Schema Table information
 
             _finalSchemaTable.Rows.Add(theRow);
             _finalSchemaTable.AcceptChanges();
         }
 
-        #endregion Private Methods
+#endregion Private Methods
     }
 }

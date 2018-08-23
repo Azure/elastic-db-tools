@@ -1,3 +1,14 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
+{
+    /// <summary>
+    /// Utility properties and methods used for managing scripts and errors.
+    /// </summary>
+    internal static partial class Scripts
+    {
+        internal const string CreateShardMapManagerGlobal = @"
 -- Copyright (c) Microsoft. All rights reserved.
 -- Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
@@ -836,7 +847,7 @@ begin
 	while (@stepIndex <= @stepsCount)
 	begin
 		select 
-			@currentStep = x.query('(./Step[@Id = sql:variable("@stepIndex")])[1]') 
+			@currentStep = x.query('(./Step[@Id = sql:variable(""@stepIndex"")])[1]') 
 		from
 			@input.nodes('/BulkOperationShardsGlobal/Steps') as t(x)
 
@@ -1133,7 +1144,7 @@ begin
 	while (@stepIndex <= @stepsCount)
 	begin
 		select 
-			@currentStep = x.query('(./Step[@Id = sql:variable("@stepIndex")])[1]') 
+			@currentStep = x.query('(./Step[@Id = sql:variable(""@stepIndex"")])[1]') 
 		from
 			@input.nodes('/BulkOperationShardsGlobal/Steps') as t(x)
 
@@ -1285,10 +1296,10 @@ begin
 	select
 		@gsmVersionClient = x.value('(GsmVersion)[1]', 'int'),
 		@shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier'),
-		@shardId = x.value('(Shard[@Null="0"]/Id)[1]', 'uniqueidentifier'),
-		@shardVersion = x.value('(Shard[@Null="0"]/Version)[1]', 'uniqueidentifier'),
-		@minValue = convert(varbinary(128), x.value('(Range[@Null="0"]/MinValue)[1]', 'varchar(258)'), 1),
-		@maxValue = convert(varbinary(128), x.value('(Range[@Null="0"]/MaxValue[@Null="0"])[1]', 'varchar(258)'), 1)
+		@shardId = x.value('(Shard[@Null=""0""]/Id)[1]', 'uniqueidentifier'),
+		@shardVersion = x.value('(Shard[@Null=""0""]/Version)[1]', 'uniqueidentifier'),
+		@minValue = convert(varbinary(128), x.value('(Range[@Null=""0""]/MinValue)[1]', 'varchar(258)'), 1),
+		@maxValue = convert(varbinary(128), x.value('(Range[@Null=""0""]/MaxValue[@Null=""0""])[1]', 'varchar(258)'), 1)
 	from
 		@input.nodes('/GetAllShardMappingsGlobal') as t(x)
 
@@ -1845,7 +1856,7 @@ begin
 	while (@stepIndex <= @stepsCount)
 	begin
 		select 
-			@currentStep = x.query('(./Step[@Id = sql:variable("@stepIndex")])[1]') 
+			@currentStep = x.query('(./Step[@Id = sql:variable(""@stepIndex"")])[1]') 
 		from 
 			@input.nodes('/BulkOperationShardMappingsGlobal/Steps') as t(x)
 
@@ -1960,7 +1971,7 @@ begin
 				@stepShouldValidate = x.value('(@Validate)[1]', 'bit'),
 				@stepMappingId = x.value('(Mapping/Id)[1]', 'uniqueidentifier'),
 				@stepMinValue = convert(varbinary(128), x.value('(Mapping/MinValue)[1]', 'varchar(258)'), 1),
-				@stepMaxValue = convert(varbinary(128), x.value('(Mapping/MaxValue[@Null="0"])[1]', 'varchar(258)'), 1),
+				@stepMaxValue = convert(varbinary(128), x.value('(Mapping/MaxValue[@Null=""0""])[1]', 'varchar(258)'), 1),
 				@stepStatus = x.value('(Mapping/Status)[1]', 'int'),
 				@stepLockOwnerId = x.value('(Mapping/LockOwnerId)[1]', 'uniqueidentifier')
 			from
@@ -2224,7 +2235,7 @@ begin
 	while (@stepIndex <= @stepsCount)
 	begin
 		select 
-			@currentStep = x.query('(./Step[@Id = sql:variable("@stepIndex")])[1]') 
+			@currentStep = x.query('(./Step[@Id = sql:variable(""@stepIndex"")])[1]') 
 		from
 		@input.nodes('/BulkOperationShardMappingsGlobal/Steps') as t(x)
 
@@ -2935,7 +2946,7 @@ begin
 		@serverName = x.value('(Location/ServerName)[1]', 'nvarchar(128)'),
 		@port = x.value('(Location/Port)[1]', 'int'),
 		@databaseName = x.value('(Location/DatabaseName)[1]', 'nvarchar(128)'),
-		@name = x.value('(Shardmap[@Null="0"]/Name)[1]', 'nvarchar(50)')
+		@name = x.value('(Shardmap[@Null=""0""]/Name)[1]', 'nvarchar(50)')
 	from
 		@input.nodes('/DetachShardGlobal') as t(x)
 
@@ -3062,7 +3073,7 @@ begin
 		while (@removeStepIndex <= @removeStepsCount)
 		begin
 			select 
-				@currentRemoveStep = x.query('(./Step[@Id = sql:variable("@removeStepIndex")])[1]') 
+				@currentRemoveStep = x.query('(./Step[@Id = sql:variable(""@removeStepIndex"")])[1]') 
 			from
 				@input.nodes('ReplaceShardMappingsGlobal/RemoveSteps') as t(x)
 
@@ -3111,14 +3122,14 @@ begin
 		while (@addStepIndex <= @addStepsCount)
 		begin
 			select 
-				@currentAddStep = x.query('(./Step[@Id = sql:variable("@addStepIndex")])[1]') 
+				@currentAddStep = x.query('(./Step[@Id = sql:variable(""@addStepIndex"")])[1]') 
 			from
 				@input.nodes('ReplaceShardMappingsGlobal/AddSteps') as t(x)
 		
 			select
 				@stepMappingId = x.value('(Mapping/Id)[1]', 'uniqueidentifier'),
 				@stepMinValue = convert(varbinary(128), x.value('(Mapping/MinValue)[1]', 'varchar(258)'), 1),
-				@stepMaxValue = convert(varbinary(128), x.value('(Mapping/MaxValue[@Null="0"])[1]', 'varchar(258)'), 1),
+				@stepMaxValue = convert(varbinary(128), x.value('(Mapping/MaxValue[@Null=""0""])[1]', 'varchar(258)'), 1),
 				@stepStatus = x.value('(Mapping/Status)[1]', 'int')
 			from
 				@currentAddStep.nodes('./Step') as t(x)
@@ -3177,3 +3188,6 @@ Error_GSMVersionMismatch:
 Exit_Procedure:
 end
 go
+";
+    }
+}

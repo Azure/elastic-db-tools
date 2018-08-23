@@ -117,29 +117,23 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="_Store_ShardMapper_MappingPointOrRangeAlreadyMapped" xml:space="preserve">
-    <value>Mapping referencing shard '{0}' in the shard map '{1}' cannot be added because the {2} it covers is already mapped by another mapping. Error occurred while executing stored procedure '{3}' for operation '{4}'. This can occur if another concurrent user has already added a mapping covering the given {2}.</value>
+  <data name="_General_InvalidArgumentValue" xml:space="preserve">
+    <value>Unsupport value '{0}' specified for parameter '{1}'.</value>
   </data>
-  <data name="_Store_ShardMapper_MappingDoesNotExistGlobal" xml:space="preserve">
-    <value>Mapping referencing shard '{0}' in the shard map '{1}' does not exist. Error occurred while executing stored procedure '{2}' for operation '{3}'. This can occur if another concurrent user has already removed the mapping.</value>
+  <data name="_Recovery_InvalidRebuildShardSpecification" xml:space="preserve">
+    <value>The specified ShardRange {0} was not in the set of ShardRanges from which the local shardmap information can be rebuilt at location '{1}'.</value>
   </data>
-  <data name="_Store_ShardMapper_MappingNotFoundForKeyGlobal" xml:space="preserve">
-    <value>Mapping containing the given key value could not be located in the shard map '{0}'. Error occurred while executing stored procedure '{1}' for operation '{2}'.</value>
+  <data name="_Recovery_InvalidRecoveryToken" xml:space="preserve">
+    <value>Recovery token {0} was not recognized.</value>
   </data>
-  <data name="_Store_Validate_MappingDoesNotExist" xml:space="preserve">
-    <value>Mapping referencing shard '{0}' associated with shard map '{1}' no longer exists in store. Error occurred while executing stored procedure '{2}' for operation '{3}' on the shard. This can happen if another concurrent user has deleted or modified the mapping.</value>
+  <data name="_Recovery_ShardNotValid" xml:space="preserve">
+    <value>The given location '{0}' does not have the necessary storage structures present for a shard. Error occurred while performing operation '{1}'.</value>
   </data>
-  <data name="_ShardMapping_RangeNotSubset" xml:space="preserve">
-    <value>Requested range is not a subset of the existing range mapping.</value>
+  <data name="_SchemaInfo_TableInfoAlreadyExists" xml:space="preserve">
+    <value>The SchemaInfo object already contains a {0} table by the given name of [{1}].[{2}].</value>
   </data>
-  <data name="_ShardMapping_MergeDifferentShards" xml:space="preserve">
-    <value>Mappings provided for the merge operation which belong to shard map '{0}' belong to different shards '{1}' and '{2}'. Merge operation is only allowed for mappings belonging to the same shard.</value>
-  </data>
-  <data name="_ShardMapping_MergeNotAdjacent" xml:space="preserve">
-    <value>Mappings provided for the merge operation are not adjacent. Merge operation is only allowed for adjacent mappings.</value>
-  </data>
-  <data name="_ShardMapping_DifferentStatus" xml:space="preserve">
-    <value>Mappings provided for the Merge operation belonging to shard map '{0}' differ in their Status property. Merge operation is only allowed for mappings with same values for Status.</value>
+  <data name="_ShardKey_MaxValueCannotBeIncremented" xml:space="preserve">
+    <value>Shard key has maximum value which cannot be incremented. Perform the IsMax check on shard key before requesting next key.</value>
   </data>
   <data name="_ShardKey_MaxValueCannotBeRepresented" xml:space="preserve">
     <value>Shard key has maximum value which cannot be represented. Perform the IsMax check on shard key before requesting a conversion.</value>
@@ -165,65 +159,23 @@
   <data name="_ShardKey_ValueLengthUnexpected" xml:space="preserve">
     <value>The length of raw value specified for the shard key ({0} bytes) does not match the expected length ({1} bytes) for the ShardKeyType ({2}) specified.</value>
   </data>
+  <data name="_ShardLocation_InvalidPort" xml:space="preserve">
+    <value>The given port number '{0}' is invalid.</value>
+  </data>
+  <data name="_ShardLocation_InvalidServerOrDatabase" xml:space="preserve">
+    <value>The given '{0}' name is longer than the allowed length of '{1}' characters.</value>
+  </data>
+  <data name="_ShardLocation_UnsupportedProtocol" xml:space="preserve">
+    <value>The given protocol value '{0}' is not supported.</value>
+  </data>
   <data name="_ShardMapExtensions_AsTypedShardMap_ConversionFailure" xml:space="preserve">
     <value>Shard map '{0}' can not be converted to the target type {1}ShardMap&lt;{2}&gt;. Its actual type is {3}ShardMap&lt;{4}&gt;.</value>
-  </data>
-  <data name="_Store_ShardMapManager_AlreadyExistsGlobal" xml:space="preserve">
-    <value>Data structures for shard map manager persistence already exists at the target location.</value>
-  </data>
-  <data name="_Store_ShardMap_AlreadyExistsGlobal" xml:space="preserve">
-    <value>Shard map with name '{0}' already exists in the store. Error occurred while executing stored procedure '{1}' for operation '{2}'.</value>
-  </data>
-  <data name="_ShardMapManager_ShardMapLookupFailed" xml:space="preserve">
-    <value>Shard map '{0}' could not be found in the shard map manager store at '{1}'.</value>
-  </data>
-  <data name="_Store_ShardMap_ContainsShardsGlobal" xml:space="preserve">
-    <value>Shard map '{0}' has shards associated with it. Shard maps can only be removed if there are no shards associated with them. Error occurred while executing stored procedure '{1}' for operation '{2}'.</value>
   </data>
   <data name="_ShardMapManager_DifferentShardMapManager" xml:space="preserve">
     <value>Shard map '{0}' is not associated with the current instance of shard map manager at '{1}'. Only shard maps that are obtained from the same 'ShardMapManager' instance can be used.</value>
   </data>
-  <data name="_Store_SqlExceptionGlobal" xml:space="preserve">
-    <value>Store Error: {0}. The error occurred while attempting to perform the underlying storage operation during '{1}' operation on the shard map manager database. See the inner StoreException for details.</value>
-  </data>
-  <data name="_ShardMap_OpenConnectionForKey_KeyTypeNotSupported" xml:space="preserve">
-    <value>Key values of type '{0}' are not supported. OpenConnectionForKey requests for the shard map '{1}' requires keys of type '{2}'.</value>
-  </data>
-  <data name="_ShardMap_OpenConnection_ConnectionStringPropertyDisallowed" xml:space="preserve">
-    <value>Property '{0}' must not be set in the input connection string for 'OpenConnection' operations.</value>
-  </data>
-  <data name="_Store_Shard_HasMappingsGlobal" xml:space="preserve">
-    <value>Shard '{0}' belonging to shard map '{1}' has mappings associated with it. Error occurred while executing stored procedure '{2}' for operation '{3}'. Remove all the mappings associated with the shard before attempting the operation.</value>
-  </data>
-  <data name="_Store_Shard_DoesNotExistGlobal" xml:space="preserve">
-    <value>Shard '{0}' belonging to shard map '{1}' could not be found in the shard map manager database. Error occurred while executing stored procedure '{2}' for operation '{3}'. This can happen when another concurrent user removes the shard from the store.</value>
-  </data>
-  <data name="_Store_Shard_VersionMismatchGlobal" xml:space="preserve">
-    <value>Shard '{0}' belonging to shard map '{1}' has been updated in store. Error occurred while executing stored procedure '{2}' for operation '{3}'. This can occur if another concurrent user updates the shard. Perform a GetShard operation for the shard location to obtain the updated instance.</value>
-  </data>
-  <data name="_ShardRange_LowGreaterThanOrEqualToHigh" xml:space="preserve">
-    <value>The low value {0} is greater than or equal to the high value {1}. Lower value must be less than the higher value.</value>
-  </data>
-  <data name="_Store_Validate_ShardDoesNotExist" xml:space="preserve">
-    <value>Shard '{0}' belonging to shard map '{1}' no longer exists in store. Error occurred while executing stored procedure '{2}' for operation '{3}' on the shard. This can happen if another concurrent user deletes the shard. </value>
-  </data>
-  <data name="_Store_Validate_ShardMapDoesNotExist" xml:space="preserve">
-    <value>Shard map '{0}' associated with shard '{1}' no longer exists in store. Error occurred while executing stored procedure '{2}' for operation '{3}'. This can happen if another concurrent user deletes the shard map.</value>
-  </data>
-  <data name="_SqlShardMapManagerCredentials_ConnectionStringPropertyRequired" xml:space="preserve">
-    <value>The required property '{0}' must be set in the connection string.</value>
-  </data>
-  <data name="_SqlShardMapManagerCredentials_ConnectionStringPropertyNotAllowed" xml:space="preserve">
-    <value>The property '{0}' must not be set in the connection string.</value>
-  </data>
-  <data name="_Shard_DifferentShardMap" xml:space="preserve">
-    <value>Shard '{0}' provided for the given '{1}' is not associated with current shard map '{2}'. The '{3}' operations required the shard to be associated with the current shard map.</value>
-  </data>
-  <data name="_Shard_DifferentShardMapManager" xml:space="preserve">
-    <value>Shard '{0}' provided for the given '{1}' is not associated with current shard map manager at '{2}'. The '{3}' operations required the shard to be associated with the current shard map manager.</value>
-  </data>
-  <data name="_ShardLocation_InvalidServerOrDatabase" xml:space="preserve">
-    <value>The given '{0}' name is longer than the allowed length of '{1}' characters.</value>
+  <data name="_ShardMapManager_ShardMapLookupFailed" xml:space="preserve">
+    <value>Shard map '{0}' could not be found in the shard map manager store at '{1}'.</value>
   </data>
   <data name="_ShardMapManager_UnsupportedShardMapName" xml:space="preserve">
     <value>Shard map name '{0}' is not supported. Shard map names are only allowed to contain unicode letters and digits.</value>
@@ -231,41 +183,56 @@
   <data name="_ShardMapManager_UnsupportedShardMapNameLength" xml:space="preserve">
     <value>Length of shard map name '{0}' exceeds the maximum allowed length of '{1}' characters.</value>
   </data>
-  <data name="_Store_Validate_MappingIsOffline" xml:space="preserve">
-    <value>The shard key value for an OpenConnection request is associated with a mapping that is marked ‘Offline’.  Data containing this key value is likely being moved, and the connection is blocked to avoid data corruption.  Validated connection requests for this shardlet will succeed when the mapping is back ‘Online’.  Shard: '{0}'.  Shard map: '{1}'.  Error occurred while executing stored procedure '{3}' for operation '{2}' on the shard.</value>
+  <data name="_ShardMapping_DifferentShardMap" xml:space="preserve">
+    <value>'{0}' provided for operation '{1}' is not associated with the current shard map '{2}'. Only mappings associated with the same shard map as the given shard map can be used. Error occurred for parameter '{3}'.</value>
   </data>
-  <data name="_Store_ShardMapper_UnableToKillSessions" xml:space="preserve">
-    <value>Mapping referencing shard '{0}' belonging to shard map '{1}' could not be taken offline because all existing connections on the shard could not be terminated. Error occurred during '{2}' operation while executing stored procedure '{3}' on shard '{4}'.</value>
+  <data name="_ShardMapping_DifferentShardMapManager" xml:space="preserve">
+    <value>'{0}' provided for operation '{1}' is not associated with the current instance of shard map manager at '{2}'. Only mappings associated with the same 'ShardMapManager' instance as the the one associated with current shard map '{3}' can be used. Error occurred for parameter '{4}'.</value>
   </data>
-  <data name="_Recovery_ShardNotValid" xml:space="preserve">
-    <value>The given location '{0}' does not have the necessary storage structures present for a shard. Error occurred while performing operation '{1}'.</value>
+  <data name="_ShardMapping_DifferentStatus" xml:space="preserve">
+    <value>Mappings provided for the Merge operation belonging to shard map '{0}' differ in their Status property. Merge operation is only allowed for mappings with same values for Status.</value>
   </data>
-  <data name="_Recovery_InvalidRebuildShardSpecification" xml:space="preserve">
-    <value>The specified ShardRange {0} was not in the set of ShardRanges from which the local shardmap information can be rebuilt at location '{1}'.</value>
+  <data name="_ShardMapping_LockIdNotSupported" xml:space="preserve">
+    <value>LockId for locking the mapping referencing shard {0} with shard map name {1} has unsupported value '{2}'.</value>
   </data>
-  <data name="_Recovery_InvalidRecoveryToken" xml:space="preserve">
-    <value>Recovery token {0} was not recognized.</value>
+  <data name="_ShardMapping_MergeDifferentShards" xml:space="preserve">
+    <value>Mappings provided for the merge operation which belong to shard map '{0}' belong to different shards '{1}' and '{2}'. Merge operation is only allowed for mappings belonging to the same shard.</value>
   </data>
-  <data name="_Store_ShardMapper_MappingIsNotOffline" xml:space="preserve">
-    <value>Mapping referencing shard '{0}' in the shard map '{1}' has 'Online' status.  Error occurred while executing stored procedure '{2}' for operation '{3}'. Updates to a mapping involving modification of the shard location or removal require the mapping to be 'Offline'. </value>
+  <data name="_ShardMapping_MergeNotAdjacent" xml:space="preserve">
+    <value>Mappings provided for the merge operation are not adjacent. Merge operation is only allowed for adjacent mappings.</value>
   </data>
-  <data name="_Store_SchemaInfo_NameConflict" xml:space="preserve">
-    <value>Unable to create schema info with name '{0}' as there is already an entry with the same name.</value>
+  <data name="_ShardMapping_RangeNotProperSubset" xml:space="preserve">
+    <value>Requested range is exactly the range for existing mapping. Operation is only allowed for proper subsets of existing range.</value>
   </data>
-  <data name="_Store_SchemaInfo_NameDoesNotExist" xml:space="preserve">
-    <value>Unable to {0} schema info with name '{1}' since there is no entry by the given name.</value>
+  <data name="_SqlShardMapManagerCredentials_ConnectionStringPropertyNotAllowed" xml:space="preserve">
+    <value>The property '{0}' must not be set in the connection string.</value>
   </data>
-  <data name="_General_InvalidArgumentValue" xml:space="preserve">
-    <value>Unsupport value '{0}' specified for parameter '{1}'.</value>
+  <data name="_ShardMapping_RangeNotSubset" xml:space="preserve">
+    <value>Requested range is not a subset of the existing range mapping.</value>
   </data>
-  <data name="_Store_ShardMapManager_DoesNotExistGlobal" xml:space="preserve">
-    <value>Data structures for shard map manager persistence do not exist at the target location.</value>
+  <data name="_ShardMapping_SplitPointOutOfRange" xml:space="preserve">
+    <value>Split point lies on the boundary or outside of the specified range mapping.</value>
   </data>
   <data name="_ShardMap_GetShard_ShardDoesNotExist" xml:space="preserve">
     <value>Shard corresponding to location '{0}' could not be found in shard map '{1}' .</value>
   </data>
-  <data name="_SchemaInfo_TableInfoAlreadyExists" xml:space="preserve">
-    <value>The SchemaInfo object already contains a {0} table by the given name of [{1}].[{2}].</value>
+  <data name="_ShardMap_OpenConnectionForKey_KeyTypeNotSupported" xml:space="preserve">
+    <value>Key values of type '{0}' are not supported. OpenConnectionForKey requests for the shard map '{1}' requires keys of type '{2}'.</value>
+  </data>
+  <data name="_ShardMap_OpenConnection_ConnectionStringPropertyDisallowed" xml:space="preserve">
+    <value>Property '{0}' must not be set in the input connection string for 'OpenConnection' operations.</value>
+  </data>
+  <data name="_ShardRange_LowGreaterThanOrEqualToHigh" xml:space="preserve">
+    <value>The low value {0} is greater than or equal to the high value {1}. Lower value must be less than the higher value.</value>
+  </data>
+  <data name="_Shard_DifferentShardMap" xml:space="preserve">
+    <value>Shard '{0}' provided for the given '{1}' is not associated with current shard map '{2}'. The '{3}' operations required the shard to be associated with the current shard map.</value>
+  </data>
+  <data name="_Shard_DifferentShardMapManager" xml:space="preserve">
+    <value>Shard '{0}' provided for the given '{1}' is not associated with current shard map manager at '{2}'. The '{3}' operations required the shard to be associated with the current shard map manager.</value>
+  </data>
+  <data name="_SqlShardMapManagerCredentials_ConnectionStringPropertyRequired" xml:space="preserve">
+    <value>The required property '{0}' must be set in the connection string.</value>
   </data>
   <data name="_Store_MissingSprocParametersGlobal" xml:space="preserve">
     <value>All required parameters for operation '{0}' are not supplied. Error occurred while executing procedure '{1}' on the shard map manager database. Please verify and match library and store version.</value>
@@ -273,47 +240,17 @@
   <data name="_Store_MissingSprocParametersLocal" xml:space="preserve">
     <value>All required parameters for operation '{0}' at shard '{1}' are not supplied. Error occurred while executing procedure '{2}' on the shard. Please verify and match library and store version.</value>
   </data>
-  <data name="_Store_UnsupportedLibraryVersionGlobal" xml:space="preserve">
-    <value>Shard map manager store version '{0}' is not compatible with the version '{1}' supported by client library. Please upgrade the {2}.</value>
+  <data name="_Store_SchemaInfo_NameConflict" xml:space="preserve">
+    <value>Unable to create schema info with name '{0}' as there is already an entry with the same name.</value>
   </data>
-  <data name="_Store_UnsupportedLibraryVersionLocal" xml:space="preserve">
-    <value>Shard map manager store version '{0}' at shard '{1}' is not compatible with the version '{2}' supported by client library. Please upgrade the {3}.</value>
+  <data name="_Store_SchemaInfo_NameDoesNotExist" xml:space="preserve">
+    <value>Unable to {0} schema info with name '{1}' since there is no entry by the given name.</value>
   </data>
-  <data name="_ShardMapping_SplitPointOutOfRange" xml:space="preserve">
-    <value>Split point lies on the boundary or outside of the specified range mapping.</value>
+  <data name="_Store_ShardMapManager_AlreadyExistsGlobal" xml:space="preserve">
+    <value>Data structures for shard map manager persistence already exists at the target location.</value>
   </data>
-  <data name="_Store_UnexpectedErrorGlobal" xml:space="preserve">
-    <value>Unexpected error code found while processing errors returned from the shard map manager store. This can occur because of a defect in the client library.</value>
-  </data>
-  <data name="_Store_SqlOperation_LockNotAcquired" xml:space="preserve">
-    <value>Exclusive access to application resource '{0}' could not be acquired.</value>
-  </data>
-  <data name="_Store_ShardMap_DoesNotExistGlobal" xml:space="preserve">
-    <value>Shard map '{0}' does not exist in the store. Error occurred while executing stored procedure '{1}' for operation '{2}' for shard '{3}'. This can happen if another concurrent user deletes the shard map.</value>
-  </data>
-  <data name="_ShardMapping_DifferentShardMap" xml:space="preserve">
-    <value>'{0}' provided for operation '{1}' is not associated with the current shard map '{2}'. Only mappings associated with the same shard map as the given shard map can be used. Error occurred for parameter '{3}'.</value>
-  </data>
-  <data name="_ShardMapping_DifferentShardMapManager" xml:space="preserve">
-    <value>'{0}' provided for operation '{1}' is not associated with the current instance of shard map manager at '{2}'. Only mappings associated with the same 'ShardMapManager' instance as the the one associated with current shard map '{3}' can be used. Error occurred for parameter '{4}'.</value>
-  </data>
-  <data name="_Store_Shard_AlreadyExistsGlobal" xml:space="preserve">
-    <value>Shard '{0}' already exists in store for shard map '{1}'. Error occurred while executing stored procedure '{2}' for operation '{3}'. This can happen when another concurrent user adds the shard to the store.</value>
-  </data>
-  <data name="_Store_Shard_LocationAlreadyExistsGlobal" xml:space="preserve">
-    <value>Shard referecing location '{0}' already exists in store for shard map '{1}'. Error occurred while executing stored procedure '{2}' for operation '{3}'. This can happen when another concurrent user has added a shard with specified location in store.</value>
-  </data>
-  <data name="_Store_SqlExceptionLocal" xml:space="preserve">
-    <value>Store Error: {0}. The error occurred while attempting to perform the underlying storage operation during '{1}' operation on shard '{2}'. See the inner StoreException for details.</value>
-  </data>
-  <data name="_Store_UnexpectedErrorLocal" xml:space="preserve">
-    <value>Unexpected error code found while processing errors returned from the shard location '{0}'. This can occur because of a defect in the client library.</value>
-  </data>
-  <data name="_ShardMapping_RangeNotProperSubset" xml:space="preserve">
-    <value>Requested range is exactly the range for existing mapping. Operation is only allowed for proper subsets of existing range.</value>
-  </data>
-  <data name="_ShardMapping_LockIdNotSupported" xml:space="preserve">
-    <value>LockId for locking the mapping referencing shard {0} with shard map name {1} has unsupported value '{2}'.</value>
+  <data name="_Store_ShardMapManager_DoesNotExistGlobal" xml:space="preserve">
+    <value>Data structures for shard map manager persistence do not exist at the target location.</value>
   </data>
   <data name="_Store_ShardMapper_LockMappingAlreadyLocked" xml:space="preserve">
     <value>Mapping referencing shard '{0}' belonging to shard map '{1}' is already locked. Error occurred while executing procedure '{2}' for operation '{3}' on the shard map manager database. This can happen if another concurrent user locks the mapping.</value>
@@ -321,25 +258,88 @@
   <data name="_Store_ShardMapper_LockOwnerDoesNotMatch" xml:space="preserve">
     <value>Mapping referencing shard '{0}' belonging to shard map '{1}' is locked and correct lock token is not provided. Error occurred while executing procedure '{2}' for operation '{3}' on the shard map manager database. This can happen if another concurrent user locks the mapping.</value>
   </data>
+  <data name="_Store_ShardMapper_MappingDoesNotExistGlobal" xml:space="preserve">
+    <value>Mapping referencing shard '{0}' in the shard map '{1}' does not exist. Error occurred while executing stored procedure '{2}' for operation '{3}'. This can occur if another concurrent user has already removed the mapping.</value>
+  </data>
+  <data name="_Store_ShardMapper_MappingIsNotOffline" xml:space="preserve">
+    <value>Mapping referencing shard '{0}' in the shard map '{1}' has 'Online' status.  Error occurred while executing stored procedure '{2}' for operation '{3}'. Updates to a mapping involving modification of the shard location or removal require the mapping to be 'Offline'. </value>
+  </data>
+  <data name="_Store_ShardMapper_MappingNotFoundForKeyGlobal" xml:space="preserve">
+    <value>Mapping containing the given key value could not be located in the shard map '{0}'. Error occurred while executing stored procedure '{1}' for operation '{2}'.</value>
+  </data>
+  <data name="_Store_ShardMapper_MappingPointOrRangeAlreadyMapped" xml:space="preserve">
+    <value>Mapping referencing shard '{0}' in the shard map '{1}' cannot be added because the {2} it covers is already mapped by another mapping. Error occurred while executing stored procedure '{3}' for operation '{4}'. This can occur if another concurrent user has already added a mapping covering the given {2}.</value>
+  </data>
+  <data name="_Store_ShardMapper_UnableToKillSessions" xml:space="preserve">
+    <value>Mapping referencing shard '{0}' belonging to shard map '{1}' could not be taken offline because all existing connections on the shard could not be terminated. Error occurred during '{2}' operation while executing stored procedure '{3}' on shard '{4}'.</value>
+  </data>
+  <data name="_Store_ShardMap_AlreadyExistsGlobal" xml:space="preserve">
+    <value>Shard map with name '{0}' already exists in the store. Error occurred while executing stored procedure '{1}' for operation '{2}'.</value>
+  </data>
+  <data name="_Store_ShardMap_ContainsShardsGlobal" xml:space="preserve">
+    <value>Shard map '{0}' has shards associated with it. Shard maps can only be removed if there are no shards associated with them. Error occurred while executing stored procedure '{1}' for operation '{2}'.</value>
+  </data>
+  <data name="_Store_ShardMap_DoesNotExistGlobal" xml:space="preserve">
+    <value>Shard map '{0}' does not exist in the store. Error occurred while executing stored procedure '{1}' for operation '{2}' for shard '{3}'. This can happen if another concurrent user deletes the shard map.</value>
+  </data>
   <data name="_Store_ShardMap_DoesNotExistLocal" xml:space="preserve">
     <value>Shard map '{0}' does not exist on shard '{1}'. Error occurred while executing stored procedure '{2}' for operation '{3}'. This can happen if another concurrent user deletes the shard map.</value>
   </data>
-  <data name="_Store_Validate_ShardVersionMismatch" xml:space="preserve">
-    <value>Shard '{0}' belonging to shard map '{1}' has been modified in the store. Error occurred while executing stored procedure '{2}' for operation '{3}' on the shard. This can happen if another concurrent user performs modification operations on the shard or its associated mappings.</value>
+  <data name="_Store_Shard_AlreadyExistsGlobal" xml:space="preserve">
+    <value>Shard '{0}' already exists in store for shard map '{1}'. Error occurred while executing stored procedure '{2}' for operation '{3}'. This can happen when another concurrent user adds the shard to the store.</value>
   </data>
-  <data name="_ShardLocation_UnsupportedProtocol" xml:space="preserve">
-    <value>The given protocol value '{0}' is not supported.</value>
+  <data name="_Store_Shard_DoesNotExistGlobal" xml:space="preserve">
+    <value>Shard '{0}' belonging to shard map '{1}' could not be found in the shard map manager database. Error occurred while executing stored procedure '{2}' for operation '{3}'. This can happen when another concurrent user removes the shard from the store.</value>
+  </data>
+  <data name="_Store_Shard_HasMappingsGlobal" xml:space="preserve">
+    <value>Shard '{0}' belonging to shard map '{1}' has mappings associated with it. Error occurred while executing stored procedure '{2}' for operation '{3}'. Remove all the mappings associated with the shard before attempting the operation.</value>
+  </data>
+  <data name="_Store_Shard_LocationAlreadyExistsGlobal" xml:space="preserve">
+    <value>Shard referecing location '{0}' already exists in store for shard map '{1}'. Error occurred while executing stored procedure '{2}' for operation '{3}'. This can happen when another concurrent user has added a shard with specified location in store.</value>
+  </data>
+  <data name="_Store_Shard_VersionMismatchGlobal" xml:space="preserve">
+    <value>Shard '{0}' belonging to shard map '{1}' has been updated in store. Error occurred while executing stored procedure '{2}' for operation '{3}'. This can occur if another concurrent user updates the shard. Perform a GetShard operation for the shard location to obtain the updated instance.</value>
+  </data>
+  <data name="_Store_SqlExceptionGlobal" xml:space="preserve">
+    <value>Store Error: {0}. The error occurred while attempting to perform the underlying storage operation during '{1}' operation on the shard map manager database. See the inner StoreException for details.</value>
+  </data>
+  <data name="_Store_SqlExceptionLocal" xml:space="preserve">
+    <value>Store Error: {0}. The error occurred while attempting to perform the underlying storage operation during '{1}' operation on shard '{2}'. See the inner StoreException for details.</value>
+  </data>
+  <data name="_Store_SqlOperation_LockNotAcquired" xml:space="preserve">
+    <value>Exclusive access to application resource '{0}' could not be acquired.</value>
+  </data>
+  <data name="_Store_SqlOperation_LockNotReleased" xml:space="preserve">
+    <value>Exclusive access to application resource '{0}' could not be released.</value>
   </data>
   <data name="_Store_StoreException" xml:space="preserve">
     <value>Error occurred while performing store operation. See the inner SqlException for details.</value>
   </data>
-  <data name="_ShardKey_MaxValueCannotBeIncremented" xml:space="preserve">
-    <value>Shard key has maximum value which cannot be incremented. Perform the IsMax check on shard key before requesting next key.</value>
+  <data name="_Store_UnexpectedErrorGlobal" xml:space="preserve">
+    <value>Unexpected error code found while processing errors returned from the shard map manager store. This can occur because of a defect in the client library.</value>
   </data>
-  <data name="_ShardLocation_InvalidPort" xml:space="preserve">
-    <value>The given port number '{0}' is invalid.</value>
+  <data name="_Store_UnexpectedErrorLocal" xml:space="preserve">
+    <value>Unexpected error code found while processing errors returned from the shard location '{0}'. This can occur because of a defect in the client library.</value>
   </data>
-  <data name="_Store_SqlOperation_LockNotReleased" xml:space="preserve">
-    <value>Exclusive access to application resource '{0}' could not be released.</value>
+  <data name="_Store_UnsupportedLibraryVersionGlobal" xml:space="preserve">
+    <value>Shard map manager store version '{0}' is not compatible with the version '{1}' supported by client library. Please upgrade the {2}.</value>
+  </data>
+  <data name="_Store_UnsupportedLibraryVersionLocal" xml:space="preserve">
+    <value>Shard map manager store version '{0}' at shard '{1}' is not compatible with the version '{2}' supported by client library. Please upgrade the {3}.</value>
+  </data>
+  <data name="_Store_Validate_MappingDoesNotExist" xml:space="preserve">
+    <value>Mapping referencing shard '{0}' associated with shard map '{1}' no longer exists in store. Error occurred while executing stored procedure '{2}' for operation '{3}' on the shard. This can happen if another concurrent user has deleted or modified the mapping.</value>
+  </data>
+  <data name="_Store_Validate_MappingIsOffline" xml:space="preserve">
+    <value>The shard key value for an OpenConnection request is associated with a mapping that is marked ‘Offline’.  Data containing this key value is likely being moved, and the connection is blocked to avoid data corruption.  Validated connection requests for this shardlet will succeed when the mapping is back ‘Online’.  Shard: '{0}'.  Shard map: '{1}'.  Error occurred while executing stored procedure '{3}' for operation '{2}' on the shard.</value>
+  </data>
+  <data name="_Store_Validate_ShardDoesNotExist" xml:space="preserve">
+    <value>Shard '{0}' belonging to shard map '{1}' no longer exists in store. Error occurred while executing stored procedure '{2}' for operation '{3}' on the shard. This can happen if another concurrent user deletes the shard. </value>
+  </data>
+  <data name="_Store_Validate_ShardMapDoesNotExist" xml:space="preserve">
+    <value>Shard map '{0}' associated with shard '{1}' no longer exists in store. Error occurred while executing stored procedure '{2}' for operation '{3}'. This can happen if another concurrent user deletes the shard map.</value>
+  </data>
+  <data name="_Store_Validate_ShardVersionMismatch" xml:space="preserve">
+    <value>Shard '{0}' belonging to shard map '{1}' has been modified in the store. Error occurred while executing stored procedure '{2}' for operation '{3}' on the shard. This can happen if another concurrent user performs modification operations on the shard or its associated mappings.</value>
   </data>
 </root>

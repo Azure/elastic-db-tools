@@ -1,7 +1,10 @@
+# Nuget restore
+packages
+project.lock.json
+
 # Build folders
 bin
 FakesAssemblies
-packages
 obj
 
 # Other misc build output
@@ -18,4 +21,11 @@ TestResults
 *.GhostDoc.xml
 *.suo
 *.pd_
-/.vs
+
+# Visual studio
+.vs/
+.vscode/
+
+# Build output
+*.dll
+*.exe

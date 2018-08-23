@@ -2,14 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 // Purpose:
-//  Basic unit testing for the MultiShardDataReader class.  Will integrate with 
+//  Basic unit testing for the MultiShardDataReader class.  Will integrate with
 //  build at a later date.
 //
 // Notes:
 //  Aim is to integrate this within a broader cleint-side wrapper framework.
 //  As a result, unit testing will likely be relatively significantly
 //  restructured once we have the rest of the wrapper classes in place.
-//  *NOTE: Unit tests currently assume that a sql server instance is 
+//  *NOTE: Unit tests currently assume that a sql server instance is
 //  accessible on localhost.
 //  *NOTE: Unit tests will blow away and recreate databases called Test1, Test2,
 //  and Test3.  Should change these database names to guids at some point, but
@@ -29,7 +29,9 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics;
+#if NETFRAMEWORK
 using System.Runtime.Remoting;
+#endif
 using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
@@ -37,7 +39,7 @@ using System.Threading;
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 {
     /// <summary>
-    /// Very basic unit tests for the MultiShardDataReader class.  
+    /// Very basic unit tests for the MultiShardDataReader class.
     /// Just enough to ensure that simple scenarios working as expected.
     /// </summary>
     [TestClass]
@@ -71,7 +73,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         ///</summary>
         public TestContext TestContext { get; set; }
 
-        #region Additional test attributes
+#region Additional test attributes
 
         /// <summary>
         /// Sets up our three test databases that we drive the unit testing off of.
@@ -146,7 +148,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             }
         }
 
-        #endregion
+#endregion
 
         /// <summary>
         /// Validate MultiShardDataReader can be supplied as argument to DataTable.Load
@@ -328,8 +330,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         }
 
         /// <summary>
-        /// Check that we collect an exception and expose it on the ShardedReader 
-        /// when encountering schema mismatches across result sets due to different 
+        /// Check that we collect an exception and expose it on the ShardedReader
+        /// when encountering schema mismatches across result sets due to different
         /// column names.
         /// </summary>
         [TestMethod]
@@ -337,7 +339,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         public void TestMismatchedSchemasWrongColumnName()
         {
             // What we're doing:
-            // Issue different queries to readers 1 & 2 so that we have the same column count and types but we have a 
+            // Issue different queries to readers 1 & 2 so that we have the same column count and types but we have a
             // column name mismatch.
             // Try to load them into a MultiShardDataReader.
             // Should see an exception on the MultiShardDataReader.
@@ -373,7 +375,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         }
 
         /// <summary>
-        /// Check that we throw as expected when encountering schema mismatches across result sets due to different 
+        /// Check that we throw as expected when encountering schema mismatches across result sets due to different
         /// column types.
         /// </summary>
         [TestMethod]
@@ -381,7 +383,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         public void TestMismatchedSchemasWrongType()
         {
             // What we're doing:
-            // Issue different queries to readers 1 & 2 so that we have the same column count and names but we have a 
+            // Issue different queries to readers 1 & 2 so that we have the same column count and names but we have a
             // column type mismatch.
             // Try to load them into a MultiShardDataReader.
             // Should see an exception on the MultiShardDataReader.
@@ -495,9 +497,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         }
 
         /// <summary>
-        /// Validate ReadAsync() behavior when multiple data readers are involved. This test is same as existing test TestMiddleResultEmptyOnSelect 
+        /// Validate ReadAsync() behavior when multiple data readers are involved. This test is same as existing test TestMiddleResultEmptyOnSelect
         /// except that we are using ReadAsync() in this case instead of Read() to read individual rows.
-        /// 
+        ///
         /// NOTE: We needn't replicate every single Read() test for ReadAsync() since Read() ends up calling ReadAsync().Result under the
         /// hood. So, by validating Read(), we are also validating ReadAsync() indirectly.
         /// </summary>
@@ -575,7 +577,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
             // Create a new task that would try to read rows off the second shard while they are locked by the previous task
             // and block therefore.
-            Task readToBlockTask = Task.Factory.StartNew(() => 
+            Task readToBlockTask = Task.Factory.StartNew(() =>
                 {
                     string selectSql = string.Format(
                         "SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTable WHERE dbNameField='{0}'",
@@ -604,7 +606,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
                 Assert.IsTrue(ex != null, "A task canceled exception was not received upon cancellation.");
             }
-            
+
             // Set the event signaling the first task to rollback its update transaction.
             rollback.Set();
 
@@ -620,8 +622,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         {
             // The code below exposes a flaw in our current implementation related to
             // CompleteResults semantics and the internal c-tor.  The flaw does not
-            // leak out to customers because the MultiShardCommand object manages the 
-            // necessary logic, but we need to patch the flaw so it doesn't end up 
+            // leak out to customers because the MultiShardCommand object manages the
+            // necessary logic, but we need to patch the flaw so it doesn't end up
             // inadvertently leaking out to customers.
             // See VSTS 2616238 (i believe).  Philip will be modofying logic and
             // augmenting tests to deal with this issue.
@@ -656,8 +658,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         {
             // The code below exposes a flaw in our current implementation related to
             // CompleteResults semantics and the internal c-tor.  The flaw does not
-            // leak out to customers because the MultiShardCommand object manages the 
-            // necessary logic, but we need to patch the flaw so it doesn't end up 
+            // leak out to customers because the MultiShardCommand object manages the
+            // necessary logic, but we need to patch the flaw so it doesn't end up
             // inadvertently leaking out to customers.
             // See VSTS 2616238 (i believe).  Philip will be modofying logic and
             // augmenting tests to deal with this issue.
@@ -686,7 +688,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
         /// <summary>
         /// Validate that we throw an exception and invalidate the
-        /// MultiShardDataReader when we encounter a reader that has 
+        /// MultiShardDataReader when we encounter a reader that has
         /// multiple result sets
         /// </summary>
         [TestMethod]
@@ -791,8 +793,8 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
         {
             // The code below exposes a flaw in our current implementation related to
             // CompleteResults semantics and the internal c-tor.  The flaw does not
-            // leak out to customers because the MultiShardCommand object manages the 
-            // necessary logic, but we need to patch the flaw so it doesn't end up 
+            // leak out to customers because the MultiShardCommand object manages the
+            // necessary logic, but we need to patch the flaw so it doesn't end up
             // inadvertently leaking out to customers.
             // See VSTS 2616238 (i believe).  Philip will be modofying logic and
             // augmenting tests to deal with this issue.
@@ -858,9 +860,9 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             LabeledDbDataReader[] readers = new LabeledDbDataReader[0];
 
             using (MultiShardDataReader sdr = new MultiShardDataReader(
-                    _dummyCommand, 
+                    _dummyCommand,
                     readers,
-                    MultiShardExecutionPolicy.CompleteResults, 
+                    MultiShardExecutionPolicy.CompleteResults,
                     addShardNamePseudoColumn: true,
                     expectedReaderCount: connections.Count))
             {
@@ -900,7 +902,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
         }
 
         /// <summary>
-        /// Check that we successfuly support the asynchronous addition of readers while we are in the process of reading, when we start 
+        /// Check that we successfuly support the asynchronous addition of readers while we are in the process of reading, when we start
         /// with some readers already added.
         /// </summary>
         [TestMethod]
@@ -917,9 +919,9 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             };
 
             using (MultiShardDataReader sdr = new MultiShardDataReader(
-                _dummyCommand, 
-                readers, 
-                MultiShardExecutionPolicy.CompleteResults, 
+                _dummyCommand,
+                readers,
+                MultiShardExecutionPolicy.CompleteResults,
                 addShardNamePseudoColumn: true,
                 expectedReaderCount: connections.Count))
             {
@@ -1035,7 +1037,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             }
         }
 
-
+#if NETFRAMEWORK
         /// <summary>
         /// Check that we throw as expected when trying to call CreateObjRef.
         /// </summary>
@@ -1056,6 +1058,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                 sdr.CreateObjRef(typeof(MultiShardDataReader));
             }
         }
+#endif
 
         /// <summary>
         /// Check that we can iterate through the result sets as expected comparing all the values
@@ -1158,7 +1161,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             }
         }
 
-        #region Helpers
+#region Helpers
 
         private void ExpectException<T>(Func<int, object> func, int ordinal) where T : Exception
         {
@@ -1207,14 +1210,14 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
         private void VerifyAllGettersPositiveCases(MultiShardDataReader reader, MutliShardTestCaseColumn column, int ordinal)
         {
             // General pattern here:
-            // Grab the value through the regular getter, through the getValue, 
-            // through the sync GetFieldValue, and through the async GetFieldValue to ensure we are 
+            // Grab the value through the regular getter, through the getValue,
+            // through the sync GetFieldValue, and through the async GetFieldValue to ensure we are
             // getting back the same thing from all calls.
             //
             // Then grab through the Sql getter to make sure it works. (should we compare again?)
             //
             // Then verify that the field types are as we expect.
-            // 
+            //
             // Note: For the array-based getters we can't do the sync/async comparison.
             //
 
@@ -1237,7 +1240,7 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
 
 
             // And these are indexes into our SQL type array.
-            // 
+            //
             int SqlValueResult = 0;
             int SqlGetResult = 1;
             object[] sqlResults = new object[SqlGetResult + 1];
@@ -1649,6 +1652,6 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
             return sdr;
         }
 
-        #endregion Helpers
+#endregion Helpers
     }
 }

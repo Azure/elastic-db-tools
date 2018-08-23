@@ -169,15 +169,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
         /// <summary>
         /// </summary>
-        /// <param name="isolationLevel"></param>
-        /// <returns></returns>
-        public override void EnlistTransaction(System.Transactions.Transaction transaction)
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// </summary>
         /// <param name="databaseName"></param>
         public override void ChangeDatabase(string databaseName)
         {

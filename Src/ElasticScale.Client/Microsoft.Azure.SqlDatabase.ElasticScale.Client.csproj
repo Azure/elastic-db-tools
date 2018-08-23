@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>This client library allows ADO.NET developers to create applications that implement and use the pattern known as database sharding in Azure SQL Database. Sharding is a scale-out strategy that spreads data across a number of independent databases. The library includes APIs for creating and managing shard maps, routing SQL operations to the appropriate shard, and performing queries that cross many shards. To learn more about elastic database tools, check out http://azure.microsoft.com/en-us/documentation/articles/sql-database-elastic-scale-documentation-map/.</Description>
+    <Copyright>Copyright (C) Microsoft Corporation. All rights reserved.</Copyright>
+    <AssemblyTitle>Microsoft Azure SQL Database: Elastic Database Client Library</AssemblyTitle>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Version>2.0.0-preview2</Version>
+    <Authors>azure-sdk;Microsoft</Authors>
+    <TargetFrameworks>net451;netstandard2.0</TargetFrameworks>
+    <PackageTags>Microsoft;Elastic;Scale;Azure;SQL;DB;Database;Shard;Sharding;Management;Query;azureofficial</PackageTags>
+    <PackageReleaseNotes>Added support for .NET Standard 2.0.</PackageReleaseNotes>
+    <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/Azure/elastic-db-tools</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/Azure/elastic-db-tools/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/Azure/elastic-db-tools</RepositoryUrl>
+    <RuntimeIdentifiers>win;unix</RuntimeIdentifiers>
+    <RootNamespace>Microsoft.Azure.SqlDatabase.ElasticScale</RootNamespace>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('build.props'))" />
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="ShardManagement\Errors.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Errors.resx</DependentUpon>
+    </Compile>
+    <Compile Update="ShardManagement\PerformanceCounters.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PerformanceCounters.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="ShardManagement\Errors.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Errors.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="ShardManagement\PerformanceCounters.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>PerformanceCounters.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

@@ -1,52 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project>
   <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-  <PropertyGroup>
-    <!-- 
-      Determine whether we are building in the Microsoft Azure SQL Database team's build system
-      or standalone (i.e. from open source).
-    --> 
-    <StandaloneBuild Condition="!Exists('$(MSBuildThisFileDirectory)\..\Build.props')">true</StandaloneBuild>
-    <StandaloneBuild Condition="Exists('$(MSBuildThisFileDirectory)\..\Build.props')">false</StandaloneBuild>
+  <PropertyGroup Condition=" $(TargetFramework.StartsWith(`net4`)) ">
+    <DefineConstants>$(DefineConstants);NETFRAMEWORK</DefineConstants>
   </PropertyGroup>
-  
-  <!-- 
-    Properties that are implicitly defined in the Microsoft Azure SQL Database team's build system
-    that need to be defined here for standalone build to work.
-  -->
-  <PropertyGroup Condition="'$(StandaloneBuild)' == 'true'">
-    <!-- Common compile properties -->
-    <ErrorReport Condition="'$(ErrorReport)' == ''">prompt</ErrorReport>
-    <WarningLevel Condition="'$(WarningLevel)' == ''">4</WarningLevel>
-    <DefineConstants>$(DefineConstants);STANDALONE_BUILD</DefineConstants>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
-    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
-    
-    <!-- Folder layout properties -->
-    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)\obj\$(MSBuildProjectFile)</BaseIntermediateOutputPath>
-    <BaseOutputPath>$(MSBuildThisFileDirectory)\bin</BaseOutputPath>
-    <OutputPath>$(BaseOutputPath)\$(Configuration)\$(AssemblyName)</OutputPath>
-    <NugetPack>$(MSBuildThisFileDirectory)\packages</NugetPack>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(StandaloneBuild)' == 'true' and '$(Configuration)' == 'Debug'">
-    <!-- Debug compile properties -->
-    <Optimize Condition="'$(Optimize)' == ''">false</Optimize>
-    <DebugType Condition="'$(DebugType)' == ''">full</DebugType>
-    <DefineConstants>$(DefineConstants),DEBUG,TRACE,CODE_ANALYSIS</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(StandaloneBuild)' == 'true' and ('$(Configuration)' == 'Release' or '$(Configuration)' == 'Cover')">
-    <!-- Release compile properties -->
-    <Optimize Condition="'$(Optimize)' == ''">true</Optimize>
-    <DebugType Condition="'$(DebugType)' == ''">pdbonly</DebugType>
-    <DefineConstants>$(DefineConstants),TRACE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(StandaloneBuild)' == 'false'">
-    <!-- Enable flag that sets the version number of the built assemblies. -->
-    <EnableElasticScaleClientHardcodedVersioning>true</EnableElasticScaleClientHardcodedVersioning>
-  </PropertyGroup>
-  <Import Condition="'$(StandaloneBuild)' == 'false'" Project="$(MSBuildThisFileDirectory)\..\Build.props" />
 </Project>

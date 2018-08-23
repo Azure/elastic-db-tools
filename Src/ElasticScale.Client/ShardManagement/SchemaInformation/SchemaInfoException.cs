@@ -88,7 +88,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema
         private SchemaInfoException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-            this.ErrorCode = (SchemaInfoErrorCode)info.GetValue("ErrorCode", typeof(ShardManagementErrorCode));
+            this.ErrorCode = (SchemaInfoErrorCode)info.GetValue("ErrorCode", typeof(SchemaInfoErrorCode));
         }
 
         /// <summary>
