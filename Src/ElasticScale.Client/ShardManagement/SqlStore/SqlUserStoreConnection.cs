@@ -21,9 +21,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Creates a new instance of user store connection.
         /// </summary>
         /// <param name="connectionString">Connection string.</param>
-        internal SqlUserStoreConnection(string connectionString)
+        /// <param name="secureCredential">Secure SQL Credential.</param>
+        internal SqlUserStoreConnection(string connectionString, SqlCredential secureCredential)
         {
-            _conn = new SqlConnection(connectionString);
+            _conn = new SqlConnection { ConnectionString = connectionString, Credential = secureCredential };
         }
 
         /// <summary>

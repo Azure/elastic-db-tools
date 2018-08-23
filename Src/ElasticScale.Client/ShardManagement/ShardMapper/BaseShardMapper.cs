@@ -111,6 +111,39 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             string connectionString,
             ConnectionOptions options = ConnectionOptions.Validate) where TMapping : class, IShardProvider
         {
+            return this.OpenConnectionForKey<TMapping, TKey>(
+                key,
+                constructMapping,
+                errorCategory,
+                connectionString,
+                null,
+                options);
+        }
+
+        /// <summary>
+        /// Given a key value, obtains a SqlConnection to the shard in the mapping
+        /// that contains the key value.
+        /// </summary>
+        /// <typeparam name="TMapping">Mapping type.</typeparam>
+        /// <typeparam name="TKey">Key type.</typeparam>
+        /// <param name="key">Input key value.</param>
+        /// <param name="constructMapping">Delegate to construct a mapping object.</param>
+        /// <param name="errorCategory">Error category.</param>
+        /// <param name="connectionString">
+        /// Connection string with credential information, the DataSource and Database are 
+        /// obtained from the results of the lookup operation for key.
+        /// </param>
+        /// <param name="secureCredential">Secure Sql credential information</param>
+        /// <param name="options">Options for validation operations to perform on opened connection.</param>
+        /// <returns>An opened SqlConnection.</returns>
+        protected SqlConnection OpenConnectionForKey<TMapping, TKey>(
+            TKey key,
+            Func<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping,
+            ShardManagementErrorCategory errorCategory,
+            string connectionString,
+            SqlCredential secureCredential,
+            ConnectionOptions options = ConnectionOptions.Validate) where TMapping : class, IShardProvider
+        {
             ShardKey sk = new ShardKey(ShardKey.ShardKeyTypeFromType(typeof(TKey)), key);
 
             // Try to find the mapping within the cache.
@@ -138,6 +171,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 result = this.ShardMap.OpenConnection(
                     constructMapping(this.Manager, this.ShardMap, sm),
                     connectionString,
+                    secureCredential,
                     options);
 
                 // Reset TTL on successful connection.
@@ -166,6 +200,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     result = this.ShardMap.OpenConnection(
                         constructMapping(this.Manager, this.ShardMap, sm),
                         connectionString,
+                        secureCredential,
                         options);
                     this.Manager.Cache.IncrementPerformanceCounter(this.ShardMap.StoreShardMap, PerformanceCounterName.DdrOperationsPerSec);
                     return result;
@@ -208,6 +243,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     result = this.ShardMap.OpenConnection(
                         constructMapping(this.Manager, this.ShardMap, sm),
                         connectionString,
+                        secureCredential,
                         options);
 
                     // Reset TTL on successful connection.
@@ -249,6 +285,40 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             Func<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping,
             ShardManagementErrorCategory errorCategory,
             string connectionString,
+            ConnectionOptions options = ConnectionOptions.Validate)
+            where TMapping : class, IShardProvider
+        {
+            return await this.OpenConnectionForKeyAsync<TMapping, TKey>(
+                       key,
+                       constructMapping,
+                       errorCategory,
+                       connectionString,
+                       null,
+                       options);
+        }
+
+        /// <summary>
+        /// Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
+        /// that contains the key value.
+        /// </summary>
+        /// <typeparam name="TMapping">Mapping type.</typeparam>
+        /// <typeparam name="TKey">Key type.</typeparam>
+        /// <param name="key">Input key value.</param>
+        /// <param name="constructMapping">Delegate to construct a mapping object.</param>
+        /// <param name="errorCategory">Error category.</param>
+        /// <param name="connectionString">
+        /// Connection string with credential information, the DataSource and Database are 
+        /// obtained from the results of the lookup operation for key.
+        /// </param>
+        /// <param name="secureCredential">Secure SQL Credential.</param>
+        /// <param name="options">Options for validation operations to perform on opened connection.</param>
+        /// <returns>A task encapsulating an opened SqlConnection as the result.</returns>
+        protected async Task<SqlConnection> OpenConnectionForKeyAsync<TMapping, TKey>(
+            TKey key,
+            Func<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping,
+            ShardManagementErrorCategory errorCategory,
+            string connectionString,
+            SqlCredential secureCredential,
             ConnectionOptions options = ConnectionOptions.Validate) where TMapping : class, IShardProvider
         {
             ShardKey sk = new ShardKey(ShardKey.ShardKeyTypeFromType(typeof(TKey)), key);
@@ -280,6 +350,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 result = await this.ShardMap.OpenConnectionAsync(
                     constructMapping(this.Manager, this.ShardMap, sm),
                     connectionString,
+                    secureCredential,
                     options).ConfigureAwait(false);
 
                 csm.ResetTimeToLiveIfNecessary();
@@ -352,6 +423,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             result = await this.ShardMap.OpenConnectionAsync(
                         constructMapping(this.Manager, this.ShardMap, sm),
                         connectionString,
+                        secureCredential,
                         options).ConfigureAwait(false);
 
             // Reset TTL on successful connection.

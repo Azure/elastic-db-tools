@@ -3,7 +3,6 @@
 
 using System;
 using System.Data.SqlClient;
-using System.Diagnostics;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {
@@ -23,13 +22,37 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         private SqlConnectionStringBuilder _connectionStringShard;
 
         /// <summary>
+        /// Secure credential for shard map manager data source.
+        /// </summary>
+        private SqlCredential _secureCredential;
+
+        /// <summary>
         /// Instantiates the object that holds the credentials for accessing SQL Servers 
         /// containing the shard map manager data.
         /// </summary>
-        /// <param name="connectionString">Connection string for Shard map manager data source.</param>
-        public SqlShardMapManagerCredentials(string connectionString)
+        /// <param name="connectionString">
+        /// Connection string for shard map manager data source.
+        /// </param>
+        public SqlShardMapManagerCredentials(string connectionString) 
+            : this(connectionString, null)
+        {
+        }
+
+        /// <summary>
+        /// Instantiates the object that holds the credentials for accessing SQL Servers 
+        /// containing the shard map manager data.
+        /// </summary>
+        /// <param name="connectionString">
+        /// Connection string for shard map manager data source.
+        /// </param>
+        /// <param name="secureCredential">
+        ///  Secure credential for shard map manager data source.
+        /// </param>
+        public SqlShardMapManagerCredentials(string connectionString, SqlCredential secureCredential)
         {
             ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
+
+            this._secureCredential = secureCredential;
 
             // Devnote: If connection string specifies Active Directory authentication and runtime is not
             // .NET 4.6 or higher, then below call will throw.
@@ -58,7 +81,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             }
 
             // Ensure credentials are specified for GSM connectivity.
-            SqlShardMapManagerCredentials.EnsureCredentials(connectionStringBuilder, "connectionString");
+            SqlShardMapManagerCredentials.EnsureCredentials(
+                connectionStringBuilder, 
+                "connectionString", 
+                this._secureCredential);
 
             #endregion GSM Validation
 
@@ -91,6 +117,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
+        /// Secure Credential for shard map manager database.
+        /// </summary>
+        public SqlCredential SecureCredentialShardMapManager => this._secureCredential;
+
+        /// <summary>
         /// Connection string for shards.
         /// </summary>
         public string ConnectionStringShard
@@ -118,9 +149,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <summary>
         /// Ensures that credentials are provided for the given connection string object.
         /// </summary>
-        /// <param name="connectionString">Input connection string object.</param>
-        /// <param name="parameterName">Parameter name of the connection string object.</param>
-        internal static void EnsureCredentials(SqlConnectionStringBuilder connectionString, string parameterName)
+        /// <param name="connectionString">
+        /// Input connection string object.
+        /// </param>
+        /// <param name="parameterName">
+        /// Parameter name of the connection string object.
+        /// </param>
+        /// <param name="secureCredential">
+        /// Input secure SQL credential object.
+        /// </param>
+        internal static void EnsureCredentials(SqlConnectionStringBuilder connectionString, string parameterName, SqlCredential secureCredential)
         {
             // Check for integrated authentication
             if (connectionString.IntegratedSecurity)
@@ -135,24 +173,51 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 return;
             }
 
-            // UserID must be set when integrated authentication is disabled.
-            if (string.IsNullOrEmpty(connectionString.UserID))
+            // If secure credential not specified, verify that user/pwd are in the connection string. If secure credential
+            // specified, verify user/pwd are not in insecurely in the connection string.
+            if (secureCredential == null)
             {
-                throw new ArgumentException(
-                    StringUtils.FormatInvariant(
-                        Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired,
-                        "UserID"),
-                    parameterName);
-            }
+                // UserID must be set when integrated authentication is disabled.
+                if (string.IsNullOrEmpty(connectionString.UserID))
+                {
+                    throw new ArgumentException(
+                        StringUtils.FormatInvariant(
+                            Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired,
+                            "UserID"),
+                        parameterName);
+                }
 
-            // Password must be set when integrated authentication is disabled.
-            if (string.IsNullOrEmpty(connectionString.Password))
+                // Password must be set when integrated authentication is disabled.
+                if (string.IsNullOrEmpty(connectionString.Password))
+                {
+                    throw new ArgumentException(
+                        StringUtils.FormatInvariant(
+                            Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired,
+                            "Password"),
+                        parameterName);
+                }
+            }
+            else
             {
-                throw new ArgumentException(
-                    StringUtils.FormatInvariant(
-                        Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired,
-                        "Password"),
-                    parameterName);
+                // UserID must NOT be set when a secure SQL credential is provided.
+                if (!string.IsNullOrEmpty(connectionString.UserID))
+                {
+                    throw new ArgumentException(
+                        StringUtils.FormatInvariant(
+                            Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyNotAllowed,
+                            "UserID"),
+                        parameterName);
+                }
+
+                // Password must NOT be set when a secure SQL credential is provided.
+                if (!string.IsNullOrEmpty(connectionString.Password))
+                {
+                    throw new ArgumentException(
+                        StringUtils.FormatInvariant(
+                            Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyNotAllowed,
+                            "Password"),
+                        parameterName);
+                }
             }
         }
     }

@@ -204,6 +204,9 @@
   <data name="_ShardMapping_RangeNotProperSubset" xml:space="preserve">
     <value>Requested range is exactly the range for existing mapping. Operation is only allowed for proper subsets of existing range.</value>
   </data>
+  <data name="_SqlShardMapManagerCredentials_ConnectionStringPropertyNotAllowed" xml:space="preserve">
+    <value>The property '{0}' must not be set in the connection string.</value>
+  </data>
   <data name="_ShardMapping_RangeNotSubset" xml:space="preserve">
     <value>Requested range is not a subset of the existing range mapping.</value>
   </data>
