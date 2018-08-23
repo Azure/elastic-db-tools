@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net451;netcoreapp2.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
+    <NoWarn>0649;$(NoWarn)</NoWarn>
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('build.props'))" />
   <ItemGroup>
