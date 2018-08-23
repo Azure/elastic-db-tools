@@ -3,7 +3,6 @@
 
 using System.Data.SqlClient;
 using System.Security;
-using System.Web.Security;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
@@ -86,7 +85,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Password for test user. (with ' and ; replaced with _ to enable test code to work without T/SQL and connection string escaping)
         /// </summary>
-        internal static readonly string SqlLoginTestPassword = Membership.GeneratePassword(12, 2).Replace("'", "_").Replace(";", "_");
+        internal static readonly string SqlLoginTestPassword = "TestPa$$w0rd" + Guid.NewGuid().ToString("N");
 
         /// <summary>
         /// SMM connection string.
