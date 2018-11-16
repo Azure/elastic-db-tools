@@ -1,45 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
-    <ProjectGuid>{9ad1ddf3-213c-47b1-b136-733c9fff9fd1}</ProjectGuid>
+    <TargetFrameworks>net451</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EntityFrameworkMultiTenant</RootNamespace>
-    <AssemblyName>EntityFrameworkMultiTenant</AssemblyName>
-    <!-- Disable FxCop - fixing these warnings is low priority -->
-    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
-  <!--
-    BUILD PROCESS FOR SAMPLES GALLERY
-  -->
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Build.props))\Build.props" />
+
   <ItemGroup>
-    <!-- The file that gets transformed into the user's csproj when they create a new project from the samples gallery -->
-    <SamplesGalleryProjectInput Include="EntityFrameworkMultiTenant.csproj.SamplesGallery" />
-    <!-- The file that gets transformed into the user's sln when they create a new project from the samples gallery -->
-    <SamplesGallerySolutionInput Include="EntityFrameworkMultiTenant.sln.SamplesGallery" />
-  </ItemGroup>
-  <Import Project="..\SamplesGallery.targets" />
-  <!--
-    Any changes below must be copied to EntityFrameworkMultiTenant.csproj.SamplesGallery, except:
-    - $(NugetPack) must be replaced with ..\packages
-  -->
-  <ItemGroup>
-    <Reference Include="$(NugetPack)\EntityFramework.6.1.0\lib\net45\EntityFramework.dll">
-      <Name>EntityFramework</Name>
-    </Reference>
-    <Reference Include="$(NugetPack)\EntityFramework.6.1.0\lib\net45\EntityFramework.SqlServer.dll">
-      <Name>EntityFramework.SqlServer</Name>
-    </Reference>
-    <Reference Include="$(NugetPack)\Microsoft.Azure.SqlDatabase.ElasticScale.Client.1.3.2\lib\net45\Microsoft.Azure.SqlDatabase.ElasticScale.Client.dll">
-      <Name>Microsoft.Azure.SqlDatabase.ElasticScale.Client</Name>
-    </Reference>
-    <Reference Include="$(NugetPack)\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll">
-      <Name>Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling</Name>
-    </Reference>
-    <Reference Include="$(NugetPack)\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data.dll">
-      <Name>Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data</Name>
-    </Reference>
+    <PackageReference Include="EntityFramework" Version="6.1.0" />
+    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling" Version="6.0.1304.0" />
+    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Data" Version="6.0.1304.1" />
+    <PackageReference Include="Microsoft.Azure.SqlDatabase.ElasticScale.Client" Version="2.0.0" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
@@ -51,66 +22,15 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="ElasticScaleDbConfiguration.cs" />
-    <Compile Include="DataClasses.cs" />
-    <Compile Include="ElasticScaleContext.cs" />
-    <Compile Include="Migrations\201405280437372_InitialCreate.cs" />
-    <Compile Include="Migrations\201405280437372_InitialCreate.Designer.cs">
-      <DependentUpon>201405280437372_InitialCreate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201405280633219_AddUrl.cs" />
-    <Compile Include="Migrations\201405280633219_AddUrl.Designer.cs">
-      <DependentUpon>201405280633219_AddUrl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201405280638095_AddUser.cs" />
-    <Compile Include="Migrations\201405280638095_AddUser.Designer.cs">
-      <DependentUpon>201405280638095_AddUser.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201405280640127_ChangeDisplayName.cs" />
-    <Compile Include="Migrations\201405280640127_ChangeDisplayName.Designer.cs">
-      <DependentUpon>201405280640127_ChangeDisplayName.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201504020051125_AddTenantId.cs" />
-    <Compile Include="Migrations\201504020051125_AddTenantId.Designer.cs">
-      <DependentUpon>201504020051125_AddTenantId.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Sharding.cs" />
-    <Compile Include="SqlDatabaseUtils.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="App.config" />
     <None Include="ApplySqlToShards.ps1" />
     <None Include="LICENSE" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\201405280437372_InitialCreate.resx">
-      <DependentUpon>201405280437372_InitialCreate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201405280633219_AddUrl.resx">
-      <DependentUpon>201405280633219_AddUrl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201405280638095_AddUser.resx">
-      <DependentUpon>201405280638095_AddUser.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201405280640127_ChangeDisplayName.resx">
-      <DependentUpon>201405280640127_ChangeDisplayName.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201504020051125_AddTenantId.resx">
-      <DependentUpon>201504020051125_AddTenantId.cs</DependentUpon>
-    </EmbeddedResource>
-  </ItemGroup>
+
   <ItemGroup>
     <Content Include="EnableRLS.sql" />
     <Content Include="RemoveRLS.sql" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

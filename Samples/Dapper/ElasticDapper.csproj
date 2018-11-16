@@ -1,43 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <ProjectGuid>{7B67F0A1-A5A9-477B-9B7E-FA2E16ED34DE}</ProjectGuid>
+    <TargetFrameworks>net451</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ElasticDapper</RootNamespace>
-    <AssemblyName>ElasticDapper</AssemblyName>
-    <FileAlignment>512</FileAlignment>
   </PropertyGroup>
-  <!--
-    BUILD PROCESS FOR SAMPLES GALLERY
-  -->
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Build.props))\Build.props" />
+
   <ItemGroup>
-    <!-- The file that gets transformed into the user's csproj when they create a new project from the samples gallery -->
-    <SamplesGalleryProjectInput Include="ElasticDapper.csproj.SamplesGallery" />
-    <!-- The file that gets transformed into the user's sln when they create a new project from the samples gallery -->
-    <SamplesGallerySolutionInput Include="ElasticDapper.sln.SamplesGallery" />
-  </ItemGroup>
-  <Import Project="..\SamplesGallery.targets" />
-  <!--
-    Any changes below must be copied to ShardSqlCmd.csproj.SamplesGallery, except:
-    - $(NugetPack) must be replaced with ..\packages
-  -->
-  <ItemGroup>
-    <Reference Include="$(NugetPack)\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll">
-      <Name>Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling</Name>
-    </Reference>
-    <Reference Include="$(NugetPack)\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\net45\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data.dll">
-      <Name>Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data</Name>
-    </Reference>
-	  <Reference Include="$(NugetPack)\Dapper.1.36\lib\net45\Dapper.dll">
-      <Name>Dapper</Name>
-    </Reference>
-    <Reference Include="$(NugetPack)\DapperExtensions.1.4.4\lib\net40\DapperExtensions.dll">
-      <Name>DapperExtensions</Name>
-    </Reference>
-    <Reference Include="$(NugetPack)\Microsoft.Azure.SqlDatabase.ElasticScale.Client.1.3.2\lib\net45\Microsoft.Azure.SqlDatabase.ElasticScale.Client.dll">
-      <Name>Microsoft.Azure.SqlDatabase.ElasticScale.Client</Name>
-    </Reference>
+    <PackageReference Include="Dapper" version="1.36" />
+    <PackageReference Include="DapperExtensions" version="1.4.4" />
+    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling" version="6.0.1304.0" />
+    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Data" version="6.0.1304.1" />
+    <PackageReference Include="Microsoft.Azure.SqlDatabase.ElasticScale.Client" version="2.0.0" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
@@ -49,19 +23,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="DataClasses.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Sharding.cs" />
-    <Compile Include="SqlDatabaseUtils.cs" />
-  </ItemGroup>
+
   <ItemGroup>
     <None Include="App.config" />
     <None Include="LICENSE" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
