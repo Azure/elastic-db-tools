@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFrameworkCodeFirst", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElasticDapper", "Samples\Dapper\ElasticDapper.csproj", "{AC76C04B-881E-4CB9-B491-4D19B68459F1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardSqlCmd", "Samples\ShardSqlCmd\ShardSqlCmd.csproj", "{B210D6E5-7171-4117-9C77-3F2CB59D04D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Cover|Any CPU = Cover|Any CPU
@@ -125,6 +127,18 @@ Global
 		{AC76C04B-881E-4CB9-B491-4D19B68459F1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AC76C04B-881E-4CB9-B491-4D19B68459F1}.Release|x86.ActiveCfg = Release|Any CPU
 		{AC76C04B-881E-4CB9-B491-4D19B68459F1}.Release|x86.Build.0 = Release|Any CPU
+		{B210D6E5-7171-4117-9C77-3F2CB59D04D8}.Cover|Any CPU.ActiveCfg = Debug|Any CPU
+		{B210D6E5-7171-4117-9C77-3F2CB59D04D8}.Cover|Any CPU.Build.0 = Debug|Any CPU
+		{B210D6E5-7171-4117-9C77-3F2CB59D04D8}.Cover|x86.ActiveCfg = Debug|Any CPU
+		{B210D6E5-7171-4117-9C77-3F2CB59D04D8}.Cover|x86.Build.0 = Debug|Any CPU
+		{B210D6E5-7171-4117-9C77-3F2CB59D04D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B210D6E5-7171-4117-9C77-3F2CB59D04D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B210D6E5-7171-4117-9C77-3F2CB59D04D8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B210D6E5-7171-4117-9C77-3F2CB59D04D8}.Debug|x86.Build.0 = Debug|Any CPU
+		{B210D6E5-7171-4117-9C77-3F2CB59D04D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B210D6E5-7171-4117-9C77-3F2CB59D04D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B210D6E5-7171-4117-9C77-3F2CB59D04D8}.Release|x86.ActiveCfg = Release|Any CPU
+		{B210D6E5-7171-4117-9C77-3F2CB59D04D8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
