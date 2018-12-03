@@ -344,6 +344,25 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
         }
 
+        [TestMethod()]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void GetPointMappingForKey()
+        {
+            // Use 2 different SMM's so that we can verify when cache is used
+            ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+                Globals.ShardMapManagerConnectionString,
+                ShardMapManagerLoadPolicy.Lazy);
+
+            ShardMapManager smm2 = ShardMapManagerFactory.GetSqlShardMapManager(
+                Globals.ShardMapManagerConnectionString,
+                ShardMapManagerLoadPolicy.Lazy);
+
+            TestShardMap<int> lsm = new TestShardMap<int>(smm.GetListShardMap<int>(ShardMapperTests.s_listShardMapName));
+            TestShardMap<int> lsm2 = new TestShardMap<int>(smm2.GetListShardMap<int>(ShardMapperTests.s_listShardMapName));
+
+            GetMappingForKey(lsm, lsm2);
+        }
+
         /// <summary>
         /// All combinations of getting point mappings from a list shard map
         /// </summary>
@@ -976,7 +995,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             Assert.IsTrue(failed);
         }
-
 
         #endregion ListMapperTests
 
@@ -1787,6 +1805,25 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             Assert.IsTrue(failed);
         }
 
+        [TestMethod()]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void GetRangeMappingForKey()
+        {
+            // Use 2 different SMM's so that we can verify when cache is used
+            ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+                Globals.ShardMapManagerConnectionString,
+                ShardMapManagerLoadPolicy.Lazy);
+
+            ShardMapManager smm2 = ShardMapManagerFactory.GetSqlShardMapManager(
+                Globals.ShardMapManagerConnectionString,
+                ShardMapManagerLoadPolicy.Lazy);
+
+            TestShardMap<int> rsm = new TestShardMap<int>(smm.GetRangeShardMap<int>(ShardMapperTests.s_rangeShardMapName));
+            TestShardMap<int> rsm2 = new TestShardMap<int>(smm2.GetRangeShardMap<int>(ShardMapperTests.s_rangeShardMapName));
+
+            GetMappingForKey(rsm, rsm2);
+        }
+
         /// <summary>
         /// All combinations of getting range mappings from a range shard map
         /// </summary>
@@ -2270,6 +2307,44 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
         }
         #endregion RangeMapperTests
+
+        private static void GetMappingForKey(TestShardMap<int> lsm, TestShardMap<int> lsm2)
+        {
+            Assert.IsNotNull(lsm);
+            Assert.IsNotNull(lsm2);
+
+            Shard s1 = lsm.ShardMap.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName,
+                ShardMapperTests.s_shardedDBs[0]));
+            Assert.IsNotNull(s1);
+
+            Shard s2 = lsm.ShardMap.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName,
+                ShardMapperTests.s_shardedDBs[1]));
+            Assert.IsNotNull(s2);
+
+            // Create point mapping via lsm
+            IMappingInfoProvider p1 = lsm.CreateMapping(1, 2, s1);
+            Assert.IsNotNull(p1);
+
+            // Get mapping from cache, then storage - it should be in lsm cache, and be loaded into lsm2 cache from storage
+            IMappingInfoProvider cacheThenStorage1 = lsm.GetMappingForKey(1);
+            Assert.IsNotNull(cacheThenStorage1);
+            Assert.AreEqual(p1, cacheThenStorage1);
+
+            IMappingInfoProvider cacheThenStorage2 = lsm2.GetMappingForKey(1);
+            Assert.IsNotNull(cacheThenStorage2);
+            Assert.AreEqual(p1, cacheThenStorage2);
+
+            // Delete mapping via lsm
+            IMappingInfoProvider p1Offline = lsm.MarkMappingOffline(p1);
+            lsm.DeleteMapping(p1Offline);
+
+            // Verify mapping cannot be found via either lsm (cache is never used, only store is used)
+            ShardManagementException smme = Assert.ThrowsException<ShardManagementException>(() => lsm.GetMappingForKey(1));
+            Assert.AreEqual(ShardManagementErrorCode.MappingNotFoundForKey, smme.ErrorCode);
+
+            smme = Assert.ThrowsException<ShardManagementException>(() => lsm2.GetMappingForKey(1));
+            Assert.AreEqual(ShardManagementErrorCode.MappingNotFoundForKey, smme.ErrorCode);
+        }
 
         /// <summary>
         /// Mark a point mapping offline or online.
