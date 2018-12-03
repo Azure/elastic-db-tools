@@ -529,7 +529,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             lsm.DeleteMapping(mappingToDelete);
 
-            // Verify that the mapping is removed from cache.
+            // Try to get from store. Because the mapping is missing from the store, we will try to
+            // invalidate the cache, but since it is also missing from cache there will be an cache miss.
             bool lookupFailed = false;
             try
             {
@@ -543,7 +544,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
 
             Assert.IsTrue(lookupFailed);
-            Assert.AreEqual(0, countingCache.LookupMappingMissCount);
+            Assert.AreEqual(1, countingCache.LookupMappingMissCount);
         }
 
         /// <summary>
@@ -1331,6 +1332,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             rsm.DeleteMapping(mappingToDelete, mappingLockToken);
 
+            // Try to get from store. Because the mapping is missing from the store, we will try to
+            // invalidate the cache, but since it is also missing from cache there will be an cache miss.
             exception = AssertExtensions.AssertThrows<ShardManagementException>
                 (() => rsm.GetMappingForKey(1));
 
@@ -1338,7 +1341,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 exception.ErrorCode == ShardManagementErrorCode.MappingNotFoundForKey &&
                 exception.ErrorCategory == ShardManagementErrorCategory.RangeShardMap);
 
-            Assert.AreEqual(0, countingCache.LookupMappingMissCount);
+            Assert.AreEqual(1, countingCache.LookupMappingMissCount);
         }
 
         /// <summary>
