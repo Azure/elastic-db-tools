@@ -142,17 +142,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Looks up the key value and returns the corresponding mapping.
         /// </summary>
         /// <param name="key">Input key value.</param>
-        /// <param name="useCache">Whether to use cache for lookups.</param>
+        /// <param name="lookupOptions">Whether to search in the cache and/or store.</param>
         /// <returns>Mapping that contains the key value.</returns>
-        TMapping Lookup(TKey key, bool useCache);
+        TMapping Lookup(TKey key, LookupOptions lookupOptions);
 
         /// <summary>
         /// Tries to looks up the key value and returns the corresponding mapping.
         /// </summary>
         /// <param name="key">Input key value.</param>
-        /// <param name="useCache">Whether to use cache for lookups.</param>
+        /// <param name="lookupOptions">Whether to search in the cache and/or store.</param>
         /// <param name="mapping">Mapping that contains the key value.</param>
         /// <returns><c>true</c> if mapping is found, <c>false</c> otherwise.</returns>
-        bool TryLookup(TKey key, bool useCache, out TMapping mapping);
+        bool TryLookup(TKey key, LookupOptions lookupOptions, out TMapping mapping);
     }
 }

@@ -29,7 +29,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="key">Input shard.</param>
         /// <param name="connectionString">
-        /// Connection string with credential information, the DataSource and Database are 
+        /// Connection string with credential information, the DataSource and Database are
         /// obtained from the results of the lookup operation.
         /// </param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="key">Input shard.</param>
         /// <param name="connectionString">
-        /// Connection string with credential information, the DataSource and Database are 
+        /// Connection string with credential information, the DataSource and Database are
         /// obtained from the results of the lookup operation.
         /// </param>
         /// <param name="secureCredential">Secure SQL credential.</param>
@@ -62,7 +62,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             Debug.Assert(key != null);
             Debug.Assert(connectionString != null);
 
-            return this.ShardMap.OpenConnection(this.Lookup(key, true), connectionString, secureCredential, options);
+            return this.ShardMap.OpenConnection(
+                this.Lookup(key, LookupOptions.LookupInCache | LookupOptions.LookupInStore),
+                connectionString,
+                secureCredential,
+                options);
         }
 
         /// <summary>
@@ -70,7 +74,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="key">Input shard.</param>
         /// <param name="connectionString">
-        /// Connection string with credential information, the DataSource and Database are 
+        /// Connection string with credential information, the DataSource and Database are
         /// obtained from the results of the lookup operation.
         /// </param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
@@ -88,7 +92,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="key">Input shard.</param>
         /// <param name="connectionString">
-        /// Connection string with credential information, the DataSource and Database are 
+        /// Connection string with credential information, the DataSource and Database are
         /// obtained from the results of the lookup operation.
         /// </param>
         /// <param name="secureCredential">Secure SQL credential.</param>
@@ -103,7 +107,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             Debug.Assert(key != null);
             Debug.Assert(connectionString != null);
 
-            return await this.ShardMap.OpenConnectionAsync(this.Lookup(key, true), connectionString, secureCredential, options).ConfigureAwait(false);
+            return await this.ShardMap.OpenConnectionAsync(
+                this.Lookup(key, LookupOptions.LookupInCache | LookupOptions.LookupInStore),
+                connectionString,
+                secureCredential,
+                options).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -164,9 +172,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Looks up the given shard in the mapper.
         /// </summary>
         /// <param name="shard">Input shard.</param>
-        /// <param name="useCache">Whether to use cache for lookups.</param>
+        /// <param name="lookupOptions">Whether to search in the cache and/or store.</param>
         /// <returns>Returns the shard after verifying that it is present in mapper.</returns>
-        public Shard Lookup(Shard shard, bool useCache)
+        public Shard Lookup(Shard shard, LookupOptions lookupOptions)
         {
             Debug.Assert(shard != null);
 
@@ -177,10 +185,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Tries to looks up the key value and returns the corresponding mapping.
         /// </summary>
         /// <param name="key">Input shard.</param>
-        /// <param name="useCache">Whether to use cache for lookups.</param>
+        /// <param name="lookupOptions">Whether to search in the cache and/or store.</param>
         /// <param name="shard">Shard that contains the key value.</param>
         /// <returns><c>true</c> if shard is found, <c>false</c> otherwise.</returns>
-        public bool TryLookup(Shard key, bool useCache, out Shard shard)
+        public bool TryLookup(Shard key, LookupOptions lookupOptions, out Shard shard)
         {
             Debug.Assert(key != null);
 

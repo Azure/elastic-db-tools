@@ -2325,6 +2325,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             IMappingInfoProvider p1 = lsm.CreateMapping(1, 2, s1);
             Assert.IsNotNull(p1);
 
+            // Get mapping from cache - it should be in lsm cache, but not in lsm2 cache
+            IMappingInfoProvider cache1 = lsm.GetMappingForKey(1, LookupOptions.LookupInCache);
+            Assert.IsNotNull(cache1);
+            Assert.AreEqual(p1, cache1);
+
+            ShardManagementException smme =
+                Assert.ThrowsException<ShardManagementException>(() =>
+                    lsm2.GetMappingForKey(1, LookupOptions.LookupInCache));
+            Assert.AreEqual(ShardManagementErrorCode.MappingNotFoundForKey, smme.ErrorCode);
+
             // Get mapping from cache, then storage - it should be in lsm cache, and be loaded into lsm2 cache from storage
             IMappingInfoProvider cacheThenStorage1 = lsm.GetMappingForKey(1);
             Assert.IsNotNull(cacheThenStorage1);
@@ -2334,12 +2344,27 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             Assert.IsNotNull(cacheThenStorage2);
             Assert.AreEqual(p1, cacheThenStorage2);
 
+            // Verify that it is now loaded in lsm2 cache
+            IMappingInfoProvider cache2 = lsm2.GetMappingForKey(1, LookupOptions.LookupInCache);
+            Assert.IsNotNull(cache2);
+            Assert.AreEqual(p1, cache2);
+
             // Delete mapping via lsm
             IMappingInfoProvider p1Offline = lsm.MarkMappingOffline(p1);
             lsm.DeleteMapping(p1Offline);
 
-            // Verify mapping cannot be found via either lsm (cache is never used, only store is used)
-            ShardManagementException smme = Assert.ThrowsException<ShardManagementException>(() => lsm.GetMappingForKey(1));
+            // Verify mapping is not in lsm cache, but it is still in lsm2 cache
+            // Use `LookupOptions.Cache | LookupOptions.Store` to verify that if cache is found, then storage is not checked
+            smme = Assert.ThrowsException<ShardManagementException>(() =>
+                lsm.GetMappingForKey(1, LookupOptions.LookupInCache));
+            Assert.AreEqual(ShardManagementErrorCode.MappingNotFoundForKey, smme.ErrorCode);
+
+            IMappingInfoProvider staleCache2 = lsm2.GetMappingForKey(1, LookupOptions.LookupInCache | LookupOptions.LookupInStore);
+            Assert.IsNotNull(staleCache2);
+            Assert.AreEqual(p1, staleCache2);
+
+            // Verify mapping cannot be found via either lsm store (by default cache is never used, only store is used)
+            smme = Assert.ThrowsException<ShardManagementException>(() => lsm.GetMappingForKey(1));
             Assert.AreEqual(ShardManagementErrorCode.MappingNotFoundForKey, smme.ErrorCode);
 
             smme = Assert.ThrowsException<ShardManagementException>(() => lsm2.GetMappingForKey(1));

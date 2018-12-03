@@ -81,6 +81,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 rsm => rsm.GetMappingForKey(value));
         }
 
+        public IMappingInfoProvider GetMappingForKey(TKey value, LookupOptions lookupOptions)
+        {
+            return Do<IMappingInfoProvider>(
+                lsm => lsm.GetMappingForKey(value, lookupOptions),
+                rsm => rsm.GetMappingForKey(value, lookupOptions));
+        }
+
         public IMappingInfoProvider MarkMappingOffline(IMappingInfoProvider mapping)
         {
             return Do<IMappingInfoProvider>(

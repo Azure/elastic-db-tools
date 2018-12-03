@@ -382,26 +382,41 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
         /// <summary>
         /// Looks up the key value and returns the corresponding mapping.
+        /// Only the global shard map store is searched, not the local cache.
         /// </summary>
+        /// <remarks>
+        /// This is equivalent to <c>GetMappingForKey(key, LookupOptions.LookupInStore)</c>.
+        /// </remarks>
         /// <param name="key">Input key value.</param>
         /// <returns>Mapping that contains the key value.</returns>
         public PointMapping<TKey> GetMappingForKey(TKey key)
         {
+            return GetMappingForKey(key, LookupOptions.LookupInStore);
+        }
+
+        /// <summary>
+        /// Looks up the key value and returns the corresponding mapping.
+        /// </summary>
+        /// <param name="key">Input key value.</param>
+        /// <param name="lookupOptions">Whether to search in the cache and/or store.</param>
+        /// <returns>Mapping that contains the key value.</returns>
+        public PointMapping<TKey> GetMappingForKey(TKey key, LookupOptions lookupOptions)
+        {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ListShardMap,
-                    "LookupPointMapping", "Start; ShardMap name: {0}; Point Mapping Key Type: {1}",
-                    this.Name, typeof(TKey));
+                    "LookupPointMapping", "Start; ShardMap name: {0}; Point Mapping Key Type: {1}; Lookup Options: {2}",
+                    this.Name, typeof(TKey), lookupOptions);
 
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
-                PointMapping<TKey> pointMapping = _lsm.Lookup(key, false);
+                PointMapping<TKey> pointMapping = _lsm.Lookup(key, lookupOptions);
 
                 stopwatch.Stop();
 
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ListShardMap,
-                    "LookupPointMapping", "Complete; ShardMap name: {0}; Point Mapping Key Type: {1}; Duration: {2}",
-                    this.Name, typeof(TKey), stopwatch.Elapsed);
+                    "LookupPointMapping", "Complete; ShardMap name: {0}; Point Mapping Key Type: {1}; Lookup Options: {2}; Duration: {3}",
+                    this.Name, typeof(TKey), lookupOptions, stopwatch.Elapsed);
 
                 return pointMapping;
             }
@@ -409,11 +424,27 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
         /// <summary>
         /// Tries to looks up the key value and place the corresponding mapping in <paramref name="pointMapping"/>.
+        /// Only the global shard map store is searched, not the local cache.
         /// </summary>
+        /// <remarks>
+        /// This is equivalent to <c>TryGetMappingForKey(key, LookupOptions.LookupInStore, out pointMapping)</c>.
+        /// </remarks>
         /// <param name="key">Input key value.</param>
         /// <param name="pointMapping">Mapping that contains the key value.</param>
         /// <returns><c>true</c> if mapping is found, <c>false</c> otherwise.</returns>
         public bool TryGetMappingForKey(TKey key, out PointMapping<TKey> pointMapping)
+        {
+            return TryGetMappingForKey(key, LookupOptions.LookupInStore, out pointMapping);
+        }
+
+        /// <summary>
+        /// Tries to looks up the key value and place the corresponding mapping in <paramref name="pointMapping"/>.
+        /// </summary>
+        /// <param name="key">Input key value.</param>
+        /// <param name="lookupOptions">Whether to search in the cache and/or store.</param>
+        /// <param name="pointMapping">Mapping that contains the key value.</param>
+        /// <returns><c>true</c> if mapping is found, <c>false</c> otherwise.</returns>
+        public bool TryGetMappingForKey(TKey key, LookupOptions lookupOptions, out PointMapping<TKey> pointMapping)
         {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
@@ -423,7 +454,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
-                bool result = _lsm.TryLookup(key, false, out pointMapping);
+                bool result = _lsm.TryLookup(key, lookupOptions, out pointMapping);
 
                 stopwatch.Stop();
 
