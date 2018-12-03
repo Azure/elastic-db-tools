@@ -548,10 +548,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             ShardKey sk = new ShardKey(ShardKey.ShardKeyTypeFromType(typeof(TKey)), key);
 
-            if (lookupOptions.HasFlag(LookupOptions.LookupInCache))
+            // Try to lookup in cache. Note the interation with cache removal later in this method.
+            bool tryLookupInCache = lookupOptions.HasFlag(LookupOptions.LookupInCache);
+            if (tryLookupInCache)
             {
                 ICacheStoreMapping cachedMapping = this.Manager.Cache.LookupMappingByKey(this.ShardMap.StoreShardMap, sk);
-
                 if (cachedMapping != null)
                 {
                     return constructMapping(this.Manager, this.ShardMap, cachedMapping.Mapping);
@@ -588,13 +589,28 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     gsmResult.Result,
                     stopwatch.Elapsed);
 
-                // If we could not locate the mapping, we return null and do nothing here.
+                // If mapping was found, return it.
                 if (gsmResult.Result != StoreResult.MappingNotFoundForKey)
                 {
                     return gsmResult.StoreMappings.Select(sm => constructMapping(this.Manager, this.ShardMap, sm)).Single();
                 }
+
+                // If we could not locate the mapping, then we might need to update the cache to remove it.
+                //
+                // Only do this if we didn't already try to return the mapping from the cache (since, if it was found,
+                // we would have already returned it earlier).
+                if (!tryLookupInCache)
+                {
+                    ICacheStoreMapping cachedMapping =
+                        this.Manager.Cache.LookupMappingByKey(this.ShardMap.StoreShardMap, sk);
+                    if (cachedMapping != null)
+                    {
+                        this.Manager.Cache.DeleteMapping(cachedMapping.Mapping);
+                    }
+                }
             }
 
+            // Mapping not found - return null
             return null;
         }
 

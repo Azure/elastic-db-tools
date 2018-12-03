@@ -2369,6 +2369,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             smme = Assert.ThrowsException<ShardManagementException>(() => lsm2.GetMappingForKey(1));
             Assert.AreEqual(ShardManagementErrorCode.MappingNotFoundForKey, smme.ErrorCode);
+
+            // Lookup again from cache - the mapping should have been removed from the cache
+            smme = Assert.ThrowsException<ShardManagementException>(() =>
+                lsm2.GetMappingForKey(1, LookupOptions.LookupInCache));
+            Assert.AreEqual(ShardManagementErrorCode.MappingNotFoundForKey, smme.ErrorCode);
         }
 
         /// <summary>
