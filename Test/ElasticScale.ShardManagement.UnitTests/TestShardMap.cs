@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE f
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 
@@ -86,6 +86,44 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             return Do<IMappingInfoProvider>(
                 lsm => lsm.GetMappingForKey(value, lookupOptions),
                 rsm => rsm.GetMappingForKey(value, lookupOptions));
+        }
+
+        public bool TryGetMappingForKey(TKey value, out IMappingInfoProvider mapping)
+        {
+            if (_lsm != null)
+            {
+                bool ret =  _lsm.TryGetMappingForKey(value, out var x);
+                mapping = x;
+                return ret;
+            }
+
+            if (_rsm != null)
+            {
+                bool ret = _rsm.TryGetMappingForKey(value, out var x);
+                mapping = x;
+                return ret;
+            }
+
+            throw new InvalidOperationException("Both lsm and rsm are null!");
+        }
+
+        public bool TryGetMappingForKey(TKey value, LookupOptions lookupOptions, out IMappingInfoProvider mapping)
+        {
+            if (_lsm != null)
+            {
+                bool ret = _lsm.TryGetMappingForKey(value, lookupOptions, out var x);
+                mapping = x;
+                return ret;
+            }
+
+            if (_rsm != null)
+            {
+                bool ret = _rsm.TryGetMappingForKey(value, lookupOptions, out var x);
+                mapping = x;
+                return ret;
+            }
+
+            throw new InvalidOperationException("Both lsm and rsm are null!");
         }
 
         public IMappingInfoProvider MarkMappingOffline(IMappingInfoProvider mapping)
