@@ -535,66 +535,83 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <typeparam name="TMapping">Mapping type.</typeparam>
         /// <typeparam name="TKey">Key type.</typeparam>
         /// <param name="key">Input key value.</param>
-        /// <param name="useCache">Whether to use cache for lookups.</param>
+        /// <param name="lookupOptions">Whether to use cache and/or storage for lookups.</param>
         /// <param name="constructMapping">Delegate to construct a mapping object.</param>
         /// <param name="errorCategory">Category under which errors must be thrown.</param>
         /// <returns>Mapping that contains the key value.</returns>
         protected TMapping Lookup<TMapping, TKey>(
             TKey key,
-            bool useCache,
+            LookupOptions lookupOptions,
             Func<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping,
             ShardManagementErrorCategory errorCategory)
             where TMapping : class, IShardProvider
         {
             ShardKey sk = new ShardKey(ShardKey.ShardKeyTypeFromType(typeof(TKey)), key);
 
-            if (useCache)
+            // Try to lookup in cache. Note the interation with cache removal later in this method.
+            bool tryLookupInCache = lookupOptions.HasFlag(LookupOptions.LookupInCache);
+            if (tryLookupInCache)
             {
                 ICacheStoreMapping cachedMapping = this.Manager.Cache.LookupMappingByKey(this.ShardMap.StoreShardMap, sk);
-
                 if (cachedMapping != null)
                 {
                     return constructMapping(this.Manager, this.ShardMap, cachedMapping.Mapping);
                 }
             }
 
-            // Cache-miss, find mapping for given key in GSM.
-            TMapping m = null;
-
-            IStoreResults gsmResult;
-
-            Stopwatch stopwatch = Stopwatch.StartNew();
-
-            using (IStoreOperationGlobal op = this.Manager.StoreOperationFactory.CreateFindMappingByKeyGlobalOperation(
-                this.Manager,
-                "Lookup",
-                this.ShardMap.StoreShardMap,
-                sk,
-                CacheStoreMappingUpdatePolicy.OverwriteExisting,
-                errorCategory,
-                true,
-                false))
+            // Cache-miss (or didn't use cache), find mapping for given key in GSM.
+            if (lookupOptions.HasFlag(LookupOptions.LookupInStore))
             {
-                gsmResult = op.Do();
+                IStoreResults gsmResult;
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
+                using (IStoreOperationGlobal op = this.Manager.StoreOperationFactory.CreateFindMappingByKeyGlobalOperation(
+                    this.Manager,
+                    "Lookup",
+                    this.ShardMap.StoreShardMap,
+                    sk,
+                    CacheStoreMappingUpdatePolicy.OverwriteExisting,
+                    errorCategory,
+                    true,
+                    false))
+                {
+                    gsmResult = op.Do();
+                }
+
+                stopwatch.Stop();
+
+                Tracer.TraceVerbose(
+                    TraceSourceConstants.ComponentNames.BaseShardMapper,
+                    "Lookup",
+                    "Lookup key from GSM complete; Key type : {0}; Result: {1}; Duration: {2}",
+                    typeof(TKey),
+                    gsmResult.Result,
+                    stopwatch.Elapsed);
+
+                // If mapping was found, return it.
+                if (gsmResult.Result != StoreResult.MappingNotFoundForKey)
+                {
+                    return gsmResult.StoreMappings.Select(sm => constructMapping(this.Manager, this.ShardMap, sm)).Single();
+                }
+
+                // If we could not locate the mapping, then we might need to update the cache to remove it.
+                //
+                // Only do this if we didn't already try to return the mapping from the cache (since, if it was found,
+                // we would have already returned it earlier).
+                if (!tryLookupInCache)
+                {
+                    ICacheStoreMapping cachedMapping =
+                        this.Manager.Cache.LookupMappingByKey(this.ShardMap.StoreShardMap, sk);
+                    if (cachedMapping != null)
+                    {
+                        this.Manager.Cache.DeleteMapping(cachedMapping.Mapping);
+                    }
+                }
             }
 
-            stopwatch.Stop();
-
-            Tracer.TraceVerbose(
-                TraceSourceConstants.ComponentNames.BaseShardMapper,
-                "Lookup",
-                "Lookup key from GSM complete; Key type : {0}; Result: {1}; Duration: {2}",
-                typeof(TKey),
-                gsmResult.Result,
-                stopwatch.Elapsed);
-
-            // If we could not locate the mapping, we return null and do nothing here.
-            if (gsmResult.Result != StoreResult.MappingNotFoundForKey)
-            {
-                return gsmResult.StoreMappings.Select(sm => constructMapping(this.Manager, this.ShardMap, sm)).Single();
-            }
-
-            return m;
+            // Mapping not found - return null
+            return null;
         }
 
         /// <summary>

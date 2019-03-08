@@ -344,6 +344,37 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
         }
 
+        [TestMethod()]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void GetPointMappingForKey_Ex()
+        {
+            GetPointMappingForKey(new ExceptionBasedTestShardMapVerifier());
+        }
+
+        [TestMethod()]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void GetPointMappingForKey_Try()
+        {
+            GetPointMappingForKey(new TryBasedTestShardMapVerifier());
+        }
+
+        private void GetPointMappingForKey(TestShardMapVerifier verifier)
+        {
+            // Use 2 different SMM's so that we can verify when cache is used
+            ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+                Globals.ShardMapManagerConnectionString,
+                ShardMapManagerLoadPolicy.Lazy);
+
+            ShardMapManager smm2 = ShardMapManagerFactory.GetSqlShardMapManager(
+                Globals.ShardMapManagerConnectionString,
+                ShardMapManagerLoadPolicy.Lazy);
+
+            TestShardMap<int> lsm = new TestShardMap<int>(smm.GetListShardMap<int>(ShardMapperTests.s_listShardMapName));
+            TestShardMap<int> lsm2 = new TestShardMap<int>(smm2.GetListShardMap<int>(ShardMapperTests.s_listShardMapName));
+
+            GetMappingForKey(lsm, lsm2, verifier);
+        }
+
         /// <summary>
         /// All combinations of getting point mappings from a list shard map
         /// </summary>
@@ -510,7 +541,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             lsm.DeleteMapping(mappingToDelete);
 
-            // Verify that the mapping is removed from cache.
+            // Try to get from store. Because the mapping is missing from the store, we will try to
+            // invalidate the cache, but since it is also missing from cache there will be an cache miss.
             bool lookupFailed = false;
             try
             {
@@ -524,7 +556,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
 
             Assert.IsTrue(lookupFailed);
-            Assert.AreEqual(0, countingCache.LookupMappingMissCount);
+            Assert.AreEqual(1, countingCache.LookupMappingMissCount);
         }
 
         /// <summary>
@@ -977,7 +1009,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             Assert.IsTrue(failed);
         }
 
-
         #endregion ListMapperTests
 
         #region RangeMapperTests
@@ -1020,7 +1051,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             for (int i = 0; i < keysToTest.Count - 1; i++)
             {
                 // https://github.com/Azure/elastic-db-tools/issues/117
-                // Bug? DateTimeOffsets with the same universal time but different offset are equal as ShardKeys. 
+                // Bug? DateTimeOffsets with the same universal time but different offset are equal as ShardKeys.
                 // According to SQL (and our normalization format), they should be unequal, although according to .NET they should be equal.
                 // We need to skip empty ranges because if we use them in this test then we end up with duplicate mappings
                 if (typeof(T) == typeof(DateTimeOffset) && (DateTimeOffset)(object)keysToTest[i] == (DateTimeOffset)(object)keysToTest[i + 1])
@@ -1313,6 +1344,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
             rsm.DeleteMapping(mappingToDelete, mappingLockToken);
 
+            // Try to get from store. Because the mapping is missing from the store, we will try to
+            // invalidate the cache, but since it is also missing from cache there will be an cache miss.
             exception = AssertExtensions.AssertThrows<ShardManagementException>
                 (() => rsm.GetMappingForKey(1));
 
@@ -1320,7 +1353,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 exception.ErrorCode == ShardManagementErrorCode.MappingNotFoundForKey &&
                 exception.ErrorCategory == ShardManagementErrorCategory.RangeShardMap);
 
-            Assert.AreEqual(0, countingCache.LookupMappingMissCount);
+            Assert.AreEqual(1, countingCache.LookupMappingMissCount);
         }
 
         /// <summary>
@@ -1787,6 +1820,37 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             Assert.IsTrue(failed);
         }
 
+        [TestMethod()]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void GetRangeMappingForKey_Ex()
+        {
+            GetRangeMappingForKey(new ExceptionBasedTestShardMapVerifier());
+        }
+
+        [TestMethod()]
+        [TestCategory("ExcludeFromGatedCheckin")]
+        public void GetRangeMappingForKey_Try()
+        {
+            GetRangeMappingForKey(new TryBasedTestShardMapVerifier());
+        }
+
+        private void GetRangeMappingForKey(TestShardMapVerifier verifier)
+        {
+            // Use 2 different SMM's so that we can verify when cache is used
+            ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+                Globals.ShardMapManagerConnectionString,
+                ShardMapManagerLoadPolicy.Lazy);
+
+            ShardMapManager smm2 = ShardMapManagerFactory.GetSqlShardMapManager(
+                Globals.ShardMapManagerConnectionString,
+                ShardMapManagerLoadPolicy.Lazy);
+
+            TestShardMap<int> rsm = new TestShardMap<int>(smm.GetRangeShardMap<int>(ShardMapperTests.s_rangeShardMapName));
+            TestShardMap<int> rsm2 = new TestShardMap<int>(smm2.GetRangeShardMap<int>(ShardMapperTests.s_rangeShardMapName));
+
+            GetMappingForKey(rsm, rsm2, verifier);
+        }
+
         /// <summary>
         /// All combinations of getting range mappings from a range shard map
         /// </summary>
@@ -1939,7 +2003,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             ArgumentOutOfRangeException exception = AssertExtensions.AssertThrows<ArgumentOutOfRangeException>
                 (() => rsm.SplitMapping(r1, 1, mappingLockToken));
 
-            // Unlock mapping 
+            // Unlock mapping
             rsm.UnlockMapping(r1, mappingLockToken);
         }
 
@@ -2270,6 +2334,61 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             }
         }
         #endregion RangeMapperTests
+
+        private static void GetMappingForKey(TestShardMap<int> lsm, TestShardMap<int> lsm2, TestShardMapVerifier verifier)
+        {
+            Assert.IsNotNull(lsm);
+            Assert.IsNotNull(lsm2);
+
+            Shard s1 = lsm.ShardMap.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName,
+                ShardMapperTests.s_shardedDBs[0]));
+            Assert.IsNotNull(s1);
+
+            Shard s2 = lsm.ShardMap.CreateShard(new ShardLocation(Globals.ShardMapManagerTestsDatasourceName,
+                ShardMapperTests.s_shardedDBs[1]));
+            Assert.IsNotNull(s2);
+
+            // Create point mapping via lsm
+            IMappingInfoProvider p1 = lsm.CreateMapping(1, 2, s1);
+            Assert.IsNotNull(p1);
+
+            // Get mapping from cache - it should be in lsm cache, but not in lsm2 cache
+            IMappingInfoProvider cache1 = verifier.GetMappingForKey(lsm, 1, LookupOptions.LookupInCache);
+            Assert.AreEqual(p1, cache1);
+
+            verifier.GetMappingForKey_NotExists(lsm2, 1, LookupOptions.LookupInCache);
+
+            // Get mapping from cache, then storage - it should be in lsm cache, and be loaded into lsm2 cache from storage
+            IMappingInfoProvider cacheThenStorage1 = verifier.GetMappingForKey(lsm, 1);
+            Assert.AreEqual(p1, cacheThenStorage1);
+
+            IMappingInfoProvider cacheThenStorage2 = verifier.GetMappingForKey(lsm2, 1);
+            Assert.AreEqual(p1, cacheThenStorage2);
+
+            // Verify that it is now loaded in lsm2 cache
+            IMappingInfoProvider cache2 = verifier.GetMappingForKey(lsm2, 1, LookupOptions.LookupInCache);
+            Assert.IsNotNull(cache2);
+            Assert.AreEqual(p1, cache2);
+
+            // Delete mapping via lsm
+            IMappingInfoProvider p1Offline = lsm.MarkMappingOffline(p1);
+            lsm.DeleteMapping(p1Offline);
+
+            // Verify mapping is not in lsm cache, but it is still in lsm2 cache
+            // Use `LookupOptions.Cache | LookupOptions.Store` to verify that if cache is found, then storage is not checked
+            verifier.GetMappingForKey_NotExists(lsm, 1, LookupOptions.LookupInCache);
+
+            IMappingInfoProvider staleCache2 = verifier.GetMappingForKey(lsm2, 1, LookupOptions.LookupInCache | LookupOptions.LookupInStore);
+            Assert.IsNotNull(staleCache2);
+            Assert.AreEqual(p1, staleCache2);
+
+            // Verify mapping cannot be found via either lsm store (by default cache is never used, only store is used)
+            verifier.GetMappingForKey_NotExists(lsm, 1);
+            verifier.GetMappingForKey_NotExists(lsm2, 1);
+
+            // Lookup again from cache - the mapping should have been removed from the cache
+            verifier.GetMappingForKey_NotExists(lsm2, 1, LookupOptions.LookupInCache);
+        }
 
         /// <summary>
         /// Mark a point mapping offline or online.

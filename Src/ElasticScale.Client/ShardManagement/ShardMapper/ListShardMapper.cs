@@ -176,13 +176,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Looks up the key value and returns the corresponding mapping.
         /// </summary>
         /// <param name="key">Input key value.</param>
-        /// <param name="useCache">Whether to use cache for lookups.</param>
+        /// <param name="lookupOptions">Whether to search in the cache and/or store.</param>
         /// <returns>Mapping that contains the key value.</returns>
-        public PointMapping<TKey> Lookup(TKey key, bool useCache)
+        public PointMapping<TKey> Lookup(TKey key, LookupOptions lookupOptions)
         {
             PointMapping<TKey> p = this.Lookup<PointMapping<TKey>, TKey>(
                 key,
-                useCache,
+                lookupOptions,
                 (smm, sm, ssm) => new PointMapping<TKey>(smm, sm, ssm),
                 ShardManagementErrorCategory.ListShardMap);
 
@@ -204,14 +204,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Tries to looks up the key value and returns the corresponding mapping.
         /// </summary>
         /// <param name="key">Input key value.</param>
-        /// <param name="useCache">Whether to use cache for lookups.</param>
+        /// <param name="lookupOptions">Whether to search in the cache and/or store.</param>
         /// <param name="mapping">Mapping that contains the key value.</param>
         /// <returns><c>true</c> if mapping is found, <c>false</c> otherwise.</returns>
-        public bool TryLookup(TKey key, bool useCache, out PointMapping<TKey> mapping)
+        public bool TryLookup(TKey key, LookupOptions lookupOptions, out PointMapping<TKey> mapping)
         {
             PointMapping<TKey> p = this.Lookup<PointMapping<TKey>, TKey>(
                 key,
-                useCache,
+                lookupOptions,
                 (smm, sm, ssm) => new PointMapping<TKey>(smm, sm, ssm),
                 ShardManagementErrorCategory.ListShardMap);
 

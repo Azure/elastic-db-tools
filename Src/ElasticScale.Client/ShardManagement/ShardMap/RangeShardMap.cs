@@ -342,25 +342,41 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
         /// <summary>
         /// Looks up the key value and returns the corresponding mapping.
+        /// Only the global shard map store is searched, not the local cache.
         /// </summary>
+        /// <remarks>
+        /// This is equivalent to <c>GetMappingForKey(key, LookupOptions.LookupInStore)</c>.
+        /// </remarks>
         /// <param name="key">Input key value.</param>
         /// <returns>Mapping that contains the key value.</returns>
         public RangeMapping<TKey> GetMappingForKey(TKey key)
         {
+            return GetMappingForKey(key, LookupOptions.LookupInStore);
+        }
+
+        /// <summary>
+        /// Looks up the key value and returns the corresponding mapping.
+        /// </summary>
+        /// <param name="key">Input key value.</param>
+        /// <param name="lookupOptions">Whether to search in the cache and/or store.</param>
+        /// <returns>Mapping that contains the key value.</returns>
+        public RangeMapping<TKey> GetMappingForKey(TKey key, LookupOptions lookupOptions)
+        {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
-                    "GetMapping", "Start; Range Mapping Key Type: {0}", typeof(TKey));
+                    "GetMapping", "Start; Shard Map name: {0}, Range Mapping Key Type: {1}; Lookup Options: {2}", 
+                    this.Name, typeof(TKey), lookupOptions);
 
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
-                RangeMapping<TKey> rangeMapping = this.rsm.Lookup(key, false);
+                RangeMapping<TKey> rangeMapping = this.rsm.Lookup(key, lookupOptions);
 
                 stopwatch.Stop();
 
                 Tracer.TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap,
-                    "GetMapping", "Complete; Range Mapping Key Type: {0} Duration: {1}",
-                    typeof(TKey), stopwatch.Elapsed);
+                    "GetMapping", "Start; Shard Map name: {0}, Range Mapping Key Type: {1}; Lookup Options: {2}; Duration: {3}",
+                    this.Name, typeof(TKey), lookupOptions, stopwatch.Elapsed);
 
                 return rangeMapping;
             }
@@ -368,11 +384,27 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
         /// <summary>
         /// Tries to looks up the key value and place the corresponding mapping in <paramref name="rangeMapping"/>.
+        /// Only the global shard map store is searched, not the local cache.
         /// </summary>
+        /// <remarks>
+        /// This is equivalent to <c>TryGetMappingForKey(key, LookupOptions.LookupInStore, out rangeMapping)</c>.
+        /// </remarks>
         /// <param name="key">Input key value.</param>
         /// <param name="rangeMapping">Mapping that contains the key value.</param>
         /// <returns><c>true</c> if mapping is found, <c>false</c> otherwise.</returns>
         public bool TryGetMappingForKey(TKey key, out RangeMapping<TKey> rangeMapping)
+        {
+            return TryGetMappingForKey(key, LookupOptions.LookupInStore, out rangeMapping);
+        }
+
+        /// <summary>
+        /// Tries to looks up the key value and place the corresponding mapping in <paramref name="rangeMapping"/>.
+        /// </summary>
+        /// <param name="key">Input key value.</param>
+        /// <param name="lookupOptions">Whether to search in the cache and/or store.</param>
+        /// <param name="rangeMapping">Mapping that contains the key value.</param>
+        /// <returns><c>true</c> if mapping is found, <c>false</c> otherwise.</returns>
+        public bool TryGetMappingForKey(TKey key, LookupOptions lookupOptions, out RangeMapping<TKey> rangeMapping)
         {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
@@ -382,7 +414,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
-                bool result = this.rsm.TryLookup(key, false, out rangeMapping);
+                bool result = this.rsm.TryLookup(key, lookupOptions, out rangeMapping);
 
                 stopwatch.Stop();
 
