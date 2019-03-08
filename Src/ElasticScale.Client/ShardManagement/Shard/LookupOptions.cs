@@ -30,6 +30,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <remarks>
         /// If LookupInCache and LookupInStore are both specified, the cache will be searched first, then the store.
         /// </remarks>
-        LookupInStore = 1 << 2,
+        LookupInStore = 1 << 1,
     }
 }

@@ -11,7 +11,6 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.JScript;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
@@ -1052,7 +1051,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             for (int i = 0; i < keysToTest.Count - 1; i++)
             {
                 // https://github.com/Azure/elastic-db-tools/issues/117
-                // Bug? DateTimeOffsets with the same universal time but different offset are equal as ShardKeys. 
+                // Bug? DateTimeOffsets with the same universal time but different offset are equal as ShardKeys.
                 // According to SQL (and our normalization format), they should be unequal, although according to .NET they should be equal.
                 // We need to skip empty ranges because if we use them in this test then we end up with duplicate mappings
                 if (typeof(T) == typeof(DateTimeOffset) && (DateTimeOffset)(object)keysToTest[i] == (DateTimeOffset)(object)keysToTest[i + 1])
@@ -2004,7 +2003,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             ArgumentOutOfRangeException exception = AssertExtensions.AssertThrows<ArgumentOutOfRangeException>
                 (() => rsm.SplitMapping(r1, 1, mappingLockToken));
 
-            // Unlock mapping 
+            // Unlock mapping
             rsm.UnlockMapping(r1, mappingLockToken);
         }
 
