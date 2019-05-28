@@ -27,7 +27,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             StoreConnectionKind kind,
             string connectionString)
         {
-            return this.GetConnection(kind, connectionString, null);
+            return new SqlStoreConnection(kind, connectionString);
         }
 
         /// <summary>
@@ -44,6 +44,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return new SqlStoreConnection(kind, connectionString, secureCredential);
         }
+        public virtual IStoreConnection GetConnection(StoreConnectionKind kind, string connectionString, string accessToken)
+        {
+            return new SqlStoreConnection(kind, connectionString, accessToken);
+        }
 
         /// <summary>
         /// Constructs a new instance of user connection.
@@ -52,7 +56,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>An unopened instance of the user connection.</returns>
         public virtual IUserStoreConnection GetUserConnection(string connectionString)
         {
-            return this.GetUserConnection(connectionString, null);
+            return new SqlUserStoreConnection(connectionString);
         }
 
         /// <summary>
@@ -64,6 +68,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         public virtual IUserStoreConnection GetUserConnection(string connectionString, SqlCredential secureCredential)
         {
             return new SqlUserStoreConnection(connectionString, secureCredential);
+        }
+
+        public virtual IUserStoreConnection GetUserConnection(string connectionString, string accessToken)
+        {
+            return new SqlUserStoreConnection(connectionString, accessToken);
         }
     }
 }

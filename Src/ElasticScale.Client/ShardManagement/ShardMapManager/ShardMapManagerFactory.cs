@@ -102,6 +102,28 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
+        /// Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database,
+        /// with <see cref="ShardMapManagerCreateMode.KeepExisting"/> and <see cref="RetryBehavior.DefaultRetryBehavior"/>.
+        /// </summary>
+        /// <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+        /// <param name="accessToken">Secure access token</param>
+        /// <returns>
+        /// A shard map manager object used for performing management and read operations for
+        /// shard maps, shards and shard mappings.
+        /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        public static ShardMapManager CreateSqlShardMapManager(
+            string connectionString,
+            string accessToken)
+        {
+            return CreateSqlShardMapManager(
+                connectionString,
+                accessToken,
+                ShardMapManagerCreateMode.KeepExisting,
+                RetryBehavior.DefaultRetryBehavior);
+        }
+
+        /// <summary>
         /// Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database, 
         /// with <see cref="RetryBehavior.DefaultRetryBehavior"/>.
         /// </summary>
@@ -118,8 +140,32 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return CreateSqlShardMapManager(
                 connectionString,
-                null,
+                secureCredential: null,
                 createMode);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database, 
+        /// with <see cref="RetryBehavior.DefaultRetryBehavior"/>.
+        /// </summary>
+        /// <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+        /// <param name="secureCredential">Secure credential used for creating shard map manager database.</param>
+        /// <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
+        /// <returns>
+        /// A shard map manager object used for performing management and read operations for
+        /// shard maps, shards and shard mappings.
+        /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        public static ShardMapManager CreateSqlShardMapManager(
+            string connectionString,
+            string accessToken,
+            ShardMapManagerCreateMode createMode)
+        {
+            return CreateSqlShardMapManager(
+                connectionString,
+                accessToken,
+                createMode,
+                RetryBehavior.DefaultRetryBehavior);
         }
 
         /// <summary>
@@ -161,34 +207,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return CreateSqlShardMapManager(
                 connectionString,
-                null,
+                (SqlCredential)null,
                 createMode,
                 targetVersion);
         }
 
-        /// <summary>
-        /// Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database, 
-        /// with <see cref="RetryPolicy.DefaultRetryPolicy"/>.
-        /// </summary>
-        /// <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
-        /// <param name="secureCredential">Secure credential used for creating shard map manager database.</param>
-        /// <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
-        /// <param name="targetVersion">Target version of store to create.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
-        internal static ShardMapManager CreateSqlShardMapManager(
-            string connectionString,
-            SqlCredential secureCredential,
-            ShardMapManagerCreateMode createMode,
-            Version targetVersion)
-        {
-            return CreateSqlShardMapManagerImpl(
-                connectionString,
-                secureCredential,
-                createMode,
-                RetryBehavior.DefaultRetryBehavior,
-                null,
-                targetVersion);
-        }
+
 
         /// <summary>
         /// Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database,
@@ -236,6 +260,56 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
+        /// Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database, 
+        /// with <see cref="RetryPolicy.DefaultRetryPolicy"/>.
+        /// </summary>
+        /// <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+        /// <param name="secureCredential">Secure credential used for creating shard map manager database.</param>
+        /// <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
+        /// <param name="targetVersion">Target version of store to create.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        internal static ShardMapManager CreateSqlShardMapManager(
+            string connectionString,
+            SqlCredential secureCredential,
+            ShardMapManagerCreateMode createMode,
+            Version targetVersion)
+        {
+            return CreateSqlShardMapManagerImpl(
+                connectionString,
+                secureCredential,
+                null,
+                createMode,
+                RetryBehavior.DefaultRetryBehavior,
+                null,
+                targetVersion);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database, 
+        /// with <see cref="RetryPolicy.DefaultRetryPolicy"/>.
+        /// </summary>
+        /// <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+        /// <param name="accessToken">Secure access token</param>
+        /// <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
+        /// <param name="targetVersion">Target version of store to create.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        internal static ShardMapManager CreateSqlShardMapManager(
+            string connectionString,
+            string accessToken,
+            ShardMapManagerCreateMode createMode,
+            Version targetVersion)
+        {
+            return CreateSqlShardMapManagerImpl(
+                connectionString,
+                null,
+                accessToken,
+                createMode,
+                RetryBehavior.DefaultRetryBehavior,
+                null,
+                targetVersion);
+        }
+
+        /// <summary>
         /// Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database.
         /// </summary>
         /// <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
@@ -255,9 +329,39 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return CreateSqlShardMapManager(
                 connectionString,
-                null,
+                secureCredential: null,
                 createMode,
                 retryBehavior);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database.
+        /// </summary>
+        /// <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+        /// <param name="accessToken">Secure access token</param>
+        /// <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
+        /// <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
+        /// <returns>
+        /// A shard map manager object used for performing management and read operations for
+        /// shard maps, shards and shard mappings.
+        /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"),
+        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0"),
+        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
+        public static ShardMapManager CreateSqlShardMapManager(
+            string connectionString,
+            string accessToken,
+            ShardMapManagerCreateMode createMode,
+            RetryBehavior retryBehavior)
+        {
+            return CreateSqlShardMapManagerImpl(
+                connectionString,
+                null,
+                accessToken,
+                createMode,
+                retryBehavior,
+                null,
+                GlobalConstants.GsmVersionClient);
         }
 
         /// <summary>
@@ -283,6 +387,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             return CreateSqlShardMapManagerImpl(
                 connectionString,
                 secureCredential,
+                null,
                 createMode,
                 retryBehavior,
                 null,
@@ -311,7 +416,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return CreateSqlShardMapManager(
                 connectionString,
-                null,
+                secureCredential: null,
                 createMode,
                 retryBehavior,
                 retryEventHandler);
@@ -342,6 +447,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             return CreateSqlShardMapManagerImpl(
                 connectionString,
                 secureCredential,
+                null,
                 createMode,
                 retryBehavior,
                 retryEventHandler,
@@ -353,6 +459,41 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
         /// <param name="secureCredential">Secure credential used for creating shard map manager database.</param>
+        /// <param name="accessToken">Secure access token</param>
+        /// <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
+        /// <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
+        /// <param name="retryEventHandler">Event handler for store operation retry events.</param>
+        /// <returns>
+        /// A shard map manager object used for performing management and read operations for
+        /// shard maps, shards and shard mappings.
+        /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"),
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0"),
+        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
+        internal static ShardMapManager CreateSqlShardMapManager(
+            string connectionString,
+            string accessToken,
+            ShardMapManagerCreateMode createMode,
+            RetryBehavior retryBehavior,
+            EventHandler<RetryingEventArgs> retryEventHandler)
+        {
+            return CreateSqlShardMapManagerImpl(
+                connectionString,
+                null,
+                accessToken,
+                createMode,
+                retryBehavior,
+                retryEventHandler,
+                GlobalConstants.GsmVersionClient);
+        }
+
+
+        /// <summary>
+        /// Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database.
+        /// </summary>
+        /// <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
+        /// <param name="secureCredential">Secure credential used for creating shard map manager database.</param>
+        /// <param name="accessToken">Secure access token</param>
         /// <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
         /// <param name="retryBehavior">Behavior for performing retries on connections to shard map manager database.</param>
         /// <param name="retryEventHandler">Event handler for store operation retry events.</param>
@@ -367,6 +508,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         private static ShardMapManager CreateSqlShardMapManagerImpl(
             string connectionString,
             SqlCredential secureCredential,
+            string accessToken,
             ShardMapManagerCreateMode createMode,
             RetryBehavior retryBehavior,
             EventHandler<RetryingEventArgs> retryEventHandler,
@@ -383,7 +525,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                         Errors._General_InvalidArgumentValue,
                         createMode,
                         "createMode"),
-                    "createMode");
+                        "createMode");
             }
 
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
@@ -395,7 +537,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
-                SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(connectionString, secureCredential);
+                SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(connectionString, secureCredential, accessToken);
 
                 TransientFaultHandling.RetryPolicy retryPolicy = new TransientFaultHandling.RetryPolicy(
                         new ShardManagementTransientErrorDetectionStrategy(retryBehavior),
@@ -468,10 +610,39 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return TryGetSqlShardMapManager(
                 connectionString,
-                null,
+                (SqlCredential)null,
                 loadPolicy,
                 out shardMapManager);
         }
+
+        /// <summary>
+        /// Gets <see cref="ShardMapManager"/> from persisted state in a SQL Server database.
+        /// </summary>
+        /// <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
+        /// <param name="accessToken">Secure access token</param>
+        /// <param name="loadPolicy">Initialization policy.</param>
+        /// <param name="shardMapManager">Shard map manager object used for performing management and read operations for shard maps, 
+        ///     shards and shard mappings or <c>null</c> in case shard map manager does not exist.</param>
+        /// <returns>
+        /// <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
+        /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        public static bool TryGetSqlShardMapManager(
+            string connectionString,
+            string accessToken,
+            ShardMapManagerLoadPolicy loadPolicy,
+            out ShardMapManager shardMapManager)
+        {
+            return TryGetSqlShardMapManager(
+                connectionString,
+                null,
+                accessToken,
+                loadPolicy,
+                RetryBehavior.DefaultRetryBehavior,
+                out shardMapManager);
+        }
+
 
         /// <summary>
         /// Gets <see cref="ShardMapManager"/> from persisted state in a SQL Server database.
@@ -495,6 +666,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             return TryGetSqlShardMapManager(
                 connectionString,
                 secureCredential,
+                null,
                 loadPolicy,
                 RetryBehavior.DefaultRetryBehavior,
                 out shardMapManager);
@@ -523,6 +695,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             return TryGetSqlShardMapManager(
                     connectionString,
                     null,
+                    null,
                     loadPolicy,
                     retryBehavior,
                     out shardMapManager);
@@ -546,6 +719,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         public static bool TryGetSqlShardMapManager(
             string connectionString,
             SqlCredential secureCredential,
+            string accessToken,
             ShardMapManagerLoadPolicy loadPolicy,
             RetryBehavior retryBehavior,
             out ShardMapManager shardMapManager)
@@ -565,6 +739,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
                     connectionString,
                     secureCredential,
+                    accessToken,
                     loadPolicy,
                     retryBehavior,
                     null,
@@ -587,6 +762,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
         /// <param name="secureCredential">Secure credential used for performing operations against shard map manager database(s).</param>
+        /// <param name="accessToken">Secure access token</param>
         /// <param name="loadPolicy">Initialization policy.</param>
         /// <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
         /// <param name="retryEventHandler">Event handler for store operation retry events.</param>
@@ -601,6 +777,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         internal static bool TryGetSqlShardMapManager(
             string connectionString,
             SqlCredential secureCredential,
+            string accessToken,
             ShardMapManagerLoadPolicy loadPolicy,
             RetryBehavior retryBehavior,
             EventHandler<RetryingEventArgs> retryEventHandler,
@@ -621,6 +798,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
                     connectionString,
                     secureCredential,
+                    accessToken,
                     loadPolicy,
                     retryBehavior,
                     retryEventHandler,
@@ -654,7 +832,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return GetSqlShardMapManager(
                 connectionString,
-                null,
+                (SqlCredential)null,
                 loadPolicy,
                 RetryBehavior.DefaultRetryBehavior);
         }
@@ -683,6 +861,30 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
+        /// Gets <see cref="ShardMapManager"/> from persisted state in a SQL Server database, with <see cref="RetryBehavior.DefaultRetryBehavior"/>. 
+        /// </summary>
+        /// <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
+        /// <param name="accessToken">Secure access token</param>
+        /// <param name="loadPolicy">Initialization policy.</param>
+        /// <returns>
+        /// A shard map manager object used for performing management and read operations for
+        /// shard maps, shards and shard mappings.
+        /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        public static ShardMapManager GetSqlShardMapManager(
+            string connectionString,
+            string accessToken,
+            ShardMapManagerLoadPolicy loadPolicy)
+        {
+            return GetSqlShardMapManager(
+                connectionString,
+                accessToken,
+                loadPolicy,
+                RetryBehavior.DefaultRetryBehavior);
+        }
+
+
+        /// <summary>
         /// Gets <see cref="ShardMapManager"/> from persisted state in a SQL Server database.
         /// </summary>
         /// <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
@@ -699,6 +901,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return GetSqlShardMapManager(
                 connectionString,
+                null,
                 null,
                 loadPolicy,
                 retryBehavior,
@@ -725,10 +928,38 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             return GetSqlShardMapManager(
                 connectionString,
                 secureCredential,
+                null,
                 loadPolicy,
                 retryBehavior,
                 null);
         }
+
+        /// <summary>
+        /// Gets <see cref="ShardMapManager"/> from persisted state in a SQL Server database.
+        /// </summary>
+        /// <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
+        /// <param name="accessToken">Secure access token</param>
+        /// <param name="loadPolicy">Initialization policy.</param>
+        /// <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
+        /// <returns>
+        /// A shard map manager object used for performing management and read operations for
+        /// shard maps, shards and shard mappings.
+        /// </returns>
+        public static ShardMapManager GetSqlShardMapManager(
+            string connectionString,
+            string accessToken,
+            ShardMapManagerLoadPolicy loadPolicy,
+            RetryBehavior retryBehavior)
+        {
+            return GetSqlShardMapManager(
+                connectionString,
+                null,
+                accessToken,
+                loadPolicy,
+                retryBehavior,
+                null);
+        }
+
 
         /// <summary>
         /// Create shard management performance counter category and counters
@@ -743,6 +974,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
         /// <param name="secureCredential">Secure credential used for performing operations against shard map manager database(s).</param>
+        /// <param name="accessToken">Secure access token</param>
         /// <param name="loadPolicy">Initialization policy.</param>
         /// <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
         /// <param name="retryEventHandler">Event handler for store operation retry events.</param>
@@ -754,6 +986,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         internal static ShardMapManager GetSqlShardMapManager(
             string connectionString,
             SqlCredential secureCredential,
+            string accessToken,
             ShardMapManagerLoadPolicy loadPolicy,
             RetryBehavior retryBehavior,
             EventHandler<RetryingEventArgs> retryEventHandler)
@@ -773,6 +1006,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 ShardMapManager shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
                     connectionString,
                     secureCredential,
+                    accessToken,
                     loadPolicy,
                     retryBehavior,
                     retryEventHandler,
@@ -797,6 +1031,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
         /// <param name="secureCredential">Secure credential used for performing operations against shard map manager database(s).</param>
+        /// <param name="accessToken">Secure access token</param>
         /// <param name="loadPolicy">Initialization policy.</param>
         /// <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
         /// <param name="retryEventHandler">Event handler for store operation retry events.</param>
@@ -809,6 +1044,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         private static ShardMapManager GetSqlShardMapManager(
             string connectionString,
             SqlCredential secureCredential,
+            string accessToken,
             ShardMapManagerLoadPolicy loadPolicy,
             RetryBehavior retryBehavior,
             EventHandler<RetryingEventArgs> retryEventHandler,
@@ -817,7 +1053,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             Debug.Assert(connectionString != null);
             Debug.Assert(retryBehavior != null);
 
-            SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(connectionString, secureCredential);
+            SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(connectionString, secureCredential, accessToken);
 
             StoreOperationFactory storeOperationFactory = new StoreOperationFactory();
 

@@ -251,7 +251,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </remarks>
         public SqlConnection OpenConnection(string connectionString)
         {
-            return this.OpenConnection(connectionString, null, ConnectionOptions.Validate);
+            return this.OpenConnection(connectionString, null, null, ConnectionOptions.Validate);
         }
 
         /// <summary>
@@ -287,7 +287,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </remarks>
         public SqlConnection OpenConnection(string connectionString, ConnectionOptions options)
         {
-            return this.OpenConnection(connectionString, null, options);
+            return this.OpenConnection(connectionString, null, null, options);
         }
 
         /// <summary>
@@ -306,9 +306,33 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </remarks>
         public SqlConnection OpenConnection(string connectionString, SqlCredential secureCredential, ConnectionOptions options)
         {
+            return this.OpenConnection(connectionString, secureCredential, null, options);
+        }
+
+        /// <summary>
+        /// Opens a regular <see cref="SqlConnection"/> to the specified shard.
+        /// </summary>
+        /// <param name="connectionString">
+        /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+        /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+        /// </param>
+        /// <param name="accessToken">Access token information.</param>
+        /// <param name="options">Options for validation operations to perform on opened connection.</param>
+        /// <remarks>
+        /// Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults. 
+        /// Callers should follow best practices to protect the connection against transient faults in their application code, e.g., by using the transient fault handling 
+        /// functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+        /// </remarks>
+        public SqlConnection OpenConnection(string connectionString, string accessToken, ConnectionOptions options)
+        {
+            return this.OpenConnection(connectionString, null, accessToken, options);
+        }
+
+        public SqlConnection OpenConnection(string connectionString, SqlCredential secureCredential, string accessToken, ConnectionOptions options)
+        {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                return this.ShardMap.OpenConnection(this as IShardProvider, connectionString, secureCredential, options);
+                return this.ShardMap.OpenConnection(this as IShardProvider, connectionString, secureCredential, accessToken, options);
             }
         }
 
@@ -332,7 +356,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </remarks>
         public Task<SqlConnection> OpenConnectionAsync(string connectionString)
         {
-            return this.OpenConnectionAsync(connectionString, null, ConnectionOptions.Validate);
+            return this.OpenConnectionAsync(connectionString, null, null, ConnectionOptions.Validate);
         }
 
         /// <summary>
@@ -372,7 +396,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </remarks>
         public Task<SqlConnection> OpenConnectionAsync(string connectionString, ConnectionOptions options)
         {
-            return this.OpenConnectionAsync(connectionString, null, options);
+            return this.OpenConnectionAsync(connectionString, null, null, options);
         }
 
         /// <summary>
@@ -393,9 +417,53 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </remarks>
         public Task<SqlConnection> OpenConnectionAsync(string connectionString, SqlCredential secureCredential, ConnectionOptions options)
         {
+            return this.OpenConnectionAsync(connectionString, secureCredential, null, options);
+        }
+
+        /// <summary>
+        /// Asynchronously a regular <see cref="SqlConnection"/> to the specified shard.
+        /// </summary>
+        /// <param name="connectionString">
+        /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+        /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+        /// </param>
+        /// <param name="accessToken">Access token information.</param>
+        /// <param name="options">Options for validation operations to perform on opened connection.</param>
+        /// <returns>A Task encapsulating an opened SqlConnection</returns>
+        /// <remarks>
+        /// Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults. 
+        /// Callers should follow best practices to protect the connection against transient faults in their application code, e.g., by using the transient fault handling 
+        /// functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+        /// All non-usage errors will be propagated via the returned Task.
+        /// </remarks>
+        public Task<SqlConnection> OpenConnectionAsync(string connectionString, string accessToken, ConnectionOptions options)
+        {
+            return this.OpenConnectionAsync(connectionString, null, accessToken, options);
+        }
+
+
+        /// <summary>
+        /// Asynchronously a regular <see cref="SqlConnection"/> to the specified shard.
+        /// </summary>
+        /// <param name="connectionString">
+        /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
+        /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+        /// </param>
+        /// <param name="secureCredential">Secure SQL Credential.</param>
+        /// <param name="accessToken">Access token information.</param>
+        /// <param name="options">Options for validation operations to perform on opened connection.</param>
+        /// <returns>A Task encapsulating an opened SqlConnection</returns>
+        /// <remarks>
+        /// Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults. 
+        /// Callers should follow best practices to protect the connection against transient faults in their application code, e.g., by using the transient fault handling 
+        /// functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+        /// All non-usage errors will be propagated via the returned Task.
+        /// </remarks>
+        public Task<SqlConnection> OpenConnectionAsync(string connectionString, SqlCredential secureCredential, string accessToken, ConnectionOptions options)
+        {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                return this.ShardMap.OpenConnectionAsync(this as IShardProvider, connectionString, secureCredential, options);
+                return this.ShardMap.OpenConnectionAsync(this as IShardProvider, connectionString, secureCredential, accessToken, options);
             }
         }
 

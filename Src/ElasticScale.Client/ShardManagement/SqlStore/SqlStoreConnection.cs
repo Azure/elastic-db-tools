@@ -27,9 +27,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="connectionString">
         /// The SQL connection string
         /// </param>
-        protected internal SqlStoreConnection(StoreConnectionKind kind, string connectionString) 
-            : this(kind, connectionString, null)
+        protected internal SqlStoreConnection(StoreConnectionKind kind, string connectionString)
         {
+            this.Kind = kind;
+            this._conn = new SqlConnection { ConnectionString = connectionString };
         }
 
         /// <summary>
@@ -48,6 +49,28 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             this.Kind = kind;
             this._conn = new SqlConnection { ConnectionString = connectionString, Credential = secureCredential };
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlStoreConnection"/> class. 
+        /// </summary>
+        /// <param name="kind">
+        /// Type of store connection.
+        /// </param>
+        /// <param name="connectionString">
+        /// The SQL connection string
+        /// </param>
+        /// <param name="secureCredential">
+        /// The secure SQL Credential.
+        /// </param>
+        /// <param name="accessToken">
+        /// The access token to connect to database.
+        /// </param>
+        protected internal SqlStoreConnection(StoreConnectionKind kind, string connectionString, string accessToken)
+        {
+            this.Kind = kind;
+            this._conn = new SqlConnection { ConnectionString = connectionString };
+            this._conn.AccessToken = accessToken;
         }
 
         /// <summary>
@@ -235,7 +258,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Releases an application level lock on the connection which is session scoped.
         /// </summary>
         /// <param name="lockId">Identity of the lock.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification="We can ignore request failure.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We can ignore request failure.")]
         private void ReleaseAppLock(Guid lockId)
         {
             using (SqlCommand cmdReleaseAppLock = _conn.CreateCommand())
@@ -271,7 +294,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 {
                     cmdReleaseAppLock.ExecuteNonQuery();
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     // ignore all exceptions.
                     return;

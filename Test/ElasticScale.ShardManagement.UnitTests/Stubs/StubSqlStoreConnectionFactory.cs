@@ -18,7 +18,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// Sets the stub of SqlStoreConnectionFactory.GetConnection(StoreConnectionKind kind, String connectionString, SqlCredential secureCredential)
         /// </summary>
         internal Func<StoreConnectionKind, string, SqlCredential, IStoreConnection> GetConnectionStoreConnectionKindString;
-        
+
         /// <summary>
         /// Sets the stub of SqlStoreConnectionFactory.GetUserConnection(String connectionString)
         /// </summary>
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
             StoreConnectionKind kind,
             string connectionString)
         {
-            return GetConnection(kind, connectionString, null);
+            return GetConnection(kind, connectionString, (SqlCredential)null);
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override IUserStoreConnection GetUserConnection(string connectionString)
         {
-            return this.GetUserConnection(connectionString, null);
+            return this.GetUserConnection(connectionString, (SqlCredential)null);
         }
 
         /// <summary>

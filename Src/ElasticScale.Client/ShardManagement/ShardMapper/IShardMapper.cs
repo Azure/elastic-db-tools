@@ -75,6 +75,21 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>An opened SqlConnection.</returns>
         SqlConnection OpenConnectionForKey(TKey key, string connectionString, ConnectionOptions options = ConnectionOptions.Validate);
 
+
+        /// <summary>
+        /// Given a key value, obtains a SqlConnection to the shard in the mapping
+        /// that contains the key value.
+        /// </summary>
+        /// <param name="key">Input key value.</param>
+        /// <param name="connectionString">
+        /// Connection string with credential information, the DataSource and Database are 
+        /// obtained from the results of the lookup operation for key.
+        /// </param>
+        /// <param name="accessToken">Access token</param>
+        /// <param name="options">Options for validation operations to perform on opened connection.</param>
+        /// <returns>An opened SqlConnection.</returns>
+        SqlConnection OpenConnectionForKey(TKey key, string connectionString, string accessToken, ConnectionOptions options = ConnectionOptions.Validate);
+
         /// <summary>
         /// Given a key value, obtains a SqlConnection to the shard in the mapping
         /// that contains the key value.
@@ -89,6 +104,25 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>An opened SqlConnection.</returns>
         SqlConnection OpenConnectionForKey(TKey key, string connectionString, SqlCredential secureCredential, ConnectionOptions options = ConnectionOptions.Validate);
 
+
+        /// <summary>
+        /// Given a key value, obtains a SqlConnection to the shard in the mapping
+        /// that contains the key value.
+        /// </summary>
+        /// <param name="key">Input key value.</param>
+        /// <param name="connectionString">
+        /// Connection string with credential information, the DataSource and Database are 
+        /// obtained from the results of the lookup operation for key.
+        /// </param>
+        /// <param name="secureCredential">Secure SQL Credential.</param>
+        /// <param name="options">Options for validation operations to perform on opened connection.</param>
+        /// <returns>An opened SqlConnection.</returns>
+        SqlConnection OpenConnectionForKey(TKey key, string connectionString, SqlCredential secureCredential, string accessToken, ConnectionOptions options = ConnectionOptions.Validate);
+
+
+
+
+
         /// <summary>
         /// Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
         /// that contains the key value.
@@ -101,6 +135,21 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
         Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, string connectionString, ConnectionOptions options = ConnectionOptions.Validate);
+
+
+        /// <summary>
+        /// Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
+        /// that contains the key value.
+        /// </summary>
+        /// <param name="key">Input key value.</param>
+        /// <param name="connectionString">
+        /// Connection string with credential information, the DataSource and Database are 
+        /// obtained from the results of the lookup operation for key.
+        /// </param>
+        /// <param name="accessToken">Access token</param>
+        /// <param name="options">Options for validation operations to perform on opened connection.</param>
+        /// <returns>An opened SqlConnection.</returns>
+        Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, string connectionString, string accessToken, ConnectionOptions options = ConnectionOptions.Validate);
 
         /// <summary>
         /// Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping

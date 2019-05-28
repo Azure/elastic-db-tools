@@ -17,6 +17,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         private SqlConnection _conn;
 
+        internal SqlUserStoreConnection(string connectionString)
+        {
+            _conn = new SqlConnection { ConnectionString = connectionString };
+        }
+
         /// <summary>
         /// Creates a new instance of user store connection.
         /// </summary>
@@ -25,6 +30,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         internal SqlUserStoreConnection(string connectionString, SqlCredential secureCredential)
         {
             _conn = new SqlConnection { ConnectionString = connectionString, Credential = secureCredential };
+        }
+
+        /// <summary>
+        /// Creates a new instance of user store connection.
+        /// </summary>
+        /// <param name="connectionString">Connection string.</param>
+        /// <param name="accessToken">Access token to access the database</param>
+
+        internal SqlUserStoreConnection(string connectionString, string accessToken)
+        {
+            _conn = new SqlConnection { ConnectionString = connectionString };
+            _conn.AccessToken = accessToken;
         }
 
         /// <summary>

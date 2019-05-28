@@ -26,6 +26,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         private SqlCredential _secureCredential;
 
+
+        /// <summary>
+        /// Secure access token for shard map manager data source.
+        /// </summary>
+        private string _accessToken;
+
+
         /// <summary>
         /// Instantiates the object that holds the credentials for accessing SQL Servers 
         /// containing the shard map manager data.
@@ -33,8 +40,35 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="connectionString">
         /// Connection string for shard map manager data source.
         /// </param>
-        public SqlShardMapManagerCredentials(string connectionString) 
-            : this(connectionString, null)
+        public SqlShardMapManagerCredentials(string connectionString)
+            : this(connectionString, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Instantiates the object that holds the credentials for accessing SQL Servers 
+        /// containing the shard map manager data.
+        /// </summary>
+        /// <param name="connectionString">
+        /// Connection string for shard map manager data source.
+        /// </param>
+        /// <param name="accessToken">
+        /// Secure access token for shard map manager data source
+        /// </param>
+        public SqlShardMapManagerCredentials(string connectionString, string accessToken)
+            : this(connectionString, null, accessToken)
+        {
+        }
+
+        /// <summary>
+        /// Instantiates the object that holds the credentials for accessing SQL Servers 
+        /// containing the shard map manager data.
+        /// </summary>
+        /// <param name="connectionString">
+        /// Connection string for shard map manager data source.
+        /// </param>
+        public SqlShardMapManagerCredentials(string connectionString, SqlCredential secureCredential)
+            : this(connectionString, secureCredential, null)
         {
         }
 
@@ -46,13 +80,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Connection string for shard map manager data source.
         /// </param>
         /// <param name="secureCredential">
-        ///  Secure credential for shard map manager data source.
+        /// Secure credential for shard map manager data source.
         /// </param>
-        public SqlShardMapManagerCredentials(string connectionString, SqlCredential secureCredential)
+        /// <param name="accessToken">
+        /// Secure access token for shard map manager data source
+        /// </param>
+        public SqlShardMapManagerCredentials(string connectionString, SqlCredential secureCredential, string accessToken)
         {
             ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
             this._secureCredential = secureCredential;
+            this._accessToken = accessToken;
 
             // Devnote: If connection string specifies Active Directory authentication and runtime is not
             // .NET 4.6 or higher, then below call will throw.
@@ -82,9 +120,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             // Ensure credentials are specified for GSM connectivity.
             SqlShardMapManagerCredentials.EnsureCredentials(
-                connectionStringBuilder, 
-                "connectionString", 
-                this._secureCredential);
+                connectionStringBuilder,
+                "connectionString",
+                this._secureCredential,
+                accessToken);
 
             #endregion GSM Validation
 
@@ -158,7 +197,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="secureCredential">
         /// Input secure SQL credential object.
         /// </param>
-        internal static void EnsureCredentials(SqlConnectionStringBuilder connectionString, string parameterName, SqlCredential secureCredential)
+        /// <param name="accessToken">
+        /// SQL connection access token
+        /// </param>
+        internal static void EnsureCredentials(SqlConnectionStringBuilder connectionString, string parameterName, SqlCredential secureCredential, string accessToken)
         {
             // Check for integrated authentication
             if (connectionString.IntegratedSecurity)
@@ -170,6 +212,38 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             if (connectionString.ContainsKey(ShardMapUtils.Authentication) &&
                 connectionString[ShardMapUtils.Authentication].ToString().Equals(ShardMapUtils.ActiveDirectoryIntegratedStr))
             {
+                return;
+            }
+            //check if access token is not null, if the access token is present then there is no need of user id/password
+            if (accessToken != null)
+            {
+                // UserID must NOT be set when a access token is provided.
+                if (!string.IsNullOrEmpty(connectionString.UserID))
+                {
+                    throw new ArgumentException(
+                        StringUtils.FormatInvariant(
+                            Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyNotAllowed,
+                            "UserID"),
+                        parameterName);
+                }
+
+                // Password must NOT be set when access token is provided.
+                if (!string.IsNullOrEmpty(connectionString.Password))
+                {
+                    throw new ArgumentException(
+                        StringUtils.FormatInvariant(
+                            Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyNotAllowed,
+                            "Password"),
+                        parameterName);
+                }
+                if (secureCredential != null)
+                {
+                    throw new ArgumentException(
+                        StringUtils.FormatInvariant(
+                            Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyNotAllowed,
+                            "Secure credential"),
+                        parameterName);
+                }
                 return;
             }
 

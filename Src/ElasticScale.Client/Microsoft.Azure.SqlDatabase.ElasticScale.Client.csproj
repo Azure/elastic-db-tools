@@ -7,7 +7,7 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <Version>2.1.0</Version>
     <Authors>Microsoft</Authors>
-    <TargetFrameworks>net451;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
     <PackageTags>Microsoft;Elastic;Scale;Azure;SQL;DB;Database;Shard;Sharding;Management;Query;azureofficial</PackageTags>
     <PackageReleaseNotes>Added support for LookupOptions in ListShardMap.GetMappingForKey(....) , ListShardMap.TryGetMappingForKey(....), RangeShardMap.GetMappingForKey(....), and RangeShardMap.TryGetMappingForKey(....). This gives the ability to lookup from cache instead of only from store, which can greatly improve performance.</PackageReleaseNotes>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
@@ -18,12 +18,17 @@
     <RepositoryUrl>https://github.com/Azure/elastic-db-tools</RepositoryUrl>
     <RuntimeIdentifiers>win;unix</RuntimeIdentifiers>
     <RootNamespace>Microsoft.Azure.SqlDatabase.ElasticScale</RootNamespace>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('build.props'))" />
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="System.Data.SqlClient" Version="4.5.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.6.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Data.SqlClient" Version="4.6.1" />
   </ItemGroup>
 
   <ItemGroup>
