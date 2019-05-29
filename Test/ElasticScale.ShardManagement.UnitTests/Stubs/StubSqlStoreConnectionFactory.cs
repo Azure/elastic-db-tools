@@ -71,7 +71,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
             StoreConnectionKind kind,
             string connectionString)
         {
-            return GetConnection(kind, connectionString, (SqlCredential)null);
+            return GetConnection(kind, connectionString);
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override IUserStoreConnection GetUserConnection(string connectionString)
         {
-            return this.GetUserConnection(connectionString, (SqlCredential)null);
+            return this.GetUserConnection(connectionString);
         }
 
         /// <summary>

@@ -395,7 +395,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
-        /// Asynchronously a regular <see cref="SqlConnection"/> to the specified shard.
+        /// Asynchronously opens a regular <see cref="SqlConnection"/> to the specified shard.
         /// </summary>
         /// <param name="connectionString">
         /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
@@ -415,7 +415,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
-        /// Asynchronously a regular <see cref="SqlConnection"/> to the specified shard.
+        /// Asynchronously opens a regular <see cref="SqlConnection"/> to the specified shard.
         /// </summary>
         /// <param name="connectionString">
         /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
@@ -436,7 +436,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
-        /// Asynchronously a regular <see cref="SqlConnection"/> to the specified shard.
+        /// Asynchronously opens a regular <see cref="SqlConnection"/> to the specified shard.
         /// </summary>
         /// <param name="connectionString">
         /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
@@ -458,7 +458,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
 
         /// <summary>
-        /// Asynchronously a regular <see cref="SqlConnection"/> to the specified shard.
+        /// Asynchronously opens a regular <see cref="SqlConnection"/> to the specified shard.
         /// </summary>
         /// <param name="connectionString">
         /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 

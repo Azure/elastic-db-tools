@@ -20,16 +20,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// </summary>
         private static string[] s_shardedDBs = new[]
         {
-            "bshard1" + Globals.TestDatabasePostfix,
-            "bshard2" + Globals.TestDatabasePostfix,
-            "bshard3" + Globals.TestDatabasePostfix,
-            "bshard4" + Globals.TestDatabasePostfix,
-            "bshard5" + Globals.TestDatabasePostfix,
-            "bshard6" + Globals.TestDatabasePostfix,
-            "bshard7" + Globals.TestDatabasePostfix,
-            "bshard8" + Globals.TestDatabasePostfix,
-            "bshard9" + Globals.TestDatabasePostfix,
-            "bshard10" + Globals.TestDatabasePostfix,
+            "shard1" + Globals.TestDatabasePostfix,
+            "shard2" + Globals.TestDatabasePostfix,
+            "shard3" + Globals.TestDatabasePostfix,
+            "shard4" + Globals.TestDatabasePostfix,
+            "shard5" + Globals.TestDatabasePostfix,
+            "shard6" + Globals.TestDatabasePostfix,
+            "shard7" + Globals.TestDatabasePostfix,
+            "shard8" + Globals.TestDatabasePostfix,
+            "shard9" + Globals.TestDatabasePostfix,
+            "shard10" + Globals.TestDatabasePostfix,
         };
 
         /// <summary>
