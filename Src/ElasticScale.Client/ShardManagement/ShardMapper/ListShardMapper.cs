@@ -49,7 +49,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Connection string with credential information, the DataSource and Database are 
         /// obtained from the results of the lookup operation for key.
         /// </param>
-        /// <param name="accessToken">Access token</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
         public SqlConnection OpenConnectionForKey(TKey key, string connectionString, string accessToken, ConnectionOptions options = ConnectionOptions.Validate)
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// obtained from the results of the lookup operation for key.
         /// </param>
         /// <param name="secureCredential">Secure Sql Credential.</param>
-        /// <param name="accessToken">Access token</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
         public SqlConnection OpenConnectionForKey(TKey key, string connectionString, SqlCredential secureCredential, string accessToken, ConnectionOptions options = ConnectionOptions.Validate)
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Connection string with credential information, the DataSource and Database are 
         /// obtained from the results of the lookup operation for key.
         /// </param>
-        /// <param name="accessToken">Access token</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>A Task encapsulating an opened SqlConnection.</returns>
         /// <remarks>All non usage-error exceptions will be reported via the returned Task</remarks>
@@ -163,7 +163,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Connection string with credential information, the DataSource and Database are 
         /// obtained from the results of the lookup operation for key.
         /// </param>
-        /// <param name="accessToken">Access token</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>A Task encapsulating an opened SqlConnection.</returns>
         /// <remarks>All non usage-error exceptions will be reported via the returned Task</remarks>

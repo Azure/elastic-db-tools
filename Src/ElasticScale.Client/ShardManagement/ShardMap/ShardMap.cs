@@ -184,7 +184,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
         /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
         /// </param>
-        /// <param name="accessToken">SQL Access token.</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <returns>An opened SqlConnection.</returns>
         /// <remarks>
         /// Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults. 
@@ -239,6 +239,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
         /// </param>
         /// <param name="secureCredential">Secure SQL Credential.</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
         /// <remarks>
@@ -315,6 +316,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
         /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
         /// </param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <returns>A Task encapsulating an opened SqlConnection.</returns>
         /// <remarks>
         /// Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults. 
@@ -393,7 +395,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
         /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
         /// </param>
-        /// <param name="accessToken">Access token for database connection</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>A Task encapsulating an opened SqlConnection.</returns>
         /// <remarks>
@@ -785,7 +787,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="shardProvider">Shard provider containing shard to be connected to.</param>
         /// <param name="connectionString">Connection string for connection. Must have credentials.</param>
-        /// <param name="secureCredential">Secure SQL Credential.</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller will be responsible for disposal")]
         internal SqlConnection OpenConnection(
@@ -808,6 +810,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="shardProvider">Shard provider containing shard to be connected to.</param>
         /// <param name="connectionString">Connection string for connection. Must have credentials.</param>
         /// <param name="secureCredential">Secure SQL Credential.</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller will be responsible for disposal")]
         internal SqlConnection OpenConnection(
@@ -921,7 +924,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Asynchronously opens a connection to the given shard provider.
         /// </summary>
         /// <param name="shardProvider">Shard provider containing shard to be connected to.</param>
-        /// <param name="connectionString">Connection string for connection. Must have credentials.</param>
+        /// <param name="connectionString">Connection string for connection. Must have credentials.</param>\
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>A task encapsulating the SqlConnection</returns>
         /// <remarks>All exceptions are reported via the returned task.</remarks>
@@ -944,6 +948,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="shardProvider">Shard provider containing shard to be connected to.</param>
         /// <param name="connectionString">Connection string for connection. Must have credentials.</param>
         /// <param name="secureCredential">Secure Sql credential information.</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>A task encapsulating the SqlConnection</returns>
         /// <remarks>All exceptions are reported via the returned task.</remarks>
@@ -1040,6 +1045,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="shardProvider">Shard provider containing shard to be connected to.</param>
         /// <param name="connectionString">Input connection string.</param>
         /// <param name="secureCredential"></param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <returns>Connection string for DDR connection.</returns>
         private string ValidateAndPrepareConnectionString(
             IShardProvider shardProvider,

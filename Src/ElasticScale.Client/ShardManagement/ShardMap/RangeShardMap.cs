@@ -67,6 +67,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
         /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
         /// </param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <returns>An opened SqlConnection.</returns>
         /// <remarks>
         /// Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults. 
@@ -195,6 +196,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
         /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
         /// </param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <returns>A Task encapsulating an opened SqlConnection.</returns>
         /// <remarks>
         /// Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults. 

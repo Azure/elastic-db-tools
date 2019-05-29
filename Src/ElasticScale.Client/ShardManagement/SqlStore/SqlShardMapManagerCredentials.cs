@@ -53,7 +53,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Connection string for shard map manager data source.
         /// </param>
         /// <param name="accessToken">
-        /// Secure access token for shard map manager data source
+        /// Secure SQL Access token
         /// </param>
         public SqlShardMapManagerCredentials(string connectionString, string accessToken)
             : this(connectionString, null, accessToken)
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Secure credential for shard map manager data source.
         /// </param>
         /// <param name="accessToken">
-        /// Secure access token for shard map manager data source
+        /// Secure SQL Access token
         /// </param>
         public SqlShardMapManagerCredentials(string connectionString, SqlCredential secureCredential, string accessToken)
         {
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Input secure SQL credential object.
         /// </param>
         /// <param name="accessToken">
-        /// SQL connection access token
+        /// Secure SQL Access token
         /// </param>
         internal static void EnsureCredentials(SqlConnectionStringBuilder connectionString, string parameterName, SqlCredential secureCredential, string accessToken)
         {

@@ -135,7 +135,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// obtained from the results of the lookup operation for key.
         /// </param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
-        /// <param name="accessToken">Access token to connect to database</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <returns>An opened SqlConnection.</returns>
         protected SqlConnection OpenConnectionForKey<TMapping, TKey>(
             TKey key,
@@ -169,7 +169,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// obtained from the results of the lookup operation for key.
         /// </param>
         /// <param name="secureCredential">Secure Sql credential information</param>
-        /// <param name="accessToken">Access token to connect to database</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
         protected SqlConnection OpenConnectionForKey<TMapping, TKey>(
@@ -352,7 +352,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Connection string with credential information, the DataSource and Database are 
         /// obtained from the results of the lookup operation for key.
         /// </param>
-        /// <param name="accessToken">Access token to connect to database</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>A task encapsulating an opened SqlConnection as the result.</returns>
         protected async Task<SqlConnection> OpenConnectionForKeyAsync<TMapping, TKey>(
@@ -388,7 +388,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// obtained from the results of the lookup operation for key.
         /// </param>
         /// <param name="secureCredential">Secure SQL Credential.</param>
-        /// <param name="accessToken">Access token to connect to database</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>A task encapsulating an opened SqlConnection as the result.</returns>
         protected async Task<SqlConnection> OpenConnectionForKeyAsync<TMapping, TKey>(

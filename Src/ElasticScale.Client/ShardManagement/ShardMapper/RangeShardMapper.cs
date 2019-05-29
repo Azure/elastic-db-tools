@@ -78,7 +78,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Connection string with credential information, the DataSource and Database are 
         /// obtained from the results of the lookup operation for key.
         /// </param>
-        /// <param name="accessToken">Access token to connect to database</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
         public SqlConnection OpenConnectionForKey(
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Connection string with credential information, the DataSource and Database are 
         /// obtained from the results of the lookup operation for key.
         /// </param>
-        /// <param name="accessToken">Access token to connect to database</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
         public SqlConnection OpenConnectionForKey(
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Connection string with credential information, the DataSource and Database are 
         /// obtained from the results of the lookup operation for key.
         /// </param>
-        /// <param name="accessToken">Access token to connect to database</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>A Task encapsulating an opened SqlConnection.</returns>
         public async Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, string connectionString, string accessToken, ConnectionOptions options = ConnectionOptions.Validate)
@@ -196,7 +196,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// obtained from the results of the lookup operation for key.
         /// </param>
         /// <param name="secureCredential">Secure SQL Credential.</param>
-        /// <param name="accessToken">Access token to connect to database</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>A Task encapsulating an opened SqlConnection.</returns>
         public async Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, string connectionString, SqlCredential secureCredential, string accessToken, ConnectionOptions options = ConnectionOptions.Validate)

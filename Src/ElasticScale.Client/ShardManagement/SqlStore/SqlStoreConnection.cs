@@ -64,7 +64,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// The secure SQL Credential.
         /// </param>
         /// <param name="accessToken">
-        /// The access token to connect to database.
+        /// Secure SQL Access token
         /// </param>
         protected internal SqlStoreConnection(StoreConnectionKind kind, string connectionString, string accessToken)
         {

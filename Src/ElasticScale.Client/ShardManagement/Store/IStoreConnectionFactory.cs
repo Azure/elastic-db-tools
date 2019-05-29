@@ -38,7 +38,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="kind">Type of store connection.</param>
         /// <param name="connectionString">Connection string for store.</param>
-        /// <param name="accessToken">Access token to connecto to database</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <returns>An unopened instance of the store connection.</returns>
         IStoreConnection GetConnection(
             StoreConnectionKind kind,
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Constructs a new instance of user connection.
         /// </summary>
         /// <param name="connectionString">Connection string of user.</param>
-        /// <param name="accessToken">Access token to connect to database</param>
+        /// <param name="accessToken">Secure SQL Access token</param>
         /// <returns>An unopened instance of the user connection.</returns>
         IUserStoreConnection GetUserConnection(string connectionString, string accessToken);
     }
