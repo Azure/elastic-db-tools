@@ -161,6 +161,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         public SqlCredential SecureCredentialShardMapManager => this._secureCredential;
 
         /// <summary>
+        /// Secure Sql Access token
+        /// </summary>
+        public string accessTokenShardMapManager => this._accessToken;
+
+        /// <summary>
         /// Connection string for shards.
         /// </summary>
         public string ConnectionStringShard

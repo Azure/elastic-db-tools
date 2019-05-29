@@ -66,6 +66,28 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="accessToken">
         /// Secure SQL Access token
         /// </param>
+        protected internal SqlStoreConnection(StoreConnectionKind kind, string connectionString, SqlCredential secureCredential, string accessToken)
+        {
+            this.Kind = kind;
+            this._conn = new SqlConnection { ConnectionString = connectionString, Credential = secureCredential };
+            this._conn.AccessToken = accessToken;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlStoreConnection"/> class. 
+        /// </summary>
+        /// <param name="kind">
+        /// Type of store connection.
+        /// </param>
+        /// <param name="connectionString">
+        /// The SQL connection string
+        /// </param>
+        /// <param name="secureCredential">
+        /// The secure SQL Credential.
+        /// </param>
+        /// <param name="accessToken">
+        /// Secure SQL Access token
+        /// </param>
         protected internal SqlStoreConnection(StoreConnectionKind kind, string connectionString, string accessToken)
         {
             this.Kind = kind;

@@ -314,7 +314,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         private void EstablishConnnection()
         {
-            _globalConnection = new SqlStoreConnection(StoreConnectionKind.Global, _credentials.ConnectionStringShardMapManager, _credentials.SecureCredentialShardMapManager);
+            _globalConnection = new SqlStoreConnection(StoreConnectionKind.Global, _credentials.ConnectionStringShardMapManager, _credentials.SecureCredentialShardMapManager, _credentials.accessTokenShardMapManager);
             _globalConnection.Open();
         }
 
@@ -324,7 +324,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>Task to await connection establishment</returns>
         private Task EstablishConnnectionAsync()
         {
-            _globalConnection = new SqlStoreConnection(StoreConnectionKind.Global, _credentials.ConnectionStringShardMapManager, _credentials.SecureCredentialShardMapManager);
+            _globalConnection = new SqlStoreConnection(StoreConnectionKind.Global, _credentials.ConnectionStringShardMapManager, _credentials.SecureCredentialShardMapManager, _credentials.accessTokenShardMapManager);
             return _globalConnection.OpenAsync();
         }
 
