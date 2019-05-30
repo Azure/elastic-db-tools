@@ -676,7 +676,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 "OpenConnection",
                 "Shard");
 
-            IUserStoreConnection conn = this.Manager.StoreConnectionFactory.GetUserConnection(connectionStringFinal, secureCredential);
+            IUserStoreConnection conn = this.Manager.StoreConnectionFactory.GetUserConnection(
+                new SqlStoreConnectionInfo(
+                    connectionStringFinal,
+                    secureCredential));
 
             Tracer.TraceInfo(
                 TraceSourceConstants.ComponentNames.ShardMap,
@@ -763,7 +766,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 "OpenConnectionAsync",
                 "Shard");
 
-            IUserStoreConnection conn = this.Manager.StoreConnectionFactory.GetUserConnection(connectionStringFinal, secureCredential);
+            IUserStoreConnection conn = this.Manager.StoreConnectionFactory.GetUserConnection(
+                new SqlStoreConnectionInfo(
+                    connectionStringFinal,
+                    secureCredential));
 
             Tracer.TraceInfo(
                 TraceSourceConstants.ComponentNames.ShardMap,

@@ -653,8 +653,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             // Open global & local connections and acquire application level locks for the corresponding scope.
             _globalConnection = this.Manager.StoreConnectionFactory.GetConnection(
                 StoreConnectionKind.Global,
-                this.Manager.Credentials.ConnectionStringShardMapManager,
-                this.Manager.Credentials.SecureCredentialShardMapManager);
+                new SqlStoreConnectionInfo(
+                    this.Manager.Credentials.ConnectionStringShardMapManager,
+                    this.Manager.Credentials.SecureCredentialShardMapManager));
 
             _globalConnection.OpenWithLock(this.Id);
 
@@ -664,8 +665,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 _localConnectionSource = this.Manager.StoreConnectionFactory.GetConnection(
                     StoreConnectionKind.LocalSource,
-                    this.GetConnectionStringForShardLocation(sci.SourceLocation),
-                    this.GetSecureCredentialForShardLocation(sci.SourceLocation));
+                    new SqlStoreConnectionInfo(
+                        this.GetConnectionStringForShardLocation(sci.SourceLocation),
+                        this.GetSecureCredentialForShardLocation(sci.SourceLocation)));
 
                 _localConnectionSource.OpenWithLock(this.Id);
             }
@@ -678,8 +680,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 _localConnectionTarget = this.Manager.StoreConnectionFactory.GetConnection(
                     StoreConnectionKind.LocalTarget,
-                    this.GetConnectionStringForShardLocation(sci.TargetLocation),
-                    this.GetSecureCredentialForShardLocation(sci.TargetLocation));
+                    new SqlStoreConnectionInfo(
+                        this.GetConnectionStringForShardLocation(sci.TargetLocation),
+                        this.GetSecureCredentialForShardLocation(sci.TargetLocation)));
 
                 _localConnectionTarget.OpenWithLock(this.Id);
             }

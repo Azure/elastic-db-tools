@@ -179,7 +179,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                     InitialCatalog = this.Location.Database
                 };
 
-            _localConnection = new SqlStoreConnection(StoreConnectionKind.LocalSource, localConnectionString.ConnectionString, _credentials.SecureCredentialShardMapManager);
+            _localConnection = new SqlStoreConnection(
+                StoreConnectionKind.LocalSource,
+                new SqlStoreConnectionInfo(
+                    localConnectionString.ConnectionString,
+                    _credentials.SecureCredentialShardMapManager));
+
             _localConnection.Open();
         }
 

@@ -21,49 +21,23 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Constructs a new instance of store connection.
         /// </summary>
         /// <param name="kind">Type of store connection.</param>
-        /// <param name="connectionString">Connection string for store.</param>
+        /// <param name="connectionInfo">Connection info.</param>
         /// <returns>An unopened instance of the store connection.</returns>
         public virtual IStoreConnection GetConnection(
             StoreConnectionKind kind,
-            string connectionString)
+            SqlStoreConnectionInfo connectionInfo)
         {
-            return this.GetConnection(kind, connectionString, null);
-        }
-
-        /// <summary>
-        /// Constructs a new instance of store connection.
-        /// </summary>
-        /// <param name="kind">Type of store connection.</param>
-        /// <param name="connectionString">Connection string for store.</param>
-        /// <param name="secureCredential">Secure Credential for store.</param>
-        /// <returns>An unopened instance of the store connection.</returns>
-        public virtual IStoreConnection GetConnection(
-            StoreConnectionKind kind,
-            string connectionString,
-            SqlCredential secureCredential)
-        {
-            return new SqlStoreConnection(kind, connectionString, secureCredential);
+            return new SqlStoreConnection(kind, connectionInfo);
         }
 
         /// <summary>
         /// Constructs a new instance of user connection.
         /// </summary>
-        /// <param name="connectionString">Connection string of user.</param>
+        /// <param name="connectionInfo">Connection info.</param>
         /// <returns>An unopened instance of the user connection.</returns>
-        public virtual IUserStoreConnection GetUserConnection(string connectionString)
+        public virtual IUserStoreConnection GetUserConnection(SqlStoreConnectionInfo connectionInfo)
         {
-            return this.GetUserConnection(connectionString, null);
-        }
-
-        /// <summary>
-        /// Constructs a new instance of user connection.
-        /// </summary>
-        /// <param name="connectionString">Connection string of user.</param>
-        /// <param name="secureCredential">Secure Credential of user</param>
-        /// <returns>An unopened instance of the user connection.</returns>
-        public virtual IUserStoreConnection GetUserConnection(string connectionString, SqlCredential secureCredential)
-        {
-            return new SqlUserStoreConnection(connectionString, secureCredential);
+            return new SqlUserStoreConnection(connectionInfo);
         }
     }
 }

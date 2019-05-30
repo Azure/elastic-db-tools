@@ -14,40 +14,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Constructs a new instance of store connection.
         /// </summary>
         /// <param name="kind">Type of store connection.</param>
-        /// <param name="connectionString">Connection string for store.</param>
-        /// <param name="secureCredential">Secure credential for store.</param>
+        /// <param name="connectionInfo">Connection info.</param>
         /// <returns>An unopened instance of the store connection.</returns>
         IStoreConnection GetConnection(
             StoreConnectionKind kind,
-            string connectionString,
-            SqlCredential secureCredential);
-
-        /// <summary>
-        /// Constructs a new instance of store connection.
-        /// </summary>
-        /// <param name="kind">Type of store connection.</param>
-        /// <param name="connectionString">Connection string for store.</param>
-        /// <returns>An unopened instance of the store connection.</returns>
-        IStoreConnection GetConnection(
-            StoreConnectionKind kind,
-            string connectionString);
+            SqlStoreConnectionInfo connectionInfo);
 
         /// <summary>
         /// Constructs a new instance of user connection.
         /// </summary>
-        /// <param name="connectionString">Connection string of user.</param>
-        /// <param name="secureCredential">Secure credential of user.</param>
+        /// <param name="connectionInfo">Connection info.</param>
         /// <returns>An unopened instance of the user connection.</returns>
         IUserStoreConnection GetUserConnection(
-            string connectionString, 
-            SqlCredential secureCredential);
-
-        /// <summary>
-        /// Constructs a new instance of user connection.
-        /// </summary>
-        /// <param name="connectionString">Connection string of user.</param>
-        /// <returns>An unopened instance of the user connection.</returns>
-        IUserStoreConnection GetUserConnection(
-            string connectionString);
+            SqlStoreConnectionInfo connectionInfo);
     }
 }

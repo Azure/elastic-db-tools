@@ -584,9 +584,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 IStoreResults result;
 
                 using (IStoreConnection connectionForKill = this.Manager.StoreConnectionFactory.GetConnection(
-                    StoreConnectionKind.LocalSource, 
-                    sourceShardConnectionString, 
-                    sourceShardSecureCredential))
+                    StoreConnectionKind.LocalSource,
+                    new SqlStoreConnectionInfo(
+                        sourceShardConnectionString,
+                        sourceShardSecureCredential)))
                 {
                     connectionForKill.Open();
 
