@@ -86,7 +86,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
-        SqlConnection OpenConnectionForKey(TKey key, SqlStoreConnectionInfo connectionInfo, ConnectionOptions options = ConnectionOptions.Validate);
+        SqlConnection OpenConnectionForKey(TKey key, SqlConnectionInfo connectionInfo, ConnectionOptions options = ConnectionOptions.Validate);
 
         /// <summary>
         /// Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
-        Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, SqlStoreConnectionInfo connectionInfo, ConnectionOptions options = ConnectionOptions.Validate);
+        Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, SqlConnectionInfo connectionInfo, ConnectionOptions options = ConnectionOptions.Validate);
     }
 
     /// <summary>

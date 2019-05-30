@@ -27,7 +27,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="connectionInfo">
         /// The connection info.
         /// </param>
-        protected internal SqlStoreConnection(StoreConnectionKind kind, SqlStoreConnectionInfo connectionInfo)
+        protected internal SqlStoreConnection(StoreConnectionKind kind, SqlConnectionInfo connectionInfo)
         {
             this.Kind = kind;
             this._conn = new SqlConnection

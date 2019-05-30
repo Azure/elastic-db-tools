@@ -17,12 +17,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// <summary>
         /// Sets the stub of SqlStoreConnectionFactory.GetConnection(StoreConnectionKind kind, SqlStoreConnectionInfo connectionInfo)
         /// </summary>
-        internal Func<StoreConnectionKind, SqlStoreConnectionInfo, IStoreConnection> GetConnectionStoreConnectionKindString;
+        internal Func<StoreConnectionKind, SqlConnectionInfo, IStoreConnection> GetConnectionStoreConnectionKindString;
 
         /// <summary>
         /// Sets the stub of SqlStoreConnectionFactory.GetUserConnection(SqlStoreConnectionInfo connectionInfo)
         /// </summary>
-        internal Func<SqlStoreConnectionInfo, IUserStoreConnection> GetUserConnectionString;
+        internal Func<SqlConnectionInfo, IUserStoreConnection> GetUserConnectionString;
         private bool ___callBase;
         private IStubBehavior ___instanceBehavior;
 
@@ -69,9 +69,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override IStoreConnection GetConnection(
             StoreConnectionKind kind,
-            SqlStoreConnectionInfo connectionInfo)
+            SqlConnectionInfo connectionInfo)
         {
-            Func<StoreConnectionKind, SqlStoreConnectionInfo, IStoreConnection> func1 = this.GetConnectionStoreConnectionKindString;
+            Func<StoreConnectionKind, SqlConnectionInfo, IStoreConnection> func1 = this.GetConnectionStoreConnectionKindString;
             if (func1 != null)
                 return func1(kind, connectionInfo);
             if (this.___callBase)
@@ -83,9 +83,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// <summary>
         /// Sets the stub of SqlStoreConnectionFactory.GetUserConnection(SqlStoreConnectionInfo connectionInfo)
         /// </summary>
-        public override IUserStoreConnection GetUserConnection(SqlStoreConnectionInfo connectionInfo)
+        public override IUserStoreConnection GetUserConnection(SqlConnectionInfo connectionInfo)
         {
-            Func<SqlStoreConnectionInfo, IUserStoreConnection> func1 = this.GetUserConnectionString;
+            Func<SqlConnectionInfo, IUserStoreConnection> func1 = this.GetUserConnectionString;
             if (func1 != null)
                 return func1(connectionInfo);
             if (this.___callBase)

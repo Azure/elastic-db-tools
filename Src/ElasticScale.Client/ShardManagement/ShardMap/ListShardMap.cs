@@ -130,7 +130,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 return _lsm.OpenConnectionForKey(
                     key,
-                    new SqlStoreConnectionInfo(connectionString, secureCredential),
+                    new SqlConnectionInfo(connectionString, secureCredential),
                     options);
             }
         }
@@ -238,7 +238,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 return _lsm.OpenConnectionForKeyAsync(
                     key,
-                    new SqlStoreConnectionInfo(
+                    new SqlConnectionInfo(
                         connectionString,
                         secureCredential),
                     options);

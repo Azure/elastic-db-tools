@@ -310,7 +310,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 return this.ShardMap.OpenConnection(
                     this as IShardProvider,
-                    new SqlStoreConnectionInfo(
+                    new SqlConnectionInfo(
                         connectionString,
                         secureCredential),
                     options);
@@ -402,7 +402,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 return this.ShardMap.OpenConnectionAsync(
                     this as IShardProvider,
-                    new SqlStoreConnectionInfo(
+                    new SqlConnectionInfo(
                         connectionString,
                         secureCredential),
                     options);

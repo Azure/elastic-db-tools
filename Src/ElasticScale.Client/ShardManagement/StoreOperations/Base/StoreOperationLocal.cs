@@ -181,7 +181,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             _localConnection = new SqlStoreConnection(
                 StoreConnectionKind.LocalSource,
-                new SqlStoreConnectionInfo(
+                new SqlConnectionInfo(
                     localConnectionString.ConnectionString,
                     _credentials.SecureCredentialShardMapManager));
 

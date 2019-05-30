@@ -38,7 +38,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return this.OpenConnectionForKey(
                 key,
-                new SqlStoreConnectionInfo(
+                new SqlConnectionInfo(
                     connectionString,
                     null),
                 options);
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>An opened SqlConnection.</returns>
         public SqlConnection OpenConnectionForKey(
             TKey key,
-            SqlStoreConnectionInfo connectionInfo,
+            SqlConnectionInfo connectionInfo,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
             return this.OpenConnectionForKey<PointMapping<TKey>, TKey>(
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return this.OpenConnectionForKeyAsync(
                 key,
-                new SqlStoreConnectionInfo(
+                new SqlConnectionInfo(
                     connectionString,
                     null),
                 options);
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <remarks>All non usage-error exceptions will be reported via the returned Task</remarks>
         public Task<SqlConnection> OpenConnectionForKeyAsync(
             TKey key,
-            SqlStoreConnectionInfo connectionInfo,
+            SqlConnectionInfo connectionInfo,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
             return this.OpenConnectionForKeyAsync<PointMapping<TKey>, TKey>(

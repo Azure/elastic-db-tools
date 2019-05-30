@@ -18,7 +18,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>An unopened instance of the store connection.</returns>
         IStoreConnection GetConnection(
             StoreConnectionKind kind,
-            SqlStoreConnectionInfo connectionInfo);
+            SqlConnectionInfo connectionInfo);
 
         /// <summary>
         /// Constructs a new instance of user connection.
@@ -26,6 +26,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="connectionInfo">Connection info.</param>
         /// <returns>An unopened instance of the user connection.</returns>
         IUserStoreConnection GetUserConnection(
-            SqlStoreConnectionInfo connectionInfo);
+            SqlConnectionInfo connectionInfo);
     }
 }

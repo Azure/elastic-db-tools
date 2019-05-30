@@ -249,7 +249,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 return mapper.OpenConnectionForKey(
                     key,
-                    new SqlStoreConnectionInfo(
+                    new SqlConnectionInfo(
                         connectionString,
                         secureCredential),
                     options);
@@ -381,7 +381,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 return mapper.OpenConnectionForKeyAsync(
                     key,
-                    new SqlStoreConnectionInfo(
+                    new SqlConnectionInfo(
                         connectionString,
                         secureCredential),
                     options);
@@ -656,7 +656,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return this.OpenConnection(
                 shardProvider,
-                new SqlStoreConnectionInfo(connectionString, null),
+                new SqlConnectionInfo(connectionString, null),
                 options);
         }
 
@@ -669,7 +669,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller will be responsible for disposal")]
         internal SqlConnection OpenConnection(
             IShardProvider shardProvider,
-            SqlStoreConnectionInfo connectionInfo,
+            SqlConnectionInfo connectionInfo,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
             Debug.Assert(shardProvider != null, "Expecting IShardProvider.");
@@ -742,7 +742,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return await this.OpenConnectionAsync(
                 shardProvider,
-                new SqlStoreConnectionInfo(connectionString, null),
+                new SqlConnectionInfo(connectionString, null),
                 options);
         }
 
@@ -757,7 +757,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller will be responsible for disposal")]
         internal async Task<SqlConnection> OpenConnectionAsync(
             IShardProvider shardProvider,
-            SqlStoreConnectionInfo connectionInfo,
+            SqlConnectionInfo connectionInfo,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
             Debug.Assert(shardProvider != null, "Expecting IShardProvider.");
@@ -844,9 +844,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="shardProvider">Shard provider containing shard to be connected to.</param>
         /// <param name="connectionInfo">Input connection info.</param>
         /// <returns>Connection string for DDR connection.</returns>
-        private SqlStoreConnectionInfo ValidateAndPrepareConnectionString(
+        private SqlConnectionInfo ValidateAndPrepareConnectionString(
             IShardProvider shardProvider,
-            SqlStoreConnectionInfo connectionInfo)
+            SqlConnectionInfo connectionInfo)
         {
             Debug.Assert(shardProvider != null);
             Debug.Assert(connectionInfo != null);

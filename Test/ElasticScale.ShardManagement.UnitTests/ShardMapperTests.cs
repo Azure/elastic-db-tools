@@ -5391,7 +5391,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             IStoreResults result;
             using (IStoreConnection conn = new SqlStoreConnectionFactory().GetConnection(
                 StoreConnectionKind.Global,
-                new SqlStoreConnectionInfo(
+                new SqlConnectionInfo(
                     Globals.ShardMapManagerConnectionString,
                     null)))
             {

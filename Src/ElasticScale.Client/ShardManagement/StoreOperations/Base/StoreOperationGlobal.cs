@@ -316,7 +316,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             _globalConnection = new SqlStoreConnection(
                 StoreConnectionKind.Global,
-                new SqlStoreConnectionInfo(
+                new SqlConnectionInfo(
                     _credentials.ConnectionStringShardMapManager,
                     _credentials.SecureCredentialShardMapManager));
             _globalConnection.Open();
@@ -330,7 +330,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             _globalConnection = new SqlStoreConnection(
                 StoreConnectionKind.Global,
-                new SqlStoreConnectionInfo(
+                new SqlConnectionInfo(
                     _credentials.ConnectionStringShardMapManager,
                     _credentials.SecureCredentialShardMapManager));
             return _globalConnection.OpenAsync();

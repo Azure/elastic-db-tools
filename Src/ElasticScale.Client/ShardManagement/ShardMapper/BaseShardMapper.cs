@@ -108,7 +108,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             TKey key,
             Func<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping,
             ShardManagementErrorCategory errorCategory,
-            SqlStoreConnectionInfo connectionInfo,
+            SqlConnectionInfo connectionInfo,
             ConnectionOptions options = ConnectionOptions.Validate) where TMapping : class, IShardProvider
         {
             ShardKey sk = new ShardKey(ShardKey.ShardKeyTypeFromType(typeof(TKey)), key);
@@ -248,7 +248,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             TKey key,
             Func<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping,
             ShardManagementErrorCategory errorCategory,
-            SqlStoreConnectionInfo connectionInfo,
+            SqlConnectionInfo connectionInfo,
             ConnectionOptions options = ConnectionOptions.Validate) where TMapping : class, IShardProvider
         {
             ShardKey sk = new ShardKey(ShardKey.ShardKeyTypeFromType(typeof(TKey)), key);

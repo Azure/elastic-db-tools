@@ -39,7 +39,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             string connectionString,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
-            return this.OpenConnectionForKey(key, new SqlStoreConnectionInfo(connectionString, null), options);
+            return this.OpenConnectionForKey(key, new SqlConnectionInfo(connectionString, null), options);
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>An opened SqlConnection.</returns>
         public SqlConnection OpenConnectionForKey(
             Shard key,
-            SqlStoreConnectionInfo connectionInfo,
+            SqlConnectionInfo connectionInfo,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
             Debug.Assert(key != null);
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             string connectionString,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
-            return await this.OpenConnectionForKeyAsync(key, new SqlStoreConnectionInfo(connectionString, null), options);
+            return await this.OpenConnectionForKeyAsync(key, new SqlConnectionInfo(connectionString, null), options);
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>An opened SqlConnection.</returns>
         public async Task<SqlConnection> OpenConnectionForKeyAsync(
             Shard key,
-            SqlStoreConnectionInfo connectionInfo,
+            SqlConnectionInfo connectionInfo,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
             Debug.Assert(key != null);

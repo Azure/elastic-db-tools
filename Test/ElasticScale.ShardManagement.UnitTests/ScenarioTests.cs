@@ -637,7 +637,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                             ConnectionOptions.Validate) :
                         perTenantShardMap.OpenConnection(
                             mappingToDelete,
-                            new SqlStoreConnectionInfo(
+                            new SqlConnectionInfo(
                                 shardUserConnectionString,
                                 shardUserSqlCredential),
                             ConnectionOptions.Validate))
@@ -725,7 +725,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                             ConnectionOptions.Validate) :
                         newPerTenantShardMap.OpenConnection(
                             newMappingToDelete,
-                            new SqlStoreConnectionInfo(
+                            new SqlConnectionInfo(
                                 shardUserConnectionString,
                                 shardUserSqlCredential),
                             ConnectionOptions.Validate))
@@ -772,7 +772,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                             ConnectionOptions.Validate).Result :
                         perTenantShardMap.OpenConnectionAsync(
                             mappingToDelete,
-                            new SqlStoreConnectionInfo(
+                            new SqlConnectionInfo(
                                 shardUserConnectionString,
                                 shardUserSqlCredential),
                             ConnectionOptions.Validate).Result)
@@ -863,7 +863,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                             ConnectionOptions.Validate).Result :
                         newPerTenantShardMap.OpenConnectionAsync(
                             newMappingToDelete,
-                            new SqlStoreConnectionInfo(
+                            new SqlConnectionInfo(
                                 shardUserConnectionString,
                                 shardUserSqlCredential),
                             ConnectionOptions.Validate).Result)

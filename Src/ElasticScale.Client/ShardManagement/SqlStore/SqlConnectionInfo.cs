@@ -9,7 +9,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
     /// <summary>
     /// Arguments used to create a <see cref="SqlStoreConnection"/> or <see cref="SqlUserStoreConnection"/>.
     /// </summary>
-    internal sealed class SqlStoreConnectionInfo
+    internal sealed class SqlConnectionInfo
     {
         /// <summary>
         /// Gets the connection string.
@@ -28,11 +28,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         internal SqlCredential Credential { get; private set; }
 
         /// <summary>
-        /// Creates an instance of <see cref="SqlStoreConnectionInfo"/>.
+        /// Creates an instance of <see cref="SqlConnectionInfo"/>.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
         /// <param name="secureCredential">The secure SQL credential.</param>
-        internal SqlStoreConnectionInfo(
+        internal SqlConnectionInfo(
             string connectionString,
             SqlCredential secureCredential)
         {
@@ -43,13 +43,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="SqlStoreConnectionInfo"/> which has an updated connection string.
+        /// Creates an instance of <see cref="SqlConnectionInfo"/> which has an updated connection string.
         /// </summary>
         /// <param name="connectionString">The new connection string</param>
         /// <returns>The new connection info.</returns>
-        internal SqlStoreConnectionInfo CloneWithUpdatedConnectionString(string connectionString)
+        internal SqlConnectionInfo CloneWithUpdatedConnectionString(string connectionString)
         {
-            return new SqlStoreConnectionInfo(
+            return new SqlConnectionInfo(
                 connectionString,
                 this.Credential);
         }
