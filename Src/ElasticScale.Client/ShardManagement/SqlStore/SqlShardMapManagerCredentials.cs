@@ -158,7 +158,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="secureCredential">
         /// Input secure SQL credential object.
         /// </param>
-        internal static void EnsureCredentials(SqlConnectionStringBuilder connectionString, string parameterName, SqlCredential secureCredential)
+        internal static void EnsureCredentials(
+            SqlConnectionStringBuilder connectionString,
+            string parameterName,
+            SqlCredential secureCredential)
         {
             // Check for integrated authentication
             if (connectionString.IntegratedSecurity)
@@ -175,7 +178,31 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             // If secure credential not specified, verify that user/pwd are in the connection string. If secure credential
             // specified, verify user/pwd are not in insecurely in the connection string.
-            if (secureCredential == null)
+            bool expectUserIdPasswordInConnectionString = secureCredential == null;
+            EnsureHasCredential(
+                connectionString,
+                parameterName,
+                expectUserIdPasswordInConnectionString);
+        }
+
+        /// <summary>
+        /// Ensures that credentials are provided for the given connection string object.
+        /// </summary>
+        /// <param name="connectionString">
+        /// Input connection string object.
+        /// </param>
+        /// <param name="parameterName">
+        /// Parameter name of the connection string object.
+        /// </param>
+        /// <param name="expectUserIdPassword">
+        /// True if <paramref name="connectionString"/> is expected to have user id & password, otherwise false.
+        /// </param>
+        private static void EnsureHasCredential(
+            SqlConnectionStringBuilder connectionString,
+            string parameterName,
+            bool expectUserIdPassword)
+        {
+            if (expectUserIdPassword)
             {
                 // UserID must be set when integrated authentication is disabled.
                 if (string.IsNullOrEmpty(connectionString.UserID))
