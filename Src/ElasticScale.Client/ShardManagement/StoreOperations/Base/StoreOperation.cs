@@ -564,9 +564,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Obtains the Secure Credential for an LSM location.
         /// </summary>
         /// <returns>Connection string for LSM given its location.</returns>
-        protected SqlCredential GetSecureCredentialForShardLocation(ShardLocation location)
+        protected SqlStoreConnectionInfo GetSqlStoreConnectionInfoForShardLocation(ShardLocation location)
         {
-            return this.Manager.Credentials.SecureCredentialShardMapManager;
+            return new SqlStoreConnectionInfo(
+                this.GetConnectionStringForShardLocation(location),
+                this.Manager.Credentials.SecureCredentialShardMapManager);
         }
 
         /// <summary>
@@ -665,9 +667,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 _localConnectionSource = this.Manager.StoreConnectionFactory.GetConnection(
                     StoreConnectionKind.LocalSource,
-                    new SqlStoreConnectionInfo(
-                        this.GetConnectionStringForShardLocation(sci.SourceLocation),
-                        this.GetSecureCredentialForShardLocation(sci.SourceLocation)));
+                    GetSqlStoreConnectionInfoForShardLocation(sci.SourceLocation));
 
                 _localConnectionSource.OpenWithLock(this.Id);
             }
@@ -680,9 +680,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
                 _localConnectionTarget = this.Manager.StoreConnectionFactory.GetConnection(
                     StoreConnectionKind.LocalTarget,
-                    new SqlStoreConnectionInfo(
-                        this.GetConnectionStringForShardLocation(sci.TargetLocation),
-                        this.GetSecureCredentialForShardLocation(sci.TargetLocation)));
+                    GetSqlStoreConnectionInfoForShardLocation(sci.TargetLocation));
 
                 _localConnectionTarget.OpenWithLock(this.Id);
             }
