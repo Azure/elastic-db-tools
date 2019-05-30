@@ -2645,37 +2645,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // Mapping is there, now let's try to abort the OpenConnectionForKey
             shouldThrow = true;
 
-            bool failed = false;
-
             for (int i = 1; i <= 10; i++)
             {
-                failed = false;
-
-                try
+                Assert.ThrowsException<SqlException>(() =>
                 {
                     if (openConnectionAsync)
                     {
-                        lsm.OpenConnectionForKeyAsync(2, Globals.ShardUserConnectionString).Wait();
+                        lsm.OpenConnectionForKeyAsync(2, Globals.ShardUserConnectionString).GetAwaiter().GetResult();
                     }
                     else
                     {
                         lsm.OpenConnectionForKey(2, Globals.ShardUserConnectionString);
                     }
-                }
-                catch (Exception ex)
-                {
-                    if (ex is AggregateException)
-                    {
-                        ex = ex.InnerException as SqlException;
-                    }
-
-                    if (ex is SqlException)
-                    {
-                        failed = true;
-                    }
-                }
-
-                Assert.IsTrue(failed);
+                });
             }
 
             Assert.AreEqual(1, callCount);
@@ -2688,97 +2670,49 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             sics.TimeToLiveMillisecondsGet = () => 0;
             sics.HasTimeToLiveExpired = () => true;
 
-            failed = false;
-
-            try
+            Assert.ThrowsException<SqlException>(() =>
             {
                 if (openConnectionAsync)
                 {
-                    lsm.OpenConnectionForKeyAsync(2, Globals.ShardUserConnectionString).Wait();
+                    lsm.OpenConnectionForKeyAsync(2, Globals.ShardUserConnectionString).GetAwaiter().GetResult();
                 }
                 else
                 {
                     lsm.OpenConnectionForKey(2, Globals.ShardUserConnectionString);
                 }
-            }
-            catch (Exception ex)
-            {
-                if (ex is AggregateException)
-                {
-                    ex = ex.InnerException as SqlException;
-                }
+            });
 
-                if (ex is SqlException)
-                {
-                    failed = true;
-                }
-            }
-
-            Assert.IsTrue(failed);
             Assert.AreEqual(2, callCount);
 
             sics.TimeToLiveMillisecondsGet = () => currentMapping.TimeToLiveMilliseconds;
             sics.HasTimeToLiveExpired = () => currentMapping.HasTimeToLiveExpired();
 
-            failed = false;
-
-            try
+            Assert.ThrowsException<SqlException>(() =>
             {
                 if (openConnectionAsync)
                 {
-                    lsm.OpenConnectionForKeyAsync(2, Globals.ShardUserConnectionString).Wait();
+                    lsm.OpenConnectionForKeyAsync(2, Globals.ShardUserConnectionString).GetAwaiter().GetResult();
                 }
                 else
                 {
                     lsm.OpenConnectionForKey(2, Globals.ShardUserConnectionString);
                 }
-            }
-            catch (Exception ex)
-            {
-                if (ex is AggregateException)
-                {
-                    ex = ex.InnerException as SqlException;
-                }
-
-                if (ex is SqlException)
-                {
-                    failed = true;
-                }
-            }
-
-            Assert.IsTrue(failed);
+            });
 
             Assert.IsTrue(((ICacheStoreMapping)sics).TimeToLiveMilliseconds > currentTtl);
 
             shouldThrow = false;
 
-            failed = false;
-
-            try
             {
                 if (openConnectionAsync)
                 {
-                    lsm.OpenConnectionForKeyAsync(2, Globals.ShardUserConnectionString).Wait();
+                    lsm.OpenConnectionForKeyAsync(2, Globals.ShardUserConnectionString).GetAwaiter().GetResult();
                 }
                 else
                 {
                     lsm.OpenConnectionForKey(2, Globals.ShardUserConnectionString);
                 }
             }
-            catch (Exception ex)
-            {
-                if (ex is AggregateException)
-                {
-                    ex = ex.InnerException as SqlException;
-                }
-
-                if (ex is SqlException)
-                {
-                    failed = true;
-                }
-            }
-
-            Assert.IsFalse(failed);
 
             Assert.AreEqual(0, ((ICacheStoreMapping)sics).TimeToLiveMilliseconds);
         }
@@ -2930,37 +2864,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             // Mapping is there, now let's try to abort the OpenConnectionForKey
             shouldThrow = true;
 
-            bool failed = false;
-
             for (int i = 1; i <= 10; i++)
             {
-                failed = false;
-
-                try
+                Assert.ThrowsException<SqlException>(() =>
                 {
                     if (openConnectionAsync)
                     {
-                        rsm.OpenConnectionForKeyAsync(10, Globals.ShardUserConnectionString).Wait();
+                        rsm.OpenConnectionForKeyAsync(10, Globals.ShardUserConnectionString).GetAwaiter().GetResult();
                     }
                     else
                     {
                         rsm.OpenConnectionForKey(10, Globals.ShardUserConnectionString);
                     }
-                }
-                catch (Exception ex)
-                {
-                    if (ex is AggregateException)
-                    {
-                        ex = ex.InnerException as SqlException;
-                    }
-
-                    if (ex is SqlException)
-                    {
-                        failed = true;
-                    }
-                }
-
-                Assert.IsTrue(failed);
+                });
             }
 
             Assert.AreEqual(1, callCount);
@@ -2973,97 +2889,49 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             sics.TimeToLiveMillisecondsGet = () => 0;
             sics.HasTimeToLiveExpired = () => true;
 
-            failed = false;
-
-            try
+            Assert.ThrowsException<SqlException>(() =>
             {
                 if (openConnectionAsync)
                 {
-                    rsm.OpenConnectionForKeyAsync(12, Globals.ShardUserConnectionString).Wait();
+                    rsm.OpenConnectionForKeyAsync(12, Globals.ShardUserConnectionString).GetAwaiter().GetResult();
                 }
                 else
                 {
                     rsm.OpenConnectionForKey(12, Globals.ShardUserConnectionString);
                 }
-            }
-            catch (Exception ex)
-            {
-                if (ex is AggregateException)
-                {
-                    ex = ex.InnerException as SqlException;
-                }
+            });
 
-                if (ex is SqlException)
-                {
-                    failed = true;
-                }
-            }
-
-            Assert.IsTrue(failed);
             Assert.AreEqual(2, callCount);
 
             sics.TimeToLiveMillisecondsGet = () => currentMapping.TimeToLiveMilliseconds;
             sics.HasTimeToLiveExpired = () => currentMapping.HasTimeToLiveExpired();
 
-            failed = false;
-
-            try
+            Assert.ThrowsException<SqlException>(() =>
             {
                 if (openConnectionAsync)
                 {
-                    rsm.OpenConnectionForKeyAsync(15, Globals.ShardUserConnectionString).Wait();
+                    rsm.OpenConnectionForKeyAsync(15, Globals.ShardUserConnectionString).GetAwaiter().GetResult();
                 }
                 else
                 {
                     rsm.OpenConnectionForKey(15, Globals.ShardUserConnectionString);
                 }
-            }
-            catch (Exception ex)
-            {
-                if (ex is AggregateException)
-                {
-                    ex = ex.InnerException as SqlException;
-                }
-
-                if (ex is SqlException)
-                {
-                    failed = true;
-                }
-            }
-
-            Assert.IsTrue(failed);
+            });
 
             Assert.IsTrue(((ICacheStoreMapping)sics).TimeToLiveMilliseconds > currentTtl);
 
             shouldThrow = false;
 
-            failed = false;
-
-            try
             {
                 if (openConnectionAsync)
                 {
-                    rsm.OpenConnectionForKeyAsync(7, Globals.ShardUserConnectionString).Wait();
+                    rsm.OpenConnectionForKeyAsync(7, Globals.ShardUserConnectionString).GetAwaiter().GetResult();
                 }
                 else
                 {
                     rsm.OpenConnectionForKey(7, Globals.ShardUserConnectionString);
                 }
             }
-            catch (Exception ex)
-            {
-                if (ex is AggregateException)
-                {
-                    ex = ex.InnerException as SqlException;
-                }
-
-                if (ex is SqlException)
-                {
-                    failed = true;
-                }
-            }
-
-            Assert.IsFalse(failed);
 
             Assert.AreEqual(0, ((ICacheStoreMapping)sics).TimeToLiveMilliseconds);
         }
