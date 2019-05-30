@@ -39,33 +39,30 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             string connectionString,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
-            return this.OpenConnectionForKey(key, connectionString, null, options);
+            return this.OpenConnectionForKey(key, new SqlConnectionInfo(connectionString, null), options);
         }
 
         /// <summary>
         /// Given a shard, obtains a SqlConnection to the shard. The shard must exist in the mapper.
         /// </summary>
         /// <param name="key">Input shard.</param>
-        /// <param name="connectionString">
-        /// Connection string with credential information, the DataSource and Database are
+        /// <param name="connectionInfo">
+        /// Connection info with credential information, the DataSource and Database are
         /// obtained from the results of the lookup operation.
         /// </param>
-        /// <param name="secureCredential">Secure SQL credential.</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
         public SqlConnection OpenConnectionForKey(
             Shard key,
-            string connectionString,
-            SqlCredential secureCredential,
+            SqlConnectionInfo connectionInfo,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
             Debug.Assert(key != null);
-            Debug.Assert(connectionString != null);
+            Debug.Assert(connectionInfo != null);
 
             return this.ShardMap.OpenConnection(
                 this.Lookup(key, LookupOptions.LookupInCache | LookupOptions.LookupInStore),
-                connectionString,
-                secureCredential,
+                connectionInfo,
                 options);
         }
 
@@ -84,33 +81,30 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             string connectionString,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
-            return await this.OpenConnectionForKeyAsync(key, connectionString, null, options);
+            return await this.OpenConnectionForKeyAsync(key, new SqlConnectionInfo(connectionString, null), options);
         }
 
         /// <summary>
         /// Given a shard, asynchronously obtains a SqlConnection to the shard. The shard must exist in the mapper.
         /// </summary>
         /// <param name="key">Input shard.</param>
-        /// <param name="connectionString">
+        /// <param name="connectionInfo">
         /// Connection string with credential information, the DataSource and Database are
         /// obtained from the results of the lookup operation.
         /// </param>
-        /// <param name="secureCredential">Secure SQL credential.</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
         public async Task<SqlConnection> OpenConnectionForKeyAsync(
             Shard key,
-            string connectionString,
-            SqlCredential secureCredential,
+            SqlConnectionInfo connectionInfo,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
             Debug.Assert(key != null);
-            Debug.Assert(connectionString != null);
+            Debug.Assert(connectionInfo != null);
 
             return await this.ShardMap.OpenConnectionAsync(
                 this.Lookup(key, LookupOptions.LookupInCache | LookupOptions.LookupInStore),
-                connectionString,
-                secureCredential,
+                connectionInfo,
                 options).ConfigureAwait(false);
         }
 

@@ -578,15 +578,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             SqlUtils.WithSqlExceptionHandling(() =>
             {
-                string sourceShardConnectionString = this.GetConnectionStringForShardLocation(_mappingSource.StoreShard.Location);
-                SqlCredential sourceShardSecureCredential = this.GetSecureCredentialForShardLocation(_mappingSource.StoreShard.Location);
-
                 IStoreResults result;
 
                 using (IStoreConnection connectionForKill = this.Manager.StoreConnectionFactory.GetConnection(
-                    StoreConnectionKind.LocalSource, 
-                    sourceShardConnectionString, 
-                    sourceShardSecureCredential))
+                    StoreConnectionKind.LocalSource,
+                    this.GetSqlStoreConnectionInfoForShardLocation(_mappingSource.StoreShard.Location)))
                 {
                     connectionForKill.Open();
 

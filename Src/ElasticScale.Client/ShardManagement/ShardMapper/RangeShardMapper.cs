@@ -42,8 +42,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return this.OpenConnectionForKey(
                 key,
-                connectionString,
-                null,
+                new SqlConnectionInfo(
+                    connectionString,
+                    null),
                 options);
         }
 
@@ -52,25 +53,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// that contains the key value.
         /// </summary>
         /// <param name="key">Input key value.</param>
-        /// <param name="connectionString">
-        /// Connection string with credential information, the DataSource and Database are 
+        /// <param name="connectionInfo">
+        /// Connection info with credential information, the DataSource and Database are 
         /// obtained from the results of the lookup operation for key.
         /// </param>
-        /// <param name="secureCredential">Secure SQL Credential.</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
         public SqlConnection OpenConnectionForKey(
             TKey key,
-            string connectionString,
-            SqlCredential secureCredential,
+            SqlConnectionInfo connectionInfo,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
             return this.OpenConnectionForKey<RangeMapping<TKey>, TKey>(
                 key,
                 (smm, sm, ssm) => new RangeMapping<TKey>(smm, sm, ssm),
                 ShardManagementErrorCategory.RangeShardMap,
-                connectionString,
-                secureCredential,
+                connectionInfo,
                 options);
         }
 
@@ -92,8 +90,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return await this.OpenConnectionForKeyAsync(
                 key,
-                connectionString,
-                null,
+                new SqlConnectionInfo(
+                    connectionString,
+                    null),
                 options).ConfigureAwait(false);
         }
 
@@ -111,16 +110,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>A Task encapsulating an opened SqlConnection.</returns>
         public async Task<SqlConnection> OpenConnectionForKeyAsync(
             TKey key,
-            string connectionString,
-            SqlCredential secureCredential,
+            SqlConnectionInfo connectionInfo,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
             return await this.OpenConnectionForKeyAsync<RangeMapping<TKey>, TKey>(
                        key,
                        (smm, sm, ssm) => new RangeMapping<TKey>(smm, sm, ssm),
                        ShardManagementErrorCategory.RangeShardMap,
-                       connectionString,
-                       secureCredential,
+                       connectionInfo,
                        options).ConfigureAwait(false);
         }
 
