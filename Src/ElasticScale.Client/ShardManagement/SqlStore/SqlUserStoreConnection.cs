@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStore;
 using System;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
@@ -33,15 +34,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
-        /// Creates a new instance of user store connection.
+        /// Constructs a new instance of user connection.
         /// </summary>
-        /// <param name="connectionString">Connection string.</param>
-        /// <param name="accessToken">Secure SQL Access token</param>
-
-        internal SqlUserStoreConnection(string connectionString, string accessToken)
-        {
-            _conn = new SqlConnection { ConnectionString = connectionString };
-            _conn.AccessToken = accessToken;
+        /// <param name="sqlConnectionInfo">Sql Connection Information</param>
+        internal SqlUserStoreConnection(SqlConnectionInfo sqlConnectionInfo){
+            _conn = new SqlConnection { ConnectionString = sqlConnectionInfo.ConnectionString, Credential = sqlConnectionInfo.SecureCredential };
+            _conn.AccessToken = sqlConnectionInfo.AccessToken;
         }
 
         /// <summary>

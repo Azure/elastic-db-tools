@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStore;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -39,7 +40,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             string connectionString,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
-            return this.OpenConnectionForKey(key, connectionString, null, null, options);
+            SqlConnectionInfo sqlConnectionInfo = new SqlConnectionInfo(connectionString, null, null);
+            return this.OpenConnectionForKey(key, sqlConnectionInfo, options);
         }
 
         /// <summary>
@@ -59,7 +61,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             SqlCredential secureCredential,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
-            return this.OpenConnectionForKey(key, connectionString, secureCredential, null, options);
+            SqlConnectionInfo sqlConnectionInfo = new SqlConnectionInfo(connectionString, secureCredential, null);
+            return this.OpenConnectionForKey(key, sqlConnectionInfo, options);
         }
 
 
@@ -67,69 +70,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Given a shard, obtains a SqlConnection to the shard. The shard must exist in the mapper.
         /// </summary>
         /// <param name="key">Input shard.</param>
-        /// <param name="connectionString">
-        /// Connection string with credential information, the DataSource and Database are
-        /// obtained from the results of the lookup operation.
-        /// </param>
-        /// <param name="accessToken">Secure SQL Access token</param>
+        /// <param name="sqlConnectionInfo">Sql Connection Information</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
-
-        public SqlConnection OpenConnectionForKey(Shard key, string connectionString, string accessToken, ConnectionOptions options = ConnectionOptions.Validate)
-        {
-            Debug.Assert(accessToken != null);
-            return this.OpenConnectionForKey(key, connectionString, null, accessToken, options);
-        }
-
-
-        /// <summary>
-        /// Given a shard, obtains a SqlConnection to the shard. The shard must exist in the mapper.
-        /// </summary>
-        /// <param name="key">Input shard.</param>
-        /// <param name="connectionString">
-        /// Connection string with credential information, the DataSource and Database are
-        /// obtained from the results of the lookup operation.
-        /// </param>
-        /// <param name="secureCredential">Secure SQL credential</param>
-        /// <param name="accessToken">Secure SQL Access token</param>
-        /// <param name="options">Options for validation operations to perform on opened connection.</param>
-        /// <returns>An opened SqlConnection.</returns>
-        public SqlConnection OpenConnectionForKey(Shard key, string connectionString, SqlCredential secureCredential, string accessToken, ConnectionOptions options = ConnectionOptions.Validate)
+        public SqlConnection OpenConnectionForKey(Shard key, SqlConnectionInfo sqlConnectionInfo, ConnectionOptions options = ConnectionOptions.Validate)
         {
             Debug.Assert(key != null);
-            Debug.Assert(connectionString != null);
+            Debug.Assert(sqlConnectionInfo != null);
+            Debug.Assert(sqlConnectionInfo.ConnectionString != null);
             return this.ShardMap.OpenConnection(
                 this.Lookup(key, LookupOptions.LookupInCache | LookupOptions.LookupInStore),
-                connectionString,
-                secureCredential,
-                accessToken,
+                sqlConnectionInfo,
                 options);
         }
-        /// <summary>
-        /// Given a shard, obtains a SqlConnection to the shard. The shard must exist in the mapper.
-        /// </summary>
-        /// <param name="key">Input shard.</param>
-        /// <param name="connectionString">
-        /// Connection string with credential information, the DataSource and Database are
-        /// obtained from the results of the lookup operation.
-        /// </param>
-        /// <param name="accessToken">Secure SQL Access token</param>
-        /// <param name="options">Options for validation operations to perform on opened connection.</param>
-        /// <returns>An opened SqlConnection.</returns>
-        public async Task<SqlConnection> OpenConnectionForKeyAsync(Shard key, string connectionString, string accessToken, ConnectionOptions options = ConnectionOptions.Validate)
-        {
-            Debug.Assert(key != null);
-            Debug.Assert(connectionString != null);
-            Debug.Assert(accessToken != null);
-
-            return await this.ShardMap.OpenConnectionAsync(
-               this.Lookup(key, LookupOptions.LookupInCache | LookupOptions.LookupInStore),
-               connectionString,
-               null,
-               accessToken,
-               options).ConfigureAwait(false);
-        }
-
 
         /// <summary>
         /// Given a shard, asynchronously obtains a SqlConnection to the shard. The shard must exist in the mapper.
@@ -146,7 +99,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             string connectionString,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
-            return await this.OpenConnectionForKeyAsync(key, connectionString, null, null, options);
+            SqlConnectionInfo sqlConnectionInfo = new SqlConnectionInfo(connectionString, null, null);
+            return await this.OpenConnectionForKeyAsync(key, sqlConnectionInfo, options);
         }
 
         /// <summary>
@@ -166,36 +120,29 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             SqlCredential secureCredential,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
-            return await this.OpenConnectionForKeyAsync(key, connectionString, secureCredential, null, options);
+            SqlConnectionInfo sqlConnectionInfo = new SqlConnectionInfo(connectionString, secureCredential, null);
+            return await this.OpenConnectionForKeyAsync(key, sqlConnectionInfo, options);
         }
 
         /// <summary>
         /// Given a shard, asynchronously obtains a SqlConnection to the shard. The shard must exist in the mapper.
         /// </summary>
         /// <param name="key">Input shard.</param>
-        /// <param name="connectionString">
-        /// Connection string with credential information, the DataSource and Database are
-        /// obtained from the results of the lookup operation.
-        /// </param>
-        /// <param name="secureCredential">Secure SQL credential.</param>
-        /// <param name="accessToken">Secure SQL Access token</param>
+        /// <param name="sqlConnectionInfo">Sql Connection Information</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
         public async Task<SqlConnection> OpenConnectionForKeyAsync(
             Shard key,
-            string connectionString,
-            SqlCredential secureCredential,
-            string accessToken,
+            SqlConnectionInfo sqlConnectionInfo,
             ConnectionOptions options = ConnectionOptions.Validate)
         {
             Debug.Assert(key != null);
-            Debug.Assert(connectionString != null);
+            Debug.Assert(sqlConnectionInfo != null);
+            Debug.Assert(sqlConnectionInfo.ConnectionString != null);
 
             return await this.ShardMap.OpenConnectionAsync(
                 this.Lookup(key, LookupOptions.LookupInCache | LookupOptions.LookupInStore),
-                connectionString,
-                secureCredential,
-                accessToken,
+                sqlConnectionInfo,
                 options).ConfigureAwait(false);
         }
 

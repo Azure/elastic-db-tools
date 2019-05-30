@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStore;
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -56,43 +57,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="kind">
         /// Type of store connection.
+        /// <param name="sqlConnectionInfo">
+        /// Sql Connection Information
         /// </param>
-        /// <param name="connectionString">
-        /// The SQL connection string
-        /// </param>
-        /// <param name="secureCredential">
-        /// The secure SQL Credential.
-        /// </param>
-        /// <param name="accessToken">
-        /// Secure SQL Access token
-        /// </param>
-        protected internal SqlStoreConnection(StoreConnectionKind kind, string connectionString, SqlCredential secureCredential, string accessToken)
-        {
-            this.Kind = kind;
-            this._conn = new SqlConnection { ConnectionString = connectionString, Credential = secureCredential };
-            this._conn.AccessToken = accessToken;
-        }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SqlStoreConnection"/> class. 
-        /// </summary>
-        /// <param name="kind">
-        /// Type of store connection.
-        /// </param>
-        /// <param name="connectionString">
-        /// The SQL connection string
-        /// </param>
-        /// <param name="secureCredential">
-        /// The secure SQL Credential.
-        /// </param>
-        /// <param name="accessToken">
-        /// Secure SQL Access token
-        /// </param>
-        protected internal SqlStoreConnection(StoreConnectionKind kind, string connectionString, string accessToken)
+        protected internal SqlStoreConnection(StoreConnectionKind kind, SqlConnectionInfo sqlConnectionInfo)
         {
             this.Kind = kind;
-            this._conn = new SqlConnection { ConnectionString = connectionString };
-            this._conn.AccessToken = accessToken;
+            this._conn = new SqlConnection { ConnectionString = sqlConnectionInfo.ConnectionString, Credential = sqlConnectionInfo.SecureCredential };
+            this._conn.AccessToken = sqlConnectionInfo.AccessToken;
         }
 
         /// <summary>

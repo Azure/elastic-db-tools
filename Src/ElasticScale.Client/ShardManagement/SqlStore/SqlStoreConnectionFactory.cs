@@ -3,6 +3,8 @@
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {
+    using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStore;
+    using System;
     using System.Data.SqlClient;
 
     /// <summary>
@@ -46,18 +48,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
-        /// Constructs a new instance of store connection.
-        /// </summary>
-        /// <param name="kind">Type of store connection.</param>
-        /// <param name="connectionString">Connection string for store.</param>
-        /// <param name="accessToken">Secure SQL Access token</param>
-        /// <returns>An unopened instance of the store connection.</returns>
-        public virtual IStoreConnection GetConnection(StoreConnectionKind kind, string connectionString, string accessToken)
-        {
-            return new SqlStoreConnection(kind, connectionString, accessToken);
-        }
-
-        /// <summary>
         /// Constructs a new instance of user connection.
         /// </summary>
         /// <param name="connectionString">Connection string of user.</param>
@@ -81,12 +71,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <summary>
         /// Constructs a new instance of user connection.
         /// </summary>
-        /// <param name="connectionString">Connection string of user.</param>
-        /// <param name="accessToken">Secure SQL Access token</param>
-        /// <returns>An unopened instance of the user connection.</returns>
-        public virtual IUserStoreConnection GetUserConnection(string connectionString, string accessToken)
+        /// <param name="sqlConnectionInfo">Sql Connection Information</param>
+        public virtual IUserStoreConnection GetUserConnection(SqlConnectionInfo sqlConnectionInfo)
         {
-            return new SqlUserStoreConnection(connectionString, accessToken);
+           return new SqlUserStoreConnection(sqlConnectionInfo);
         }
     }
 }

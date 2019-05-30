@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Data.SqlClient;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStore;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stubs
 {
@@ -71,7 +72,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
             StoreConnectionKind kind,
             string connectionString)
         {
-            return GetConnection(kind, connectionString);
+            return GetConnection(kind, connectionString,null);
         }
 
         /// <summary>
@@ -95,7 +96,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override IUserStoreConnection GetUserConnection(string connectionString)
         {
-            return this.GetUserConnection(connectionString);
+            return this.GetUserConnection(connectionString, null);
         }
 
         /// <summary>
@@ -103,11 +104,24 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stu
         /// </summary>
         public override IUserStoreConnection GetUserConnection(string connectionString, SqlCredential secureCredential)
         {
+            
             Func<string, IUserStoreConnection> func1 = this.GetUserConnectionString;
             if (func1 != null)
                 return func1(connectionString);
             if (this.___callBase)
                 return base.GetUserConnection(connectionString, secureCredential);
+            return this.InstanceBehavior.Result<StubSqlStoreConnectionFactory, IUserStoreConnection>(this, "GetUserConnection");
+        }
+
+     
+        public override IUserStoreConnection GetUserConnection(SqlConnectionInfo sqlConectionInfo)
+        {
+
+            Func<string, IUserStoreConnection> func1 = this.GetUserConnectionString;
+            if (func1 != null)
+                return func1(sqlConectionInfo.ConnectionString);
+            if (this.___callBase)
+                return base.GetUserConnection(sqlConectionInfo);
             return this.InstanceBehavior.Result<StubSqlStoreConnectionFactory, IUserStoreConnection>(this, "GetUserConnection");
         }
 

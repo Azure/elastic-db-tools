@@ -245,7 +245,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     ShardMapManager smm4 = ShardMapManagerFactory.GetSqlShardMapManager(
                         Globals.ShardMapManagerConnectionStringForSqlAuth,
                         Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
-                        null,
                         loadPolicy,
                         RetryBehavior.DefaultRetryBehavior,
                         null);
@@ -306,7 +305,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     success = ShardMapManagerFactory.TryGetSqlShardMapManager(
                     Globals.ShardMapManagerConnectionStringForSqlAuth,
                     Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
-                    null,
                     loadPolicy,
                     RetryBehavior.DefaultRetryBehavior,
                     out smm);
@@ -316,7 +314,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     success = ShardMapManagerFactory.TryGetSqlShardMapManager(
                         Globals.ShardMapManagerConnectionStringForSqlAuth,
                         Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
-                        null,
                         loadPolicy,
                         RetryBehavior.DefaultRetryBehavior,
                         null,

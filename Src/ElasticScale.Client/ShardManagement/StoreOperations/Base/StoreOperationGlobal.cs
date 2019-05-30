@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStore;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -314,7 +315,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         private void EstablishConnnection()
         {
-            _globalConnection = new SqlStoreConnection(StoreConnectionKind.Global, _credentials.ConnectionStringShardMapManager, _credentials.SecureCredentialShardMapManager, _credentials.accessTokenShardMapManager);
+            SqlConnectionInfo sqlConnectionInfo = new SqlConnectionInfo(_credentials.ConnectionStringShardMapManager, _credentials.SecureCredentialShardMapManager, _credentials.accessTokenShardMapManager);
+            _globalConnection = new SqlStoreConnection(StoreConnectionKind.Global, sqlConnectionInfo);
             _globalConnection.Open();
         }
 
@@ -324,7 +326,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <returns>Task to await connection establishment</returns>
         private Task EstablishConnnectionAsync()
         {
-            _globalConnection = new SqlStoreConnection(StoreConnectionKind.Global, _credentials.ConnectionStringShardMapManager, _credentials.SecureCredentialShardMapManager, _credentials.accessTokenShardMapManager);
+            SqlConnectionInfo sqlConnectionInfo = new SqlConnectionInfo(_credentials.ConnectionStringShardMapManager, _credentials.SecureCredentialShardMapManager, _credentials.accessTokenShardMapManager);
+            _globalConnection = new SqlStoreConnection(StoreConnectionKind.Global, sqlConnectionInfo);
             return _globalConnection.OpenAsync();
         }
 

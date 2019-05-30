@@ -56,33 +56,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             return this.OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
         }
 
-
-
-        /// <summary>
-        /// Opens a regular <see cref="SqlConnection"/> to the shard 
-        /// to which the specified key value is mapped, with <see cref="ConnectionOptions.Validate"/>.
-        /// </summary>
-        /// <param name="key">Input key value.</param>
-        /// <param name="connectionString">
-        /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
-        /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
-        /// </param>
-        /// <param name="accessToken">Secure SQL Access token</param>
-        /// <returns>An opened SqlConnection.</returns>
-        /// <remarks>
-        /// Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults. 
-        /// Callers should follow best practices to protect the connection against transient faults 
-        /// in their application code, e.g., by using the transient fault handling 
-        /// functionality in the Enterprise Library from Microsoft Patterns and Practices team.
-        /// </remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1061:DoNotHideBaseClassMethods")]
-        public SqlConnection OpenConnectionForKey(TKey key, string connectionString, string accessToken)
-        {
-            return this.OpenConnectionForKey(key, connectionString, null, accessToken, ConnectionOptions.Validate);
-        }
-
-
-
         /// <summary>
         /// Opens a regular <see cref="SqlConnection"/> to the shard 
         /// to which the specified key value is mapped, with <see cref="ConnectionOptions.Validate"/>.
@@ -183,32 +156,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         public Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, string connectionString)
         {
             return this.OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
-        }
-
-
-
-        /// <summary>
-        /// Asynchronously opens a regular <see cref="SqlConnection"/> to the shard 
-        /// to which the specified key value is mapped, with <see cref="ConnectionOptions.Validate"/>.
-        /// </summary>
-        /// <param name="key">Input key value.</param>
-        /// <param name="connectionString">
-        /// Connection string with credential information such as SQL Server credentials or Integrated Security settings. 
-        /// The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
-        /// </param>
-        /// <param name="accessToken">Secure SQL Access token</param>
-        /// <returns>A Task encapsulating an opened SqlConnection.</returns>
-        /// <remarks>
-        /// Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults. 
-        /// Callers should follow best practices to protect the connection against transient faults 
-        /// in their application code, e.g., by using the transient fault handling 
-        /// functionality in the Enterprise Library from Microsoft Patterns and Practices team.
-        /// All non-usage errors will be propagated via the returned Task.
-        /// </remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1061:DoNotHideBaseClassMethods")]
-        public Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, string connectionString, string accessToken)
-        {
-            return this.OpenConnectionForKeyAsync(key, connectionString, accessToken, ConnectionOptions.Validate);
         }
 
         /// <summary>

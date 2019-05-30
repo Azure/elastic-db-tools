@@ -12,6 +12,7 @@ using System.Linq;
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
     using ClientTestCommon;
+    using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStore;
 
     /// <summary>
     /// Tests based on scenarios which cover various aspects of the
@@ -45,6 +46,39 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         {
             "MultiTenantDB1", "MultiTenantDB2", "MultiTenantDB3", "MultiTenantDB4", "MultiTenantDB5"
         };
+
+     // [TestMethod()]
+        public void testWithAccessToken()
+        {
+            string accessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkhCeGw5bUFlNmd4YXZDa2NvT1UyVEhzRE5hMCIsImtpZCI6IkhCeGw5bUFlNmd4YXZDa2NvT1UyVEhzRE5hMCJ9.eyJhdWQiOiJodHRwczovL2RhdGFiYXNlLndpbmRvd3MubmV0LyIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0Ny8iLCJpYXQiOjE1NTkxOTU4MjcsIm5iZiI6MTU1OTE5NTgyNywiZXhwIjoxNTU5MTk5NzI3LCJhaW8iOiI0MlpnWU5EclhwVTdZOGZSczgrS2IyNDZIdXU1RmdBPSIsImFwcGlkIjoiNTZlMTBlOGItMjUzNi00NjI0LThlMTktN2Y3OGQ4NjU1YjJjIiwiYXBwaWRhY3IiOiIyIiwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNzJmOTg4YmYtODZmMS00MWFmLTkxYWItMmQ3Y2QwMTFkYjQ3LyIsIm9pZCI6IjcyMGZjNjQ1LTRkYzAtNDI4NC05OGI4LTg5ZGNhN2ZhOGY5OSIsInN1YiI6IjcyMGZjNjQ1LTRkYzAtNDI4NC05OGI4LTg5ZGNhN2ZhOGY5OSIsInRpZCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsInV0aSI6IlRpMGQ0R3M2Z1VpbWQyYjlPdU1BQUEiLCJ2ZXIiOiIxLjAifQ.j8aQHHj7ymKL9jTaGPAU-8Dd6mNEtmn86yzbKJxL2Q4lXHv1UWkGdmI5ptFHW3alylvvcFVBwQpX2PGA9IDUnaDT4yfVQnXBILwwpYnWzfSgACMGpTJiW8Do1JMCidQh1QCzcewnrtLk-Kmhl8Q3GyGGmwthSr-oiN9qi1Q_k0MYes_49Y1VYEHW0LtK4wWDM3KiY_j4Z061_G0TnYGbKOt4l9MiYmaOIE-WuuyVp93DaeSQe7s2qWK0jNL8Ir2QbayJuujFKNEiW1tZc4lOQ2Hvv0yedNRN-mA4cUE73AIEo4GO-BN1hVnsP_7PC2e-Ve-yD1kN8gJzojx0fwfoYQ";
+            ShardMapManager shardMapManager;
+            SqlConnectionInfo sqlConnectionInfo= new SqlConnectionInfo(this.GetConnectionStringForShardMapManager(), null, accessToken);
+            var con1= ShardMapManagerFactory.TryGetSqlShardMapManager( sqlConnectionInfo,ShardMapManagerLoadPolicy.Lazy,out shardMapManager);
+            var x = shardMapManager.GetListShardMap<Guid>("datasetshardmap");
+            var connection =  x.OpenConnectionForKeyAsync( new Guid("C7D8C4AA-7565-4DE4-BC00-465DF9BA240D"), sqlConnectionInfo, ConnectionOptions.Validate);
+
+            x.OpenConnectionForKey(new Guid("C7D8C4AA-7565-4DE4-BC00-465DF9BA240D"), sqlConnectionInfo, ConnectionOptions.Validate);
+          
+
+        }
+        
+        private string GetConnectionStringForShardMapManager()
+
+        {
+
+            var connStr = new SqlConnectionStringBuilder()
+
+            {
+
+                DataSource = "nam1gcsppefailover.database.windows.net",
+
+                InitialCatalog = "gcsshardmapmanager"
+
+            };
+
+            return connStr.ToString();
+
+        }
 
         #region Common Methods
 
