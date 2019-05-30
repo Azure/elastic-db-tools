@@ -38,8 +38,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return this.OpenConnectionForKey(
                 key,
-                connectionString,
-                null,
+                new SqlStoreConnectionInfo(
+                    connectionString,
+                    null),
                 options);
         }
 
@@ -48,21 +49,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// that contains the key value.
         /// </summary>
         /// <param name="key">Input key value.</param>
-        /// <param name="connectionString">
+        /// <param name="connectionInfo">
         /// Connection string with credential information, the DataSource and Database are 
         /// obtained from the results of the lookup operation for key.
         /// </param>
-        /// <param name="secureCredential">Secure Sql Credential.</param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>An opened SqlConnection.</returns>
-        public SqlConnection OpenConnectionForKey(TKey key, string connectionString, SqlCredential secureCredential, ConnectionOptions options = ConnectionOptions.Validate)
+        public SqlConnection OpenConnectionForKey(
+            TKey key,
+            SqlStoreConnectionInfo connectionInfo,
+            ConnectionOptions options = ConnectionOptions.Validate)
         {
             return this.OpenConnectionForKey<PointMapping<TKey>, TKey>(
                 key,
                 (smm, sm, ssm) => new PointMapping<TKey>(smm, sm, ssm),
                 ShardManagementErrorCategory.ListShardMap,
-                connectionString,
-                secureCredential,
+                connectionInfo,
                 options);
         }
 
@@ -82,8 +84,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return this.OpenConnectionForKeyAsync(
                 key,
-                connectionString,
-                null,
+                new SqlStoreConnectionInfo(
+                    connectionString,
+                    null),
                 options);
         }
 
@@ -92,22 +95,23 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// that contains the key value.
         /// </summary>
         /// <param name="key">Input key value.</param>
-        /// <param name="connectionString">
-        /// <param name="secureCredential">Secure SQL Credential.</param>
-        /// Connection string with credential information, the DataSource and Database are 
+        /// <param name="connectionInfo">
+        /// Connection info with credential information, the DataSource and Database are 
         /// obtained from the results of the lookup operation for key.
         /// </param>
         /// <param name="options">Options for validation operations to perform on opened connection.</param>
         /// <returns>A Task encapsulating an opened SqlConnection.</returns>
         /// <remarks>All non usage-error exceptions will be reported via the returned Task</remarks>
-        public Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, string connectionString, SqlCredential secureCredential, ConnectionOptions options = ConnectionOptions.Validate)
+        public Task<SqlConnection> OpenConnectionForKeyAsync(
+            TKey key,
+            SqlStoreConnectionInfo connectionInfo,
+            ConnectionOptions options = ConnectionOptions.Validate)
         {
             return this.OpenConnectionForKeyAsync<PointMapping<TKey>, TKey>(
                 key,
                 (smm, sm, ssm) => new PointMapping<TKey>(smm, sm, ssm),
                 ShardManagementErrorCategory.ListShardMap,
-                connectionString,
-                secureCredential,
+                connectionInfo,
                 options);
         }
 

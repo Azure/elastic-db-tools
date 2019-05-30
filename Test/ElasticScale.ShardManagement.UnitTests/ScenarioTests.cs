@@ -637,8 +637,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                             ConnectionOptions.Validate) :
                         perTenantShardMap.OpenConnection(
                             mappingToDelete,
-                            shardUserConnectionString,
-                            shardUserSqlCredential,
+                            new SqlStoreConnectionInfo(
+                                shardUserConnectionString,
+                                shardUserSqlCredential),
                             ConnectionOptions.Validate))
                     {
                     }
@@ -724,8 +725,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                             ConnectionOptions.Validate) :
                         newPerTenantShardMap.OpenConnection(
                             newMappingToDelete,
-                            shardUserConnectionString,
-                            shardUserSqlCredential,
+                            new SqlStoreConnectionInfo(
+                                shardUserConnectionString,
+                                shardUserSqlCredential),
                             ConnectionOptions.Validate))
                     {
                     }
@@ -770,8 +772,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                             ConnectionOptions.Validate).Result :
                         perTenantShardMap.OpenConnectionAsync(
                             mappingToDelete,
-                            shardUserConnectionString,
-                            shardUserSqlCredential,
+                            new SqlStoreConnectionInfo(
+                                shardUserConnectionString,
+                                shardUserSqlCredential),
                             ConnectionOptions.Validate).Result)
                     {
                     }
@@ -860,8 +863,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                             ConnectionOptions.Validate).Result :
                         newPerTenantShardMap.OpenConnectionAsync(
                             newMappingToDelete,
-                            shardUserConnectionString,
-                            shardUserSqlCredential,
+                            new SqlStoreConnectionInfo(
+                                shardUserConnectionString,
+                                shardUserSqlCredential),
                             ConnectionOptions.Validate).Result)
                     {
                     }

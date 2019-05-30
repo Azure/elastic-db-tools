@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Data.SqlClient;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
@@ -35,8 +36,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             string connectionString,
             SqlCredential secureCredential)
         {
+            ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
+
             this.ConnectionString = connectionString;
             this.Credential = secureCredential;
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="SqlStoreConnectionInfo"/> which has an updated connection string.
+        /// </summary>
+        /// <param name="connectionString">The new connection string</param>
+        /// <returns>The new connection info.</returns>
+        internal SqlStoreConnectionInfo CloneWithUpdatedConnectionString(string connectionString)
+        {
+            return new SqlStoreConnectionInfo(
+                connectionString,
+                this.Credential);
         }
     }
 }

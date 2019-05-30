@@ -308,7 +308,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                return this.ShardMap.OpenConnection(this as IShardProvider, connectionString, secureCredential, options);
+                return this.ShardMap.OpenConnection(
+                    this as IShardProvider,
+                    new SqlStoreConnectionInfo(
+                        connectionString,
+                        secureCredential),
+                    options);
             }
         }
 
@@ -395,7 +400,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
             {
-                return this.ShardMap.OpenConnectionAsync(this as IShardProvider, connectionString, secureCredential, options);
+                return this.ShardMap.OpenConnectionAsync(
+                    this as IShardProvider,
+                    new SqlStoreConnectionInfo(
+                        connectionString,
+                        secureCredential),
+                    options);
             }
         }
 
