@@ -27,36 +27,33 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         private SqlCredential _secureCredential;
 
         /// <summary>
-        /// Instantiates the object that holds the credentials for accessing SQL Servers 
+        /// Instantiates the object that holds the credentials for accessing SQL Servers
         /// containing the shard map manager data.
         /// </summary>
         /// <param name="connectionString">
         /// Connection string for shard map manager data source.
         /// </param>
-        public SqlShardMapManagerCredentials(string connectionString) 
-            : this(connectionString, null)
+        public SqlShardMapManagerCredentials(string connectionString)
+            : this(new SqlConnectionInfo(connectionString, null))
         {
         }
 
         /// <summary>
-        /// Instantiates the object that holds the credentials for accessing SQL Servers 
+        /// Instantiates the object that holds the credentials for accessing SQL Servers
         /// containing the shard map manager data.
         /// </summary>
-        /// <param name="connectionString">
-        /// Connection string for shard map manager data source.
+        /// <param name="connectionInfo">
+        /// Connection info for shard map manager data source.
         /// </param>
-        /// <param name="secureCredential">
-        ///  Secure credential for shard map manager data source.
-        /// </param>
-        public SqlShardMapManagerCredentials(string connectionString, SqlCredential secureCredential)
+        public SqlShardMapManagerCredentials(SqlConnectionInfo connectionInfo)
         {
-            ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
+            ExceptionUtils.DisallowNullArgument(connectionInfo, "connectionInfo");
 
-            this._secureCredential = secureCredential;
+            this._secureCredential = connectionInfo.Credential;
 
             // Devnote: If connection string specifies Active Directory authentication and runtime is not
             // .NET 4.6 or higher, then below call will throw.
-            SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
+            SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(connectionInfo.ConnectionString);
 
             #region GSM Validation
 
@@ -82,8 +79,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             // Ensure credentials are specified for GSM connectivity.
             SqlShardMapManagerCredentials.EnsureCredentials(
-                connectionStringBuilder, 
-                "connectionString", 
+                connectionStringBuilder,
+                "connectionString",
                 this._secureCredential);
 
             #endregion GSM Validation

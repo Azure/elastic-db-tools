@@ -23,11 +23,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="connectionInfo">Connection info.</param>
         internal SqlUserStoreConnection(SqlConnectionInfo connectionInfo)
         {
-            _conn = new SqlConnection
-            {
-                ConnectionString = connectionInfo.ConnectionString,
-                Credential = connectionInfo.Credential
-            };
+            _conn = connectionInfo.CreateConnection();
         }
 
         /// <summary>

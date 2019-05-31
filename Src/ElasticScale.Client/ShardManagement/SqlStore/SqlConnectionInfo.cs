@@ -43,6 +43,18 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
+        /// Creates a connection with this info.
+        /// </summary>
+        internal SqlConnection CreateConnection()
+        {
+            return new SqlConnection
+            {
+                ConnectionString = ConnectionString,
+                Credential = Credential,
+            };
+        }
+
+        /// <summary>
         /// Creates an instance of <see cref="SqlConnectionInfo"/> which has an updated connection string.
         /// </summary>
         /// <param name="connectionString">The new connection string</param>

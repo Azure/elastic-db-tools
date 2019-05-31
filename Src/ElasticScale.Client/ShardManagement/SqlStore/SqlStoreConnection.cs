@@ -19,7 +19,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         private SqlConnection _conn;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SqlStoreConnection"/> class. 
+        /// Initializes a new instance of the <see cref="SqlStoreConnection"/> class.
         /// </summary>
         /// <param name="kind">
         /// Type of store connection.
@@ -30,11 +30,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         protected internal SqlStoreConnection(StoreConnectionKind kind, SqlConnectionInfo connectionInfo)
         {
             this.Kind = kind;
-            this._conn = new SqlConnection
-            {
-                ConnectionString = connectionInfo.ConnectionString,
-                Credential = connectionInfo.Credential
-            };
+            this._conn = connectionInfo.CreateConnection();
         }
 
         /// <summary>
