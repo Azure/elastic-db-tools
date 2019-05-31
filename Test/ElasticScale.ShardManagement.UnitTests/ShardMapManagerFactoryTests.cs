@@ -167,15 +167,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 ShardMapManagerFactory.CreateSqlShardMapManager(
                     Globals.ShardMapManagerConnectionString,
                     ShardMapManagerCreateMode.ReplaceExisting,
-                    RetryBehavior.DefaultRetryBehavior,
-                    null);
+                    RetryBehavior.DefaultRetryBehavior);
 
                 ShardMapManagerFactory.CreateSqlShardMapManager(
                     Globals.ShardMapManagerConnectionStringForSqlAuth,
                     Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
                     ShardMapManagerCreateMode.ReplaceExisting,
-                    RetryBehavior.DefaultRetryBehavior,
-                    null);
+                    RetryBehavior.DefaultRetryBehavior);
 
                 // Drop test login
                 sqlAuthLogin.Drop();
@@ -246,8 +244,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                         Globals.ShardMapManagerConnectionStringForSqlAuth,
                         Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
                         loadPolicy,
-                        RetryBehavior.DefaultRetryBehavior,
-                        null);
+                        RetryBehavior.DefaultRetryBehavior);
                     Assert.IsNotNull(smm4);
 
                     ShardMapManager smm5 = ShardMapManagerFactory.GetSqlShardMapManager(
@@ -316,7 +313,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                         Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
                         loadPolicy,
                         RetryBehavior.DefaultRetryBehavior,
-                        null,
                         out smm);
                     Assert.IsTrue(success);
                     Assert.IsNotNull(smm);
