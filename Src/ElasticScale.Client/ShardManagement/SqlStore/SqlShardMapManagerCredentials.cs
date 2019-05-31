@@ -12,19 +12,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
     internal sealed class SqlShardMapManagerCredentials
     {
         /// <summary>
-        /// Connection string for shard map manager database.
+        /// Shard map manager data source
         /// </summary>
-        private SqlConnectionStringBuilder _connectionStringShardMapManager;
+        private readonly string _smmDataSource;
 
         /// <summary>
-        /// Connection string for individual shards.
+        /// Shard map manager database
         /// </summary>
-        private SqlConnectionStringBuilder _connectionStringShard;
-
-        /// <summary>
-        /// Secure credential for shard map manager data source.
-        /// </summary>
-        private SqlCredential _secureCredential;
+        private readonly string _smmInitialCatalog;
 
         /// <summary>
         /// Instantiates the object that holds the credentials for accessing SQL Servers
@@ -48,8 +43,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         public SqlShardMapManagerCredentials(SqlConnectionInfo connectionInfo)
         {
             ExceptionUtils.DisallowNullArgument(connectionInfo, "connectionInfo");
-
-            this._secureCredential = connectionInfo.Credential;
 
             // Devnote: If connection string specifies Active Directory authentication and runtime is not
             // .NET 4.6 or higher, then below call will throw.
@@ -81,53 +74,46 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             SqlShardMapManagerCredentials.EnsureCredentials(
                 connectionStringBuilder,
                 "connectionString",
-                this._secureCredential);
+                connectionInfo.Credential);
 
             #endregion GSM Validation
 
-            // Copy the input connection strings.
-            _connectionStringShardMapManager = new SqlConnectionStringBuilder(connectionStringBuilder.ConnectionString);
+            // Generate connectionInfoShardMapManager
+            SqlConnectionStringBuilder connectionStringShardMapManager = new SqlConnectionStringBuilder(connectionStringBuilder.ConnectionString);
 
-            _connectionStringShardMapManager.ApplicationName = ApplicationNameHelper.AddApplicationNameSuffix(
-                _connectionStringShardMapManager.ApplicationName,
+            connectionStringShardMapManager.ApplicationName = ApplicationNameHelper.AddApplicationNameSuffix(
+                connectionStringShardMapManager.ApplicationName,
                 GlobalConstants.ShardMapManagerInternalConnectionSuffixGlobal);
 
-            _connectionStringShard = new SqlConnectionStringBuilder(connectionStringBuilder.ConnectionString);
+            _smmDataSource = connectionStringShardMapManager.DataSource;
+            _smmInitialCatalog = connectionStringShardMapManager.InitialCatalog;
 
-            _connectionStringShard.Remove("Data Source");
-            _connectionStringShard.Remove("Initial Catalog");
+            this.ConnectionInfoShardMapManager =
+                connectionInfo.CloneWithUpdatedConnectionString(connectionStringShardMapManager.ConnectionString);
 
-            _connectionStringShard.ApplicationName = ApplicationNameHelper.AddApplicationNameSuffix(
-                _connectionStringShard.ApplicationName,
+            // Generate connectionInfoShard
+            SqlConnectionStringBuilder connectionStringShard = new SqlConnectionStringBuilder(connectionStringBuilder.ConnectionString);
+
+            connectionStringShard.Remove("Data Source");
+            connectionStringShard.Remove("Initial Catalog");
+
+            connectionStringShard.ApplicationName = ApplicationNameHelper.AddApplicationNameSuffix(
+                connectionStringShard.ApplicationName,
                 GlobalConstants.ShardMapManagerInternalConnectionSuffixLocal);
+
+            this.ConnectionInfoShard =
+                connectionInfo.CloneWithUpdatedConnectionString(connectionStringShard.ConnectionString);
         }
 
         /// <summary>
-        /// Connection string for shard map manager database.
+        /// Connection info for shard map manager database.
         /// </summary>
-        public string ConnectionStringShardMapManager
-        {
-            get
-            {
-                return _connectionStringShardMapManager.ConnectionString;
-            }
-        }
+        public SqlConnectionInfo ConnectionInfoShardMapManager { get; private set; }
 
         /// <summary>
-        /// Secure Credential for shard map manager database.
+        /// Connection info for shards.
         /// </summary>
-        public SqlCredential SecureCredentialShardMapManager => this._secureCredential;
-
-        /// <summary>
-        /// Connection string for shards.
-        /// </summary>
-        public string ConnectionStringShard
-        {
-            get
-            {
-                return _connectionStringShard.ConnectionString;
-            }
-        }
+        public SqlConnectionInfo ConnectionInfoShard { get; private set; }
 
         /// <summary>
         /// Location of Shard Map Manager used for logging purpose.
@@ -138,8 +124,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 return StringUtils.FormatInvariant(
                 "[DataSource={0} Database={1}]",
-                _connectionStringShardMapManager.DataSource,
-                _connectionStringShardMapManager.InitialCatalog);
+                _smmDataSource,
+                _smmInitialCatalog);
             }
         }
 
