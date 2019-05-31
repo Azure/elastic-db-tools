@@ -159,31 +159,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             ShardMapManagerCreateMode createMode,
             Version targetVersion)
         {
-            return CreateSqlShardMapManager(
-                connectionString,
-                null,
-                createMode,
-                targetVersion);
-        }
-
-        /// <summary>
-        /// Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database,
-        /// with <see cref="RetryPolicy.DefaultRetryPolicy"/>.
-        /// </summary>
-        /// <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
-        /// <param name="secureCredential">Secure credential used for creating shard map manager database.</param>
-        /// <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
-        /// <param name="targetVersion">Target version of store to create.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
-        internal static ShardMapManager CreateSqlShardMapManager(
-            string connectionString,
-            SqlCredential secureCredential,
-            ShardMapManagerCreateMode createMode,
-            Version targetVersion)
-        {
             return CreateSqlShardMapManagerImpl(
                 connectionString,
-                secureCredential,
+                null,
                 createMode,
                 RetryBehavior.DefaultRetryBehavior,
                 null,
