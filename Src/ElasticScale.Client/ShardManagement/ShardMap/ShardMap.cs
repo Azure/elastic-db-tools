@@ -947,7 +947,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             }
 
             // Verify that either UserID/Password or provided or integrated authentication is enabled.
-            SqlShardMapManagerCredentials.EnsureCredentials(connectionStringBuilder, "connectionString", connectionInfo.Credential);
+            SqlShardMapManagerCredentials.EnsureCredentials(
+                connectionStringBuilder,
+                "connectionString",
+                connectionInfo.Credential,
+                connectionInfo.AccessToken);
 
             Shard s = shardProvider.ShardInfo;
 
