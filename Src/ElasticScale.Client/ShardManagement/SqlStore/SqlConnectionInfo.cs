@@ -28,29 +28,40 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         internal SqlCredential Credential { get; private set; }
 
         /// <summary>
+        /// Gets the secure SQL Credential.
+        /// </summary>
+        /// <remarks>
+        /// When creating <see cref="SqlConnection"/>, this value will be used for <see cref="SqlConnection.AccessToken"/>.
+        /// </remarks>
+        internal string AccessToken { get; private set; }
+
+        /// <summary>
         /// Creates an instance of <see cref="SqlConnectionInfo"/>.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
         /// <param name="secureCredential">The secure SQL credential.</param>
+        /// <param name="accessToken">The access token.</param>
         internal SqlConnectionInfo(
             string connectionString,
-            SqlCredential secureCredential)
+            SqlCredential secureCredential,
+            string accessToken = null)
         {
             ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
             this.ConnectionString = connectionString;
             this.Credential = secureCredential;
+            this.AccessToken = accessToken;
         }
 
-        /// <summary>
-        /// Creates a connection with this info.
-        /// </summary>
         internal SqlConnection CreateConnection()
         {
             return new SqlConnection
             {
                 ConnectionString = ConnectionString,
                 Credential = Credential,
+#if NET46 || NETCORE
+                AccessToken = AccessToken
+#endif
             };
         }
 
@@ -63,7 +74,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         {
             return new SqlConnectionInfo(
                 connectionString,
-                this.Credential);
+                this.Credential,
+                this.AccessToken);
         }
     }
 }
