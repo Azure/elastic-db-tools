@@ -502,62 +502,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
-        /// Gets <see cref="ShardMapManager"/> from persisted state in a SQL Server database.
-        /// </summary>
-        /// <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
-        /// <param name="secureCredential">Secure credential used for performing operations against shard map manager database(s).</param>
-        /// <param name="loadPolicy">Initialization policy.</param>
-        /// <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
-        /// <param name="retryEventHandler">Event handler for store operation retry events.</param>
-        /// <param name="shardMapManager">Shard map manager object used for performing management and read operations for shard maps,
-        ///     shards and shard mappings or <c>null</c> in case shard map manager does not exist.</param>
-        /// <returns>
-        /// <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
-        /// </returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
-        internal static bool TryGetSqlShardMapManager(
-            string connectionString,
-            SqlCredential secureCredential,
-            ShardMapManagerLoadPolicy loadPolicy,
-            RetryBehavior retryBehavior,
-            EventHandler<RetryingEventArgs> retryEventHandler,
-            out ShardMapManager shardMapManager)
-        {
-            ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
-            ExceptionUtils.DisallowNullArgument(retryBehavior, "retryBehavior");
-
-            using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
-            {
-                Tracer.TraceInfo(
-                    TraceSourceConstants.ComponentNames.ShardMapManagerFactory,
-                    "TryGetSqlShardMapManager",
-                    "Start; ");
-
-                Stopwatch stopwatch = Stopwatch.StartNew();
-
-                shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    connectionString,
-                    secureCredential,
-                    loadPolicy,
-                    retryBehavior,
-                    retryEventHandler,
-                    false);
-
-                stopwatch.Stop();
-
-                Tracer.TraceInfo(
-                    TraceSourceConstants.ComponentNames.ShardMapManagerFactory,
-                    "TryGetSqlShardMapManager",
-                    "Complete; Duration: {0}",
-                    stopwatch.Elapsed);
-
-                return shardMapManager != null;
-            }
-        }
-
-        /// <summary>
         /// Gets <see cref="ShardMapManager"/> from persisted state in a SQL Server database, with <see cref="RetryBehavior.DefaultRetryBehavior"/>.
         /// </summary>
         /// <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>

@@ -314,7 +314,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                         Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
                         loadPolicy,
                         RetryBehavior.DefaultRetryBehavior,
-                        null,
                         out smm);
                     Assert.IsTrue(success);
                     Assert.IsNotNull(smm);
