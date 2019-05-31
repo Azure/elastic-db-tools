@@ -7,9 +7,9 @@ using System.Data.SqlClient;
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {
     /// <summary>
-    /// Arguments used to create a <see cref="SqlStoreConnection"/> or <see cref="SqlUserStoreConnection"/>.
+    /// Arguments used to create a <see cref="SqlConnection"/>.
     /// </summary>
-    internal sealed class SqlConnectionInfo
+    public  sealed class SqlConnectionInfo
     {
         /// <summary>
         /// Gets the connection string.
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         internal SqlCredential Credential { get; private set; }
 
         /// <summary>
-        /// Gets the secure SQL Credential.
+        /// Gets the access token.
         /// </summary>
         /// <remarks>
         /// When creating <see cref="SqlConnection"/>, this value will be used for <see cref="SqlConnection.AccessToken"/>.
@@ -39,11 +39,40 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Creates an instance of <see cref="SqlConnectionInfo"/>.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
+        public static SqlConnectionInfo Create(string connectionString)
+        {
+            return new SqlConnectionInfo(connectionString, null, null);
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="SqlConnectionInfo"/> with a secure credential.
+        /// </summary>
+        /// <param name="connectionString">The connection string.</param>
+        /// <param name="secureCredential">The secure SQL credential.</param>
+        public static SqlConnectionInfo CreateWithCredential(string connectionString, SqlCredential secureCredential)
+        {
+            return new SqlConnectionInfo(connectionString, secureCredential, null);
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="SqlConnectionInfo"/> with a secure credential.
+        /// </summary>
+        /// <param name="connectionString">The connection string.</param>
+        /// <param name="accessToken">The access token.</param>
+        public static SqlConnectionInfo CreateWithAccessToken(string connectionString, string accessToken)
+        {
+            return new SqlConnectionInfo(connectionString, null, accessToken);
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="SqlConnectionInfo"/>.
+        /// </summary>
+        /// <param name="connectionString">The connection string.</param>
         /// <param name="secureCredential">The secure SQL credential.</param>
         /// <param name="accessToken">The access token.</param>
         internal SqlConnectionInfo(
             string connectionString,
-            SqlCredential secureCredential,
+            SqlCredential secureCredential = null,
             string accessToken = null)
         {
             ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
