@@ -84,14 +84,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
         internal SqlConnection CreateConnection()
         {
-            return new SqlConnection
+            SqlConnection conn = new SqlConnection
             {
                 ConnectionString = ConnectionString,
                 Credential = Credential,
-#if NET46 || NETCORE
-                AccessToken = AccessToken
-#endif
             };
+
+#if NET46 || NETCORE
+            conn.AccessToken = AccessToken;
+#else
+            if (AccessToken != null)
+            {
+                throw new NotSupportedException("AccessToken is not supported for this platform");
+            }
+#endif
+
+            return conn;
         }
 
         /// <summary>
