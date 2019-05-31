@@ -244,8 +244,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                         Globals.ShardMapManagerConnectionStringForSqlAuth,
                         Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
                         loadPolicy,
-                        RetryBehavior.DefaultRetryBehavior,
-                        null);
+                        RetryBehavior.DefaultRetryBehavior);
                     Assert.IsNotNull(smm4);
 
                     ShardMapManager smm5 = ShardMapManagerFactory.GetSqlShardMapManager(

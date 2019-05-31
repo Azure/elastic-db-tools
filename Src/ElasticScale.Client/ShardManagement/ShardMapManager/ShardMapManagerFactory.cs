@@ -482,8 +482,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
                 shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    connectionString,
-                    secureCredential,
+                    new SqlConnectionInfo(
+                        connectionString,
+                        secureCredential),
                     loadPolicy,
                     retryBehavior,
                     null,
@@ -561,8 +562,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             RetryBehavior retryBehavior)
         {
             return GetSqlShardMapManager(
-                connectionString,
-                null,
+                new SqlConnectionInfo(
+                    connectionString,
+                    null),
                 loadPolicy,
                 retryBehavior,
                 null);
@@ -586,8 +588,9 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             RetryBehavior retryBehavior)
         {
             return GetSqlShardMapManager(
-                connectionString,
-                secureCredential,
+                new SqlConnectionInfo(
+                    connectionString,
+                    secureCredential),
                 loadPolicy,
                 retryBehavior,
                 null);
@@ -604,8 +607,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <summary>
         /// Gets <see cref="ShardMapManager"/> from persisted state in a SQL Server database.
         /// </summary>
-        /// <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
-        /// <param name="secureCredential">Secure credential used for performing operations against shard map manager database(s).</param>
+        /// <param name="connectionInfo">Connection parameters used for performing operations against shard map manager database(s).</param>
         /// <param name="loadPolicy">Initialization policy.</param>
         /// <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
         /// <param name="retryEventHandler">Event handler for store operation retry events.</param>
@@ -614,14 +616,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// shard maps, shards and shard mappings.
         /// </returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
-        internal static ShardMapManager GetSqlShardMapManager(
-            string connectionString,
-            SqlCredential secureCredential,
+        private static ShardMapManager GetSqlShardMapManager(
+            SqlConnectionInfo connectionInfo,
             ShardMapManagerLoadPolicy loadPolicy,
             RetryBehavior retryBehavior,
             EventHandler<RetryingEventArgs> retryEventHandler)
         {
-            ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
+            ExceptionUtils.DisallowNullArgument(connectionInfo, "connectionInfo");
             ExceptionUtils.DisallowNullArgument(retryBehavior, "retryBehavior");
 
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
@@ -634,8 +635,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
                 ShardMapManager shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    connectionString,
-                    secureCredential,
+                    connectionInfo,
                     loadPolicy,
                     retryBehavior,
                     retryEventHandler,
@@ -658,8 +658,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <summary>
         /// Gets <see cref="ShardMapManager"/> from persisted state in a SQL Server database.
         /// </summary>
-        /// <param name="connectionString">Connection parameters used for performing operations against shard map manager database(s).</param>
-        /// <param name="secureCredential">Secure credential used for performing operations against shard map manager database(s).</param>
+        /// <param name="connectionInfo">Connection parameters used for performing operations against shard map manager database(s).</param>
         /// <param name="loadPolicy">Initialization policy.</param>
         /// <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
         /// <param name="retryEventHandler">Event handler for store operation retry events.</param>
@@ -670,21 +669,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "We need to hand of the ShardMapManager to the user.")]
         private static ShardMapManager GetSqlShardMapManager(
-            string connectionString,
-            SqlCredential secureCredential,
+            SqlConnectionInfo connectionInfo,
             ShardMapManagerLoadPolicy loadPolicy,
             RetryBehavior retryBehavior,
             EventHandler<RetryingEventArgs> retryEventHandler,
             bool throwOnFailure)
         {
-            Debug.Assert(connectionString != null);
+            Debug.Assert(connectionInfo != null);
             Debug.Assert(retryBehavior != null);
 
-            SqlShardMapManagerCredentials credentials =
-                new SqlShardMapManagerCredentials(
-                    new SqlConnectionInfo(
-                        connectionString,
-                        secureCredential));
+            SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(connectionInfo);
 
             StoreOperationFactory storeOperationFactory = new StoreOperationFactory();
 
