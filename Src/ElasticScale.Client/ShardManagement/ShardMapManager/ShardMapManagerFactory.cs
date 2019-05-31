@@ -271,34 +271,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database.
         /// </summary>
         /// <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
-        /// <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
-        /// <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
-        /// <param name="retryEventHandler">Event handler for store operation retry events.</param>
-        /// <returns>
-        /// A shard map manager object used for performing management and read operations for
-        /// shard maps, shards and shard mappings.
-        /// </returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
-        internal static ShardMapManager CreateSqlShardMapManager(
-            string connectionString,
-            ShardMapManagerCreateMode createMode,
-            RetryBehavior retryBehavior,
-            EventHandler<RetryingEventArgs> retryEventHandler)
-        {
-            return CreateSqlShardMapManager(
-                connectionString,
-                null,
-                createMode,
-                retryBehavior,
-                retryEventHandler);
-        }
-
-        /// <summary>
-        /// Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database.
-        /// </summary>
-        /// <param name="connectionString">Connection parameters used for creating shard map manager database.</param>
         /// <param name="secureCredential">Secure credential used for creating shard map manager database.</param>
         /// <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
         /// <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>

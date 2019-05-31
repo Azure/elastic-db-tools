@@ -167,15 +167,13 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 ShardMapManagerFactory.CreateSqlShardMapManager(
                     Globals.ShardMapManagerConnectionString,
                     ShardMapManagerCreateMode.ReplaceExisting,
-                    RetryBehavior.DefaultRetryBehavior,
-                    null);
+                    RetryBehavior.DefaultRetryBehavior);
 
                 ShardMapManagerFactory.CreateSqlShardMapManager(
                     Globals.ShardMapManagerConnectionStringForSqlAuth,
                     Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
                     ShardMapManagerCreateMode.ReplaceExisting,
-                    RetryBehavior.DefaultRetryBehavior,
-                    null);
+                    RetryBehavior.DefaultRetryBehavior);
 
                 // Drop test login
                 sqlAuthLogin.Drop();
