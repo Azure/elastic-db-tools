@@ -153,10 +153,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             }
 
             // Check for active directory integrated authentication (if supported)
-            if (connectionString.ContainsKey(ShardMapUtils.Authentication) &&
-                connectionString[ShardMapUtils.Authentication].ToString().Equals(ShardMapUtils.ActiveDirectoryIntegratedStr))
+            if (connectionString.ContainsKey(ShardMapUtils.Authentication))
             {
-                return;
+                string authentication = connectionString[ShardMapUtils.Authentication].ToString();
+                if (authentication.Equals(ShardMapUtils.ActiveDirectoryIntegratedStr, StringComparison.OrdinalIgnoreCase)
+                    || authentication.Equals(ShardMapUtils.ActiveDirectoryInteractiveStr, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
             }
 
             // If secure credential not specified, verify that user/pwd are in the connection string. If secure credential

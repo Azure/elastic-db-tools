@@ -16,7 +16,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
     {
         /// <summary>
         /// SqlConnectionStringBuilder property that allows one
-        /// to specify the number of reconnect attempts on connection failure 
+        /// to specify the number of reconnect attempts on connection failure
         /// </summary>
         internal static readonly string ConnectRetryCount = "ConnectRetryCount";
 
@@ -28,10 +28,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
         /// <summary>
         /// String representation of SqlAuthenticationMethod.ActiveDirectoryIntegrated
-        /// SqlAuthenticationMethod.ActiveDirectoryIntegrated.ToString() cannot be used 
+        /// SqlAuthenticationMethod.ActiveDirectoryIntegrated.ToString() cannot be used
         /// because it may not be available in the .NET framework version that we are running in
         /// </summary>
         internal static readonly string ActiveDirectoryIntegratedStr = "ActiveDirectoryIntegrated";
+
+        /// <summary>
+        /// String representation of SqlAuthenticationMethod.ActiveDirectoryInteractive
+        /// SqlAuthenticationMethod.ActiveDirectoryInteractive.ToString() cannot be used
+        /// because it may not be available in the .NET framework version that we are running in
+        /// </summary>
+        internal static readonly string ActiveDirectoryInteractiveStr = "ActiveDirectoryInteractive";
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static ShardMapUtils()
