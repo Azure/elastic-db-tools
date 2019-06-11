@@ -5,11 +5,11 @@
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <AssemblyTitle>Microsoft Azure SQL Database: Elastic Database Client Library</AssemblyTitle>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <Version>2.1.0</Version>
+    <Version>2.2.0</Version>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>net451;netstandard2.0</TargetFrameworks>
     <PackageTags>Microsoft;Elastic;Scale;Azure;SQL;DB;Database;Shard;Sharding;Management;Query;azureofficial</PackageTags>
-    <PackageReleaseNotes>Added support for LookupOptions in ListShardMap.GetMappingForKey(....) , ListShardMap.TryGetMappingForKey(....), RangeShardMap.GetMappingForKey(....), and RangeShardMap.TryGetMappingForKey(....). This gives the ability to lookup from cache instead of only from store, which can greatly improve performance.</PackageReleaseNotes>
+    <PackageReleaseNotes>Added support for ActiveDirectoryInteractive authentication. Assemblies are now signed.</PackageReleaseNotes>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
     <PackageProjectUrl>https://github.com/Azure/elastic-db-tools</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/Azure/elastic-db-tools/blob/master/LICENSE</PackageLicenseUrl>
