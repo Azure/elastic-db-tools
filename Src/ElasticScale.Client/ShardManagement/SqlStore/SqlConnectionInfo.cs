@@ -28,12 +28,25 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         internal SqlCredential Credential { get; private set; }
 
         /// <summary>
+        /// The access token callback reference.
+        /// </summary>
+        internal AccessTokenCallBack AccessTokenCallBackReference { get; private set; }
+
+        /// <summary>
         /// Gets the access token.
         /// </summary>
         /// <remarks>
         /// When creating <see cref="SqlConnection"/>, this value will be used for <see cref="SqlConnection.AccessToken"/>.
         /// </remarks>
         internal string AccessToken { get; private set; }
+
+        /// <summary>
+        /// The access token callback delegate
+        /// </summary>
+        /// <remarks>
+        /// When creating <see cref="SqlConnection"/>, this value will be used for generating <see cref="SqlConnection.AccessToken"/>.
+        /// </remarks>
+        public delegate string AccessTokenCallBack();
 
         /// <summary>
         /// Creates an instance of <see cref="SqlConnectionInfo"/>.
@@ -65,21 +78,34 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
+        /// Creates an instance of <see cref="SqlConnectionInfo"/> with a secure credential.
+        /// </summary>
+        /// <param name="connectionString">The connection string.</param>
+        /// <param name="accessToken">The access token.</param>
+        public static SqlConnectionInfo CreateWithAccessTokenCallBack(string connectionString, AccessTokenCallBack accessTokenCallBack)
+        {
+            return new SqlConnectionInfo(connectionString, null, null, accessTokenCallBack);
+        }
+
+        /// <summary>
         /// Creates an instance of <see cref="SqlConnectionInfo"/>.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
         /// <param name="secureCredential">The secure SQL credential.</param>
         /// <param name="accessToken">The access token.</param>
+        /// <param name="accessTokenCallBack">The access token callback reference.</param>
         internal SqlConnectionInfo(
             string connectionString,
             SqlCredential secureCredential = null,
-            string accessToken = null)
+            string accessToken = null,
+            AccessTokenCallBack accessTokenCallBack = null)
         {
             ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
             this.ConnectionString = connectionString;
             this.Credential = secureCredential;
             this.AccessToken = accessToken;
+            this.AccessTokenCallBackReference = accessTokenCallBack;
         }
 
         internal SqlConnection CreateConnection()
@@ -91,9 +117,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             };
 
 #if NET46 || NETCORE
-            conn.AccessToken = AccessToken;
+            if(AccessTokenCallBackReference != null)
+            {
+                conn.AccessToken = AccessTokenCallBackReference();
+            }
+            else
+            {
+                conn.AccessToken = AccessToken;
+            }
 #else
-            if (AccessToken != null)
+            if (AccessToken != null || AccessTokenCallBackReference != null)
             {
                 throw new NotSupportedException("AccessToken is not supported for this platform");
             }
@@ -112,7 +145,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             return new SqlConnectionInfo(
                 connectionString,
                 this.Credential,
-                this.AccessToken);
+                this.AccessToken,
+                this.AccessTokenCallBackReference);
         }
     }
 }

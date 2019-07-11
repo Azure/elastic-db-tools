@@ -951,7 +951,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 connectionStringBuilder,
                 "connectionString",
                 connectionInfo.Credential,
-                connectionInfo.AccessToken);
+                connectionInfo.AccessToken,
+                connectionInfo.AccessTokenCallBackReference);
 
             Shard s = shardProvider.ShardInfo;
 

@@ -75,7 +75,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 connectionStringBuilder,
                 "connectionString",
                 connectionInfo.Credential,
-                connectionInfo.AccessToken);
+                connectionInfo.AccessToken,
+                connectionInfo.AccessTokenCallBackReference);
 
             #endregion GSM Validation
 
@@ -145,12 +146,16 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <param name="accessToken">
         /// The access token.s
         /// </param>
+        /// <param name="accessTokenCallBack">
+        /// The access token callback function
+        /// </param>
         internal static void EnsureCredentials(
             SqlConnectionStringBuilder connectionString,
             string parameterName,
             SqlCredential secureCredential,
-            string accessToken)
-        {
+            string accessToken,
+            SqlConnectionInfo.AccessTokenCallBack accessTokenCallBack)
+        { 
             // Check for integrated authentication
             if (connectionString.IntegratedSecurity)
             {
@@ -166,7 +171,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             // If secure credential not specified, verify that user/pwd are in the connection string. If secure credential
             // specified, verify user/pwd are not in insecurely in the connection string.
-            bool expectUserIdPasswordInConnectionString = secureCredential == null && accessToken == null;
+            bool expectUserIdPasswordInConnectionString = secureCredential == null && accessToken == null && accessTokenCallBack == null;
             EnsureHasCredential(
                 connectionString,
                 parameterName,
