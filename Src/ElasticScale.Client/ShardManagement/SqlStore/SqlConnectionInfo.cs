@@ -28,12 +28,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         internal SqlCredential Credential { get; private set; }
 
         /// <summary>
-        /// Gets the access token.
+        /// Gets the access token factory.
         /// </summary>
         /// <remarks>
-        /// When creating <see cref="SqlConnection"/>, this value will be used for <see cref="SqlConnection.AccessToken"/>.
+        /// When creating <see cref="SqlConnection"/>, this function will be used for <see cref="SqlConnection.AccessToken"/>.
         /// </remarks>
-        internal string AccessToken { get; private set; }
+        internal Func<string> AccessTokenFactory { get; private set; }
 
         /// <summary>
         /// Creates an instance of <see cref="SqlConnectionInfo"/>.
@@ -58,10 +58,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// Creates an instance of <see cref="SqlConnectionInfo"/> with a secure credential.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
-        /// <param name="accessToken">The access token.</param>
-        public static SqlConnectionInfo CreateWithAccessToken(string connectionString, string accessToken)
+        /// <param name="accessTokenFactory">A function that returns a currently valid access token.</param>
+        public static SqlConnectionInfo CreateWithAccessTokenFactory(string connectionString, Func<string> accessTokenFactory)
         {
-            return new SqlConnectionInfo(connectionString, null, accessToken);
+            return new SqlConnectionInfo(connectionString, null, accessTokenFactory);
         }
 
         /// <summary>
@@ -69,17 +69,17 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
         /// <param name="secureCredential">The secure SQL credential.</param>
-        /// <param name="accessToken">The access token.</param>
+        /// <param name="accessTokenFactory">A function that returns an access token.</param>
         internal SqlConnectionInfo(
             string connectionString,
             SqlCredential secureCredential = null,
-            string accessToken = null)
+            Func<string> accessTokenFactory = null)
         {
             ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
             this.ConnectionString = connectionString;
             this.Credential = secureCredential;
-            this.AccessToken = accessToken;
+            this.AccessTokenFactory = accessTokenFactory;
         }
 
         internal SqlConnection CreateConnection()
@@ -90,14 +90,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 Credential = Credential,
             };
 
-#if NET46 || NETCORE
-            conn.AccessToken = AccessToken;
-#else
-            if (AccessToken != null)
+            if (AccessTokenFactory != null)
             {
+#if NET46 || NETCORE
+                conn.AccessToken = AccessTokenFactory();
+#else
                 throw new NotSupportedException("AccessToken is not supported for this platform");
-            }
 #endif
+            }
 
             return conn;
         }
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             return new SqlConnectionInfo(
                 connectionString,
                 this.Credential,
-                this.AccessToken);
+                this.AccessTokenFactory);
         }
     }
 }
