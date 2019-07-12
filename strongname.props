@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <!-- Strong name signature needed because referer might be strongly named.
+         Note that due to change in build system, the strong name key was changed from elastic-db-tools v1.0. -->
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\elastic-db-tools.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
+  </PropertyGroup>
+</Project>

@@ -5,6 +5,7 @@
     <NoWarn>0649;$(NoWarn)</NoWarn>
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('build.props'))" />
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('strongname.props'))" />
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0-preview-20170628-02" />
