@@ -62,19 +62,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </remarks>
         public MultiShardConnection(IEnumerable<Shard> shards, string connectionString)
         {
-            if (shards == null)
-            {
-                throw new ArgumentNullException("shards");
-            }
-
             SqlConnectionStringBuilder connectionStringBuilder = ValidateConnectionString(connectionString);
-
-            // Force evaluation of the input enumerable so that we don't evaluate it multiple times later
-            this.Shards = shards.ToList();
-            ValidateNotEmpty(this.Shards, "shards");
-
-            this.ShardConnections = this.Shards.Select(
-                s => CreateDbConnectionForLocation(s.Location, connectionStringBuilder)).ToList();
+            InitializeShardConnections(shards, connectionStringBuilder);
         }
 
         /// <summary>
@@ -91,20 +80,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </remarks>
         public MultiShardConnection(IEnumerable<ShardLocation> shardLocations, string connectionString)
         {
-            if (shardLocations == null)
-            {
-                throw new ArgumentNullException("shardLocations");
-            }
-
             SqlConnectionStringBuilder connectionStringBuilder = ValidateConnectionString(connectionString);
-
-            // Force evaluation of the input enumerable so that we don't evaluate it multiple times later
-            IList<ShardLocation> shardLocationsList = shardLocations.ToList();
-            ValidateNotEmpty(shardLocationsList, "shardLocations");
-
-            this.Shards = null;
-            this.ShardConnections = shardLocationsList.Select(
-                s => CreateDbConnectionForLocation(s, connectionStringBuilder)).ToList();
+            InitializeShardConnections(shardLocations, connectionStringBuilder);
         }
 
         /// <summary>
@@ -225,6 +202,41 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
 
             return connectionStringBuilder;
+        }
+
+        private void InitializeShardConnections(
+            IEnumerable<Shard> shards,
+            SqlConnectionStringBuilder connectionStringBuilder)
+        {
+            if (shards == null)
+            {
+                throw new ArgumentNullException("shards");
+            }
+
+            // Force evaluation of the input enumerable so that we don't evaluate it multiple times later
+            this.Shards = shards.ToList();
+            ValidateNotEmpty(this.Shards, "shards");
+
+            this.ShardConnections = this.Shards.Select(
+                s => CreateDbConnectionForLocation(s.Location, connectionStringBuilder)).ToList();
+        }
+
+        private void InitializeShardConnections(
+            IEnumerable<ShardLocation> shardLocations,
+            SqlConnectionStringBuilder connectionStringBuilder)
+        {
+            if (shardLocations == null)
+            {
+                throw new ArgumentNullException("shardLocations");
+            }
+
+            // Force evaluation of the input enumerable so that we don't evaluate it multiple times later
+            IList<ShardLocation> shardLocationsList = shardLocations.ToList();
+            ValidateNotEmpty(shardLocationsList, "shardLocations");
+
+            this.Shards = null;
+            this.ShardConnections = shardLocationsList.Select(
+                s => CreateDbConnectionForLocation(s, connectionStringBuilder)).ToList();
         }
 
         // Suppression rationale:  The SqlConnections we are creating will underlie the object we are returning. We do not want to dispose them.
