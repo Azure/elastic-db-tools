@@ -44,6 +44,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         private bool _disposed = false;
 
+        /// <summary>
+        /// The credentials for connection.
+        /// </summary>
+        private SqlConnectionInfo _connectionInfo;
+
 #endregion
 
 #region Ctors
@@ -62,8 +67,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </remarks>
         public MultiShardConnection(IEnumerable<Shard> shards, string connectionString)
         {
-            SqlConnectionStringBuilder connectionStringBuilder = ValidateConnectionString(connectionString);
-            InitializeShardConnections(shards, connectionStringBuilder);
+            InitializeConnectionInfo(connectionString);
+            InitializeShardConnections(shards);
         }
 
         /// <summary>
@@ -80,8 +85,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </remarks>
         public MultiShardConnection(IEnumerable<ShardLocation> shardLocations, string connectionString)
         {
-            SqlConnectionStringBuilder connectionStringBuilder = ValidateConnectionString(connectionString);
-            InitializeShardConnections(shardLocations, connectionStringBuilder);
+            InitializeConnectionInfo(connectionString);
+            InitializeShardConnections(shardLocations);
         }
 
         /// <summary>
@@ -176,7 +181,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        private static SqlConnectionStringBuilder ValidateConnectionString(string connectionString)
+        private void InitializeConnectionInfo(string connectionString)
         {
             if (connectionString == null)
             {
@@ -201,12 +206,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 throw new ArgumentException("InitialCatalog must not be set in the connectionStringBuilder");
             }
 
-            return connectionStringBuilder;
+            this._connectionInfo = new SqlConnectionInfo(connectionStringBuilder.ToString());
         }
 
-        private void InitializeShardConnections(
-            IEnumerable<Shard> shards,
-            SqlConnectionStringBuilder connectionStringBuilder)
+        private void InitializeShardConnections(IEnumerable<Shard> shards)
         {
             if (shards == null)
             {
@@ -218,12 +221,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             ValidateNotEmpty(this.Shards, "shards");
 
             this.ShardConnections = this.Shards.Select(
-                s => CreateDbConnectionForLocation(s.Location, connectionStringBuilder)).ToList();
+                s => CreateDbConnectionForLocation(s.Location, _connectionInfo)).ToList();
         }
 
-        private void InitializeShardConnections(
-            IEnumerable<ShardLocation> shardLocations,
-            SqlConnectionStringBuilder connectionStringBuilder)
+        private void InitializeShardConnections(IEnumerable<ShardLocation> shardLocations)
         {
             if (shardLocations == null)
             {
@@ -236,7 +237,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 
             this.Shards = null;
             this.ShardConnections = shardLocationsList.Select(
-                s => CreateDbConnectionForLocation(s, connectionStringBuilder)).ToList();
+                s => CreateDbConnectionForLocation(s, _connectionInfo)).ToList();
         }
 
         // Suppression rationale:  The SqlConnections we are creating will underlie the object we are returning. We do not want to dispose them.
@@ -244,18 +245,20 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         private static Tuple<ShardLocation, DbConnection> CreateDbConnectionForLocation(
             ShardLocation shardLocation,
-            SqlConnectionStringBuilder connectionStringBuilder)
+            SqlConnectionInfo connectionInfo)
         {
-            return new Tuple<ShardLocation, DbConnection>
-                    (
-                    shardLocation,
-                    new SqlConnection(
-                        new SqlConnectionStringBuilder(connectionStringBuilder.ConnectionString)
-                        {
-                            DataSource = shardLocation.DataSource,
-                            InitialCatalog = shardLocation.Database
-                        }.ConnectionString)
-                    );
+            string shardConnectionString =
+                new SqlConnectionStringBuilder(connectionInfo.ConnectionString)
+                {
+                    DataSource = shardLocation.DataSource,
+                    InitialCatalog = shardLocation.Database
+                }.ConnectionString;
+
+            SqlConnectionInfo shardConnectionInfo = connectionInfo.CloneWithUpdatedConnectionString(shardConnectionString);
+
+            return new Tuple<ShardLocation, DbConnection>(
+                shardLocation,
+                shardConnectionInfo.CreateConnection());
         }
 
         // Suppression rationale:  We explicitly do not want to throw here, so we must catch all exceptions.
