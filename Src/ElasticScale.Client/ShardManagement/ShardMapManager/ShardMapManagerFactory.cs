@@ -252,17 +252,41 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"),
          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0"),
-        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
         public static ShardMapManager CreateSqlShardMapManager(
             string connectionString,
             SqlCredential secureCredential,
             ShardMapManagerCreateMode createMode,
             RetryBehavior retryBehavior)
         {
-            return CreateSqlShardMapManagerImpl(
+            return CreateSqlShardMapManager(
                 new SqlConnectionInfo(
                     connectionString,
                     secureCredential),
+                createMode,
+                retryBehavior);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database.
+        /// </summary>
+        /// <param name="connectionInfo">Connection parameters used for creating shard map manager database.</param>
+        /// <param name="createMode">Describes the option selected by the user for creating shard map manager database.</param>
+        /// <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
+        /// <returns>
+        /// A shard map manager object used for performing management and read operations for
+        /// shard maps, shards and shard mappings.
+        /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"),
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0"),
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
+        public static ShardMapManager CreateSqlShardMapManager(
+            SqlConnectionInfo connectionInfo,
+            ShardMapManagerCreateMode createMode,
+            RetryBehavior retryBehavior)
+        {
+            return CreateSqlShardMapManagerImpl(
+                connectionInfo,
                 createMode,
                 retryBehavior,
                 null,
@@ -469,7 +493,36 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             RetryBehavior retryBehavior,
             out ShardMapManager shardMapManager)
         {
-            ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
+            return TryGetSqlShardMapManager(
+                new SqlConnectionInfo(
+                    connectionString,
+                    secureCredential),
+                loadPolicy,
+                retryBehavior,
+                out shardMapManager);
+        }
+
+        /// <summary>
+        /// Gets <see cref="ShardMapManager"/> from persisted state in a SQL Server database.
+        /// </summary>
+        /// <param name="connectionInfo">Connection parameters used for performing operations against shard map manager database(s).</param>
+        /// <param name="loadPolicy">Initialization policy.</param>
+        /// <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
+        /// <param name="shardMapManager">Shard map manager object used for performing management and read operations for shard maps,
+        ///     shards and shard mappings or <c>null</c> in case shard map manager does not exist.</param>
+        /// <returns>
+        /// <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
+        /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#"),
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0"),
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
+        public static bool TryGetSqlShardMapManager(
+            SqlConnectionInfo connectionInfo,
+            ShardMapManagerLoadPolicy loadPolicy,
+            RetryBehavior retryBehavior,
+            out ShardMapManager shardMapManager)
+        {
+            ExceptionUtils.DisallowNullArgument(connectionInfo, "connectionInfo");
             ExceptionUtils.DisallowNullArgument(retryBehavior, "retryBehavior");
 
             using (ActivityIdScope activityIdScope = new ActivityIdScope(Guid.NewGuid()))
@@ -482,9 +535,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
                 shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(
-                    new SqlConnectionInfo(
-                        connectionString,
-                        secureCredential),
+                    connectionInfo,
                     loadPolicy,
                     retryBehavior,
                     null,
@@ -591,6 +642,27 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 new SqlConnectionInfo(
                     connectionString,
                     secureCredential),
+                loadPolicy,
+                retryBehavior);
+        }
+
+        /// <summary>
+        /// Gets <see cref="ShardMapManager"/> from persisted state in a SQL Server database.
+        /// </summary>
+        /// <param name="connectionInfo">Connection parameters used for performing operations against shard map manager database(s).</param>
+        /// <param name="loadPolicy">Initialization policy.</param>
+        /// <param name="retryBehavior">Behavior for detecting transient exceptions in the store.</param>
+        /// <returns>
+        /// A shard map manager object used for performing management and read operations for
+        /// shard maps, shards and shard mappings.
+        /// </returns>
+        public static ShardMapManager GetSqlShardMapManager(
+            SqlConnectionInfo connectionInfo,
+            ShardMapManagerLoadPolicy loadPolicy,
+            RetryBehavior retryBehavior)
+        {
+            return GetSqlShardMapManager(
+                connectionInfo,
                 loadPolicy,
                 retryBehavior,
                 null);
