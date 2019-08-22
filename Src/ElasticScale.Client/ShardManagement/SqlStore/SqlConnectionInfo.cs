@@ -92,10 +92,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 
             if (AccessTokenFactory != null)
             {
-#if NET46 || NETCORE
-                conn.AccessToken = AccessTokenFactory();
-#else
+#if NET451
                 throw new NotSupportedException("AccessToken is not supported for this platform");
+#else
+                conn.AccessToken = AccessTokenFactory();
 #endif
             }
 
