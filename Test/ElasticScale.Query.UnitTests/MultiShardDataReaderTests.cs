@@ -125,15 +125,15 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             //          BUT, since we are writing tests at a lower level than that, we need to open
             //          the connections manually here.  Hence the loop below.
             //
-            foreach (var conn in _shardConnection.ShardConnections)
+            foreach (var conn in _shardConnection.GetShardConnections())
             {
                 conn.Item2.Open();
             }
 
-            _conn1 = (SqlConnection)_shardConnection.ShardConnections[0].Item2;
-            _conn2 = (SqlConnection)_shardConnection.ShardConnections[1].Item2;
-            _conn3 = (SqlConnection)_shardConnection.ShardConnections[2].Item2;
-            _conns = _shardConnection.ShardConnections.Select(x => (SqlConnection)x.Item2);
+            _conn1 = (SqlConnection)_shardConnection.GetShardConnections()[0].Item2;
+            _conn2 = (SqlConnection)_shardConnection.GetShardConnections()[1].Item2;
+            _conn3 = (SqlConnection)_shardConnection.GetShardConnections()[2].Item2;
+            _conns = _shardConnection.GetShardConnections().Select(x => (SqlConnection)x.Item2);
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         [TestCleanup()]
         public void MyTestCleanup()
         {
-            foreach (var conn in _shardConnection.ShardConnections)
+            foreach (var conn in _shardConnection.GetShardConnections())
             {
                 conn.Item2.Close();
             }

@@ -447,26 +447,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         {
             Contract.Requires(commandRetryPolicy != null && connectionRetryPolicy != null);
 
-            try
-            {
-                return this.ExecuteReaderAsync(
-                    behavior,
-                    CancellationToken.None,
-                    commandRetryPolicy,
-                    connectionRetryPolicy,
-                    executionPolicy).Result;
-            }
-            catch (Exception ex)
-            {
-                AggregateException aex = ex as AggregateException;
-
-                if (null != aex)
-                {
-                    throw aex.Flatten().InnerException;
-                }
-
-                throw;
-            }
+            return this.ExecuteReaderAsync(
+                behavior,
+                CancellationToken.None,
+                commandRetryPolicy,
+                connectionRetryPolicy,
+                executionPolicy).GetAwaiter().GetResult();
         }
 
 #endregion
@@ -1235,7 +1221,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         private List<Tuple<ShardLocation, DbCommand>> GetShardDbCommands()
         {
             return this.Connection
-                       .ShardConnections
+                       .GetShardConnections()
                        .Select(sc => new Tuple<ShardLocation, DbCommand>(sc.Item1, MultiShardUtils.CloneDbCommand(_dbCommand, sc.Item2)))
                        .ToList();
         }

@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 {
     /// <summary>
-    /// Tests for end to end scenarios where a user 
+    /// Tests for end to end scenarios where a user
     /// connects to his shards, executes commands against them
     /// and receives results
     /// </summary>
@@ -306,7 +306,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
                 "raiserror('blah', 16, 0)",
                 MultiShardExecutionPolicy.CompleteResults);
 
-            // We don't know exactly how many child exceptions will happen, because the 
+            // We don't know exactly how many child exceptions will happen, because the
             // first exception that is seen will cause the children to be canceled.
             AssertExtensions.AssertGreaterThanOrEqualTo(1, e.InnerExceptions.Count);
             AssertExtensions.AssertLessThanOrEqualTo(_shardMap.GetShards().Count(), e.InnerExceptions.Count);
@@ -403,7 +403,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         }
 
         /// <summary>
-        /// Basic test for async api(s) 
+        /// Basic test for async api(s)
         /// Also demonstrates the async pattern of this library
         /// The Sync api is implicitly tested in MultiShardDataReaderTests::TestSimpleSelect
         /// </summary>
@@ -593,7 +593,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             {
                 using (var conn = new MultiShardConnection(_shardMap.GetShards(), MultiShardTestUtils.ShardConnectionString))
                 {
-                    conn.ShardConnections.Add(new Tuple<ShardLocation, System.Data.Common.DbConnection>(badShard,
+                    conn.GetShardConnections().Add(new Tuple<ShardLocation, DbConnection>(badShard,
                         badConn));
                     using (var cmd = conn.CreateCommand())
                     {
@@ -767,7 +767,7 @@ end";
 
                 cmd.ShardExecutionBegan += (obj, args) =>
                 {
-                    // If ShardExecutionBegan were only signaled by one thread, 
+                    // If ShardExecutionBegan were only signaled by one thread,
                     // then this would hang forever.
                     barrier.SignalAndWait(barrierTimeout);
                 };
@@ -788,13 +788,13 @@ end";
                 AssertExtensions.WaitAndAssertThrows<TaskCanceledException>(cmdTask);
 
                 // Validate that the cancellation event was fired for all shards
-                List<ShardLocation> allShards = _shardConnection.ShardConnections.Select(l => l.Item1).ToList();
+                List<ShardLocation> allShards = _shardConnection.GetShardConnections().Select(l => l.Item1).ToList();
                 CollectionAssert.AreEquivalent(allShards, cancelledShards, "Expected command canceled event to be fired for all shards!");
             }
         }
 
         /// <summary>
-        /// Close the connection to one of the shards behind 
+        /// Close the connection to one of the shards behind
         /// MultiShardConnection's back. Verify that we reopen the connection with the built-in retry policy
         /// </summary>
         [TestMethod]
@@ -802,7 +802,7 @@ end";
         public void TestQueryShardsInvalidShardStateSync()
         {
             // Get a shard and close it's connection
-            var shardSqlConnections = _shardConnection.ShardConnections;
+            var shardSqlConnections = _shardConnection.GetShardConnections();
             shardSqlConnections[1].Item2.Close();
 
             try
@@ -873,7 +873,7 @@ end";
             conn = new MultiShardConnection(_shardMap.GetShards(), connStringBldr.ConnectionString);
 
             string updatedApplicationName = new SqlConnectionStringBuilder
-                (conn.ShardConnections[0].Item2.ConnectionString).ApplicationName;
+                (conn.GetShardConnections()[0].Item2.ConnectionString).ApplicationName;
             Assert.IsTrue(updatedApplicationName.Length == ApplicationNameHelper.MaxApplicationNameLength &&
                 updatedApplicationName.EndsWith(MultiShardConnection.ApplicationNameSuffix), "ApplicationName not appended with {0}!",
                 MultiShardConnection.ApplicationNameSuffix);
@@ -934,7 +934,7 @@ end";
 
         /// <summary>
         /// This test induces failures via a ProxyServer in order to validate that:
-        ///  a) we are handling reader failures as expected, and 
+        ///  a) we are handling reader failures as expected, and
         ///  b) we get all-or-nothing semantics on our reads from a single row
         /// </summary>
         [TestMethod]
@@ -946,7 +946,7 @@ end";
             try
             {
                 // Start up the proxy server.  Do it in a try so we can shut it down in the finally.
-                // Also, we have to generate the proxyShardconnections *AFTER* we start up the server 
+                // Also, we have to generate the proxyShardconnections *AFTER* we start up the server
                 // so that we know what port the proxy is listening on.  More on the placement
                 // of the connection generation below.
                 //
@@ -1033,7 +1033,7 @@ end";
             }
             finally
             {
-                // Be sure to shut down the proxy server.    
+                // Be sure to shut down the proxy server.
                 //
                 string proxyLog = proxyServer.EventLog.ToString();
                 Logger.Log(proxyLog);
@@ -1067,7 +1067,7 @@ end";
         /// </returns>
         /// <remarks>
         /// Since our shards all reside in the local instance we can just point them at a single proxy server.  If we were using
-        /// actual physically distributed shards, then I think we would need a separate proxy for each shard.  We could 
+        /// actual physically distributed shards, then I think we would need a separate proxy for each shard.  We could
         /// augment these tests to use a separate proxy per shard, if we wanted, in order to be able to simulate
         /// a richer variety of failures.  For now, we just simulate total failures of all shards.
         /// </remarks>

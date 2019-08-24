@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Data.Common;
 using System.Data.SqlClient;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
@@ -90,6 +91,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 Credential = Credential,
             };
 
+            RefreshAccessToken(conn);
+
+            return conn;
+        }
+
+        internal void RefreshAccessToken(DbConnection conn)
+        {
+            SqlConnection sqlConn= conn as SqlConnection;
+            if (sqlConn != null)
+            {
+                RefreshAccessToken(sqlConn);
+            }
+        }
+
+        internal void RefreshAccessToken(SqlConnection conn)
+        {
             if (AccessTokenFactory != null)
             {
 #if NET451
@@ -98,8 +115,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 conn.AccessToken = AccessTokenFactory();
 #endif
             }
-
-            return conn;
         }
 
         /// <summary>
