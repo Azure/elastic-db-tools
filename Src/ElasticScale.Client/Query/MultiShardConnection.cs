@@ -44,6 +44,11 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         private bool _disposed = false;
 
+        /// <summary>
+        /// The credentials for connection.
+        /// </summary>
+        private SqlConnectionInfo _connectionInfo;
+
 #endregion
 
 #region Ctors
@@ -53,8 +58,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         /// <param name="shards">The collection of <see cref="Shard"/>s used for this connection instances.</param>
         /// <param name="connectionString">
-        /// These credentials will be used to connect to the <see cref="Shard"/>s. 
-        /// The same credentials are used on all shards. 
+        /// These credentials will be used to connect to the <see cref="Shard"/>s.
+        /// The same credentials are used on all shards.
         /// Therefore, all shards need to provide the appropriate permissions for these credentials to execute the command.
         /// </param>
         /// <remarks>
@@ -62,28 +67,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </remarks>
         public MultiShardConnection(IEnumerable<Shard> shards, string connectionString)
         {
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException("connectionString");
-            }
-            if (shards == null)
-            {
-                throw new ArgumentNullException("shards");
-            }
-
-            // Enhance the ApplicationName with this library's name as a suffix
-            // Devnote: If connection string specifies Active Directory authentication and runtime is not
-            // .NET 4.6 or higher, then below call will throw.
-            SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(
-                connectionString).WithApplicationNameSuffix(ApplicationNameSuffix);
-            ValidateConnectionString(connectionStringBuilder);
-
-            // Force evaluation of the input enumerable so that we don't evaluate it multiple times later
-            this.Shards = shards.ToList();
-            ValidateNotEmpty(this.Shards, "shards");
-
-            this.ShardConnections = this.Shards.Select(
-                s => CreateDbConnectionForLocation(s.Location, connectionStringBuilder)).ToList();
+            InitializeConnectionInfo(connectionString);
+            InitializeShardConnections(shards);
         }
 
         /// <summary>
@@ -91,8 +76,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         /// <param name="shardLocations">The collection of <see cref="ShardLocation"/>s used for this connection instances.</param>
         /// <param name="connectionString">
-        /// These credentials will be used to connect to the <see cref="Shard"/>s. 
-        /// The same credentials are used on all shards. 
+        /// These credentials will be used to connect to the <see cref="Shard"/>s.
+        /// The same credentials are used on all shards.
         /// Therefore, all shards need to provide the appropriate permissions for these credentials to execute the command.
         /// </param>
         /// <remarks>
@@ -100,33 +85,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </remarks>
         public MultiShardConnection(IEnumerable<ShardLocation> shardLocations, string connectionString)
         {
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException("connectionString");
-            }
-            if (shardLocations == null)
-            {
-                throw new ArgumentNullException("shardLocations");
-            }
-
-            // Enhance the ApplicationName with this library's name as a suffix
-            // Devnote: If connection string specifies Active Directory authentication and runtime is not
-            // .NET 4.6 or higher, then below call will throw.
-            SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(
-                connectionString).WithApplicationNameSuffix(ApplicationNameSuffix);
-            ValidateConnectionString(connectionStringBuilder);
-
-            // Force evaluation of the input enumerable so that we don't evaluate it multiple times later
-            IList<ShardLocation> shardLocationsList = shardLocations.ToList();
-            ValidateNotEmpty(shardLocationsList, "shardLocations");
-
-            this.Shards = null;
-            this.ShardConnections = shardLocationsList.Select(
-                s => CreateDbConnectionForLocation(s, connectionStringBuilder)).ToList();
+            InitializeConnectionInfo(connectionString);
+            InitializeShardConnections(shardLocations);
         }
 
         /// <summary>
-        /// Creates an instance of this class 
+        /// Creates an instance of this class
         /// /* TEST ONLY */
         /// </summary>
         /// <param name="shardConnections">Connections to the shards</param>
@@ -170,8 +134,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 #region Public Methods
 
         /// <summary>
-        /// Creates and returns a <see cref="MultiShardCommand"/> object. 
-        /// The <see cref="MultiShardCommand"/> object can then be used to 
+        /// Creates and returns a <see cref="MultiShardCommand"/> object.
+        /// The <see cref="MultiShardCommand"/> object can then be used to
         /// execute a command against all shards specified in the connection.
         /// </summary>
         /// <returns>the <see cref="MultiShardCommand"/> with <see cref="MultiShardCommand.CommandText"/> set to null.</returns>
@@ -217,9 +181,19 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
-        private static void ValidateConnectionString(
-            SqlConnectionStringBuilder connectionStringBuilder)
+        private void InitializeConnectionInfo(string connectionString)
         {
+            if (connectionString == null)
+            {
+                throw new ArgumentNullException("connectionString");
+            }
+
+            // Enhance the ApplicationName with this library's name as a suffix
+            // Devnote: If connection string specifies Active Directory authentication and runtime is not
+            // .NET 4.6 or higher, then below call will throw.
+            SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(
+                connectionString).WithApplicationNameSuffix(ApplicationNameSuffix);
+
             // Datasource must not be set
             if (!string.IsNullOrEmpty(connectionStringBuilder.DataSource))
             {
@@ -231,6 +205,39 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             {
                 throw new ArgumentException("InitialCatalog must not be set in the connectionStringBuilder");
             }
+
+            this._connectionInfo = new SqlConnectionInfo(connectionStringBuilder.ToString());
+        }
+
+        private void InitializeShardConnections(IEnumerable<Shard> shards)
+        {
+            if (shards == null)
+            {
+                throw new ArgumentNullException("shards");
+            }
+
+            // Force evaluation of the input enumerable so that we don't evaluate it multiple times later
+            this.Shards = shards.ToList();
+            ValidateNotEmpty(this.Shards, "shards");
+
+            this.ShardConnections = this.Shards.Select(
+                s => CreateDbConnectionForLocation(s.Location, _connectionInfo)).ToList();
+        }
+
+        private void InitializeShardConnections(IEnumerable<ShardLocation> shardLocations)
+        {
+            if (shardLocations == null)
+            {
+                throw new ArgumentNullException("shardLocations");
+            }
+
+            // Force evaluation of the input enumerable so that we don't evaluate it multiple times later
+            IList<ShardLocation> shardLocationsList = shardLocations.ToList();
+            ValidateNotEmpty(shardLocationsList, "shardLocations");
+
+            this.Shards = null;
+            this.ShardConnections = shardLocationsList.Select(
+                s => CreateDbConnectionForLocation(s, _connectionInfo)).ToList();
         }
 
         // Suppression rationale:  The SqlConnections we are creating will underlie the object we are returning. We do not want to dispose them.
@@ -238,18 +245,20 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         private static Tuple<ShardLocation, DbConnection> CreateDbConnectionForLocation(
             ShardLocation shardLocation,
-            SqlConnectionStringBuilder connectionStringBuilder)
+            SqlConnectionInfo connectionInfo)
         {
-            return new Tuple<ShardLocation, DbConnection>
-                    (
-                    shardLocation,
-                    new SqlConnection(
-                        new SqlConnectionStringBuilder(connectionStringBuilder.ConnectionString)
-                        {
-                            DataSource = shardLocation.DataSource,
-                            InitialCatalog = shardLocation.Database
-                        }.ConnectionString)
-                    );
+            string shardConnectionString =
+                new SqlConnectionStringBuilder(connectionInfo.ConnectionString)
+                {
+                    DataSource = shardLocation.DataSource,
+                    InitialCatalog = shardLocation.Database
+                }.ConnectionString;
+
+            SqlConnectionInfo shardConnectionInfo = connectionInfo.CloneWithUpdatedConnectionString(shardConnectionString);
+
+            return new Tuple<ShardLocation, DbConnection>(
+                shardLocation,
+                shardConnectionInfo.CreateConnection());
         }
 
         // Suppression rationale:  We explicitly do not want to throw here, so we must catch all exceptions.
