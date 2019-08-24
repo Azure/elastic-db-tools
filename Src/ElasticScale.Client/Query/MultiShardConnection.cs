@@ -95,6 +95,42 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="MultiShardConnection"/> class.
+        /// </summary>
+        /// <param name="shards">The collection of <see cref="Shard"/>s used for this connection instances.</param>
+        /// <param name="connectionInfo">
+        /// These credentials will be used to connect to the <see cref="Shard"/>s.
+        /// The same credentials are used on all shards.
+        /// Therefore, all shards need to provide the appropriate permissions for these credentials to execute the command.
+        /// </param>
+        /// <remarks>
+        /// Multiple Active Result Sets (MARS) are not supported and are disabled for any processing at the shards.
+        /// </remarks>
+        public MultiShardConnection(IEnumerable<Shard> shards, SqlConnectionInfo connectionInfo)
+        {
+            InitializeConnectionInfo(connectionInfo);
+            InitializeShardConnections(shards);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MultiShardConnection"/> class.
+        /// </summary>
+        /// <param name="shardLocations">The collection of <see cref="ShardLocation"/>s used for this connection instances.</param>
+        /// <param name="connectionInfo">
+        /// These credentials will be used to connect to the <see cref="Shard"/>s.
+        /// The same credentials are used on all shards.
+        /// Therefore, all shards need to provide the appropriate permissions for these credentials to execute the command.
+        /// </param>
+        /// <remarks>
+        /// Multiple Active Result Sets (MARS) are not supported and are disabled for any processing at the shards.
+        /// </remarks>
+        public MultiShardConnection(IEnumerable<ShardLocation> shardLocations, SqlConnectionInfo connectionInfo)
+        {
+            InitializeConnectionInfo(connectionInfo);
+            InitializeShardConnections(shardLocations);
+        }
+
+        /// <summary>
         /// Creates an instance of this class
         /// /* TEST ONLY */
         /// </summary>
@@ -206,11 +242,28 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
             }
         }
 
+        private void InitializeConnectionInfo(SqlConnectionInfo connectionInfo)
+        {
+            if (connectionInfo == null)
+            {
+                throw new ArgumentNullException("connectionInfo");
+            }
+
+            string updatedConnectionString = InitializeConnectionString(connectionInfo.ConnectionString);
+            this._connectionInfo = connectionInfo.CloneWithUpdatedConnectionString(updatedConnectionString);
+        }
+
         private void InitializeConnectionInfo(string connectionString)
+        {
+            string updatedConnectionString = InitializeConnectionString(connectionString);
+            this._connectionInfo = new SqlConnectionInfo(updatedConnectionString);
+        }
+
+        private static string InitializeConnectionString(string connectionString)
         {
             if (connectionString == null)
             {
-                throw new ArgumentNullException("connectionString");
+                throw new ArgumentNullException(nameof(connectionString));
             }
 
             // Enhance the ApplicationName with this library's name as a suffix
@@ -231,7 +284,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 throw new ArgumentException("InitialCatalog must not be set in the connectionStringBuilder");
             }
 
-            this._connectionInfo = new SqlConnectionInfo(connectionStringBuilder.ToString());
+            return connectionStringBuilder.ToString();
         }
 
         private void InitializeShardConnections(IEnumerable<Shard> shards)
