@@ -6,7 +6,7 @@ using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Recovery;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 
