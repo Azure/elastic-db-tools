@@ -12,7 +12,11 @@
 
 using System;
 using System.ComponentModel;
-using Microsoft.Data.SqlClient;
+#if NETFRAMEWORK
+    using System.Data.SqlClient;
+#else
+    using Microsoft.Data.SqlClient;
+#endif
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale
 {

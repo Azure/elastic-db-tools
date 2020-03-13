@@ -12,7 +12,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Data.SqlClient;
+#if NETFRAMEWORK
+    using System.Data.SqlClient;
+#else
+    using Microsoft.Data.SqlClient;
+#endif
 using System.Globalization;
 using System.Linq;
 using System.Text;

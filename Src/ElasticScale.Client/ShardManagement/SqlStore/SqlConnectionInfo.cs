@@ -3,7 +3,11 @@
 
 using System;
 using System.Data.Common;
-using Microsoft.Data.SqlClient;
+#if NETFRAMEWORK
+    using System.Data.SqlClient;
+#else
+    using Microsoft.Data.SqlClient;
+#endif
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {

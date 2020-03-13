@@ -7,7 +7,7 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <Version>2.4.0-preview1</Version>
     <Authors>Microsoft</Authors>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net451;net46;netstandard2.0</TargetFrameworks>
     <PackageTags>Microsoft;Elastic;Scale;Azure;SQL;DB;Database;Shard;Sharding;Management;Query;azureofficial</PackageTags>
     <PackageReleaseNotes>Added support for SqlConnection.AccessToken. This can be provided by using OpenConnection methods that receive SqlConnectionInfo parameter. Using AccessToken requires .NET 4.6 or higher, or .NET Standard with System.Data.SqlClient 4.6 or higher.</PackageReleaseNotes>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
@@ -19,6 +19,8 @@
     <RuntimeIdentifiers>win;unix</RuntimeIdentifiers>
     <RootNamespace>Microsoft.Azure.SqlDatabase.ElasticScale</RootNamespace>
   </PropertyGroup>
+  
+  
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('build.props'))" />
   <Import Project="$([MSBuild]::GetPathOfFileAbove('strongname.props'))" />
@@ -47,7 +49,7 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="Microsoft.Data.SqlClient">
       <Version>1.1.1</Version>
     </PackageReference>
