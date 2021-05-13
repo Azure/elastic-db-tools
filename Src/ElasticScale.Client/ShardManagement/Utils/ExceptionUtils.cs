@@ -97,8 +97,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 category,
                 ShardManagementErrorCode.StorageOperationFailure,
                 Errors._Store_SqlExceptionGlobal,
-                storeException.InnerException != null ? storeException.InnerException.Message : storeException.Message,
                 storeException,
+                storeException.InnerException != null ? storeException.InnerException.Message : storeException.Message,
                 operationName);
         }
 
