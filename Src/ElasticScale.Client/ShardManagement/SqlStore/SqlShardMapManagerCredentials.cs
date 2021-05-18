@@ -2,7 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Data.SqlClient;
+#if NETFRAMEWORK
+    using System.Data.SqlClient;
+#else
+    using Microsoft.Data.SqlClient;
+#endif
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {
@@ -162,7 +166,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 string authentication = connectionString[ShardMapUtils.Authentication].ToString();
                 if (authentication.Equals(ShardMapUtils.ActiveDirectoryIntegratedStr, StringComparison.OrdinalIgnoreCase)
-                    || authentication.Equals(ShardMapUtils.ActiveDirectoryInteractiveStr, StringComparison.OrdinalIgnoreCase))
+                    || authentication.Equals(ShardMapUtils.ActiveDirectoryInteractiveStr, StringComparison.OrdinalIgnoreCase)
+                    || authentication.Equals(ShardMapUtils.ActiveDirectoryManagedIdentity, StringComparison.OrdinalIgnoreCase)
+                    || authentication.Equals(ShardMapUtils.ActiveDirectoryServicePrincipal, StringComparison.OrdinalIgnoreCase)
+                    || authentication.Equals(ShardMapUtils.ActiveDirectoryDeviceCodeFlow, StringComparison.OrdinalIgnoreCase)
+                    || authentication.Equals(ShardMapUtils.ActiveDirectoryMSI, StringComparison.OrdinalIgnoreCase)
+                    )
                 {
                     return;
                 }

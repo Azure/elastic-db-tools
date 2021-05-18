@@ -4,7 +4,7 @@
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Recovery;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Linq;
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
 
