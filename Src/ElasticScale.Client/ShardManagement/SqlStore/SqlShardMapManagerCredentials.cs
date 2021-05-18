@@ -166,7 +166,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             {
                 string authentication = connectionString[ShardMapUtils.Authentication].ToString();
                 if (authentication.Equals(ShardMapUtils.ActiveDirectoryIntegratedStr, StringComparison.OrdinalIgnoreCase)
-                    || authentication.Equals(ShardMapUtils.ActiveDirectoryInteractiveStr, StringComparison.OrdinalIgnoreCase))
+                    || authentication.Equals(ShardMapUtils.ActiveDirectoryInteractiveStr, StringComparison.OrdinalIgnoreCase)
+                    || authentication.Equals(ShardMapUtils.ActiveDirectoryManagedIdentity, StringComparison.OrdinalIgnoreCase)
+                    || authentication.Equals(ShardMapUtils.ActiveDirectoryServicePrincipal, StringComparison.OrdinalIgnoreCase)
+                    || authentication.Equals(ShardMapUtils.ActiveDirectoryDeviceCodeFlow, StringComparison.OrdinalIgnoreCase)
+                    || authentication.Equals(ShardMapUtils.ActiveDirectoryMSI, StringComparison.OrdinalIgnoreCase)
+                    )
                 {
                     return;
                 }
