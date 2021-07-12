@@ -29,9 +29,6 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics;
-#if NETFRAMEWORK
-using System.Runtime.Remoting;
-#endif
 using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
@@ -1036,29 +1033,6 @@ SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTab
                 Assert.AreEqual(3, rowsRead, "Not all expected rows were read.");
             }
         }
-
-#if NETFRAMEWORK
-        /// <summary>
-        /// Check that we throw as expected when trying to call CreateObjRef.
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(RemotingException))]
-        [TestCategory("ExcludeFromGatedCheckin")]
-        public void TestCreateObjRefFails()
-        {
-            // What we're doing:
-            // Set up a new sharded reader
-            // Try to call CreateObjRef on it.
-            // Verify that we threw as expected.
-            //
-            string selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field  FROM ConsistentShardedTable";
-
-            using (MultiShardDataReader sdr = GetShardedDbReader(_shardConnection, selectSql))
-            {
-                sdr.CreateObjRef(typeof(MultiShardDataReader));
-            }
-        }
-#endif
 
         /// <summary>
         /// Check that we can iterate through the result sets as expected comparing all the values

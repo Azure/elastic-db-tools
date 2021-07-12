@@ -22,9 +22,6 @@ using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
-#if NETFRAMEWORK
-using System.Runtime.Remoting;
-#endif
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -36,15 +33,15 @@ using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 {
-    // Suppression rationale:
-    //   MultiShardDataReader is not a collection.
-    //   "Multi" is the spelling we want.
-    //   We can't move the methods to other types because that would break the interface we are aiming to provide.
-    //
-    /// <summary>
-    /// Provides a way of reading a forward-only stream of rows that is retrieved from a shard set.
-    /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"),
+	// Suppression rationale:
+	//   MultiShardDataReader is not a collection.
+	//   "Multi" is the spelling we want.
+	//   We can't move the methods to other types because that would break the interface we are aiming to provide.
+	//
+	/// <summary>
+	/// Provides a way of reading a forward-only stream of rows that is retrieved from a shard set.
+	/// </summary>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"),
      System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix"),
      System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Multi"),
      System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1010:CollectionsShouldImplementGenericInterface")]
@@ -241,17 +238,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
                 _closed = true;
             }
         }
-
-#if NETFRAMEWORK
-        /// <summary>
-        /// This method is currently not supported. Invoking the method will result in an exception.
-        /// </summary>
-        /// <param name="requestedType">The <see cref="Type"/> of the object that the new <see cref="ObjRef"/> will reference.</param>
-        public override ObjRef CreateObjRef(Type requestedType)
-        {
-            throw new RemotingException("MultiShardDataReader is not a valid remoting object.");
-        }
-#endif
 
         /// <summary>
         /// Determines whether the specified object is equal to the current object. (Inherited from <see cref="Object"/>.)
@@ -913,14 +899,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         public XmlReader GetXmlReader(int ordinal)
         {
             return GetColumn<XmlReader>(GetCurrentDataReaderAsSqlDataReader().GetXmlReader, ordinal);
-        }
-
-        /// <summary>
-        /// This method is currently not supported. Invoking the method will result in an exception.
-        /// </summary>
-        public override object InitializeLifetimeService()
-        {
-            throw new NotSupportedException("InitializeLifetimeService is currently not supported");
         }
 
         /// <summary>

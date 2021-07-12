@@ -5,15 +5,14 @@
 // ActivityId via the using pattern
 
 using System;
-using System.Diagnostics;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale
 {
-    /// <summary>
-    /// Utility class to set and restore the System.Diagnostics CorrelationManager
-    /// ActivityId via the using pattern
-    /// </summary>
-    internal sealed class ActivityIdScope : IDisposable
+	/// <summary>
+	/// Utility class to set and restore the System.Diagnostics CorrelationManager
+	/// ActivityId via the using pattern
+	/// </summary>
+	internal sealed class ActivityIdScope : IDisposable
     {
         /// <summary>
         /// The previous activity id that was in scope
@@ -41,19 +40,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
 
     internal static class CorrelationManager
     {
-#if NETFRAMEWORK
-        public static Guid ActivityId
-        {
-            get
-            {
-                return Trace.CorrelationManager.ActivityId;
-            }
-            set
-            {
-                Trace.CorrelationManager.ActivityId = value;
-            }
-        }
-#else
         [ThreadStatic]
         private static Guid _activityId;
 
@@ -68,6 +54,5 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
                 _activityId = value;
             }
         }
-#endif
     }
 }

@@ -514,7 +514,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
             IncomingConnection.Client.Close();
             Server.Log("Successfully closed incoming connection.");
-            OutgoingConnection.Client.Close();
+            OutgoingConnection.Client?.Close();
             Server.Log("Successfully closed outgoing connection.");
         }
     }

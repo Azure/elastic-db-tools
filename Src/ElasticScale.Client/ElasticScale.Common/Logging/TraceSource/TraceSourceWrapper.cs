@@ -236,9 +236,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
         /// <param name="activityId"></param>
         public void TraceIn(string method, Guid activityId)
         {
-#if NETFRAMEWORK
-            _traceSource.TraceEvent(TraceEventType.Start, 0, "Start.{0}. ActivityId: {1}", method, activityId);
-#endif
         }
 
         /// <summary>
@@ -248,9 +245,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
         /// <param name="activityId"></param>
         public void TraceOut(string method, Guid activityId)
         {
-#if NETFRAMEWORK
-            _traceSource.TraceEvent(TraceEventType.Stop, 0, "Stop.{0}. ActivityId: {1}", method, activityId);
-#endif
         }
 
         /// <summary>
@@ -262,10 +256,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
         /// <param name="vars"></param>
         public void TraceIn(string method, Guid activityId, string format, params object[] vars)
         {
-#if NETFRAMEWORK
-            string fmtMessage = string.Format(format, vars);
-            _traceSource.TraceEvent(TraceEventType.Start, 0, "Start.{0}. {1}. ActivityId: {2}", method, fmtMessage, activityId);
-#endif
         }
 
         /// <summary>
@@ -277,10 +267,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
         /// <param name="vars"></param>
         public void TraceOut(string method, Guid activityId, string format, params object[] vars)
         {
-#if NETFRAMEWORK
-            string fmtMessage = string.Format(format, vars);
-            _traceSource.TraceEvent(TraceEventType.Stop, 0, "Stop.{0}. {1}. ActivityId: {2}", method, fmtMessage, activityId);
-#endif
         }
 
 #endregion
