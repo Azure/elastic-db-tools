@@ -9,7 +9,7 @@
     <Authors>Microsoft</Authors>
     <TargetFrameworks>net5.0</TargetFrameworks>
     <PackageTags>Microsoft;Elastic;Scale;Azure;SQL;DB;Database;Shard;Sharding;Management;Query;azureofficial</PackageTags>
-    <PackageReleaseNotes>Added support for SqlConnection.AccessToken. This can be provided by using OpenConnection methods that receive SqlConnectionInfo parameter. Using AccessToken requires .NET 4.6 or higher, or .NET Standard with System.Data.SqlClient 4.6 or higher.</PackageReleaseNotes>
+    <PackageReleaseNotes>Updated to net5.0 and migrated from System.Data.SqlClient to Microsoft.Data.SqlClient.</PackageReleaseNotes>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
     <PackageProjectUrl>https://github.com/Azure/elastic-db-tools</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/Azure/elastic-db-tools/blob/master/LICENSE</PackageLicenseUrl>
@@ -24,7 +24,7 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('strongname.props'))" />
 
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>

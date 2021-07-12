@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ClientTestCommon
 {
     using System;
-    using System.Data.SqlClient;
+    using Microsoft.Data.SqlClient;
     using System.Diagnostics;
 
     /// <summary>
