@@ -5,10 +5,10 @@ using System;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {
-	/// <summary>
-	/// Wrapper class around PerformanceCounter to catch and trace all exceptions.
-	/// </summary>
-	class PerformanceCounterWrapper : IDisposable
+    /// <summary>
+    /// Wrapper class around PerformanceCounter to catch and trace all exceptions.
+    /// </summary>
+    class PerformanceCounterWrapper : IDisposable
     {
         private static ILogger Tracer
         {

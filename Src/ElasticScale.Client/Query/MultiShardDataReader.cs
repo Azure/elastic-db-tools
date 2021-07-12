@@ -17,7 +17,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using Microsoft.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
@@ -26,6 +25,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
+using Microsoft.Data.SqlClient;
 
 // DEVNOTE (VSTS 2202707): This should go into the namespace that we are using for all the Wrapper classes. Since we aren't integrated
 // with those classes yet, we'll just use this namespace and have it change later when we integrate.
@@ -33,15 +33,15 @@ using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 {
-	// Suppression rationale:
-	//   MultiShardDataReader is not a collection.
-	//   "Multi" is the spelling we want.
-	//   We can't move the methods to other types because that would break the interface we are aiming to provide.
-	//
-	/// <summary>
-	/// Provides a way of reading a forward-only stream of rows that is retrieved from a shard set.
-	/// </summary>
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"),
+    // Suppression rationale:
+    //   MultiShardDataReader is not a collection.
+    //   "Multi" is the spelling we want.
+    //   We can't move the methods to other types because that would break the interface we are aiming to provide.
+    //
+    /// <summary>
+    /// Provides a way of reading a forward-only stream of rows that is retrieved from a shard set.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"),
      System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix"),
      System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Multi"),
      System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1010:CollectionsShouldImplementGenericInterface")]

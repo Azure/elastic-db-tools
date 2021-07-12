@@ -4,12 +4,6 @@
 // Purpose: Generic pluggable logger factory for retrieving configured
 // logging objects
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-
 namespace Microsoft.Azure.SqlDatabase.ElasticScale
 {
     /// <summary>

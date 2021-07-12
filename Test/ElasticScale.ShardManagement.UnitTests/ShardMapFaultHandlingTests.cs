@@ -3,18 +3,18 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stubs;
+using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {
-	/// <summary>
-	/// Test related to ShardMap fault handling.
-	/// </summary>
-	[TestClass]
+    /// <summary>
+    /// Test related to ShardMap fault handling.
+    /// </summary>
+    [TestClass]
     public class ShardMapFaultHandlingTests
     {
         /// <summary>

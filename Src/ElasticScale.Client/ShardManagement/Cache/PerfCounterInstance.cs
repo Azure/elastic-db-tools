@@ -5,10 +5,10 @@ using System;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {
-	/// <summary>
-	/// Shard management performance counter names.
-	/// </summary>
-	internal enum PerformanceCounterName
+    /// <summary>
+    /// Shard management performance counter names.
+    /// </summary>
+    internal enum PerformanceCounterName
     {
         // counters to track cached mappings
         MappingsCount,

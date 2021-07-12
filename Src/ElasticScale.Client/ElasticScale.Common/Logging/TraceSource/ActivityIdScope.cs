@@ -8,11 +8,11 @@ using System;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale
 {
-	/// <summary>
-	/// Utility class to set and restore the System.Diagnostics CorrelationManager
-	/// ActivityId via the using pattern
-	/// </summary>
-	internal sealed class ActivityIdScope : IDisposable
+    /// <summary>
+    /// Utility class to set and restore the System.Diagnostics CorrelationManager
+    /// ActivityId via the using pattern
+    /// </summary>
+    internal sealed class ActivityIdScope : IDisposable
     {
         /// <summary>
         /// The previous activity id that was in scope

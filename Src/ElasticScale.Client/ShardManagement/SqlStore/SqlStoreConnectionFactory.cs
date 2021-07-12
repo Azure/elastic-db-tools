@@ -3,8 +3,6 @@
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {
-    using Microsoft.Data.SqlClient;
-
     /// <summary>
     /// Constructs instance of Sql Store Connection.
     /// </summary>
