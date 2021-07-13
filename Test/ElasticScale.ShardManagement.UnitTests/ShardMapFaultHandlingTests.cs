@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stubs;
+using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
@@ -1484,13 +1484,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
             ConstructorInfo[] cisSqlError = typeof(SqlError)
                 .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic);
 
-#if NETFRAMEWORK
-            ConstructorInfo ciSqlError = cisSqlError.Single(c => c.GetParameters().Length == 7);
-            SqlError se = (SqlError)ciSqlError.Invoke(new object[] { (int)10928, (byte)0, (byte)0, "", "", "", (int)0 });
-#else
             ConstructorInfo ciSqlError = cisSqlError.Single(c => c.GetParameters().Length == 8);
             SqlError se = (SqlError)ciSqlError.Invoke(new object[] { (int)10928, (byte)0, (byte)0, "", "", "", (int)0, null });
-#endif
 
             ConstructorInfo ciSqlErrorCollection = typeof(SqlErrorCollection)
                 .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic).Single();

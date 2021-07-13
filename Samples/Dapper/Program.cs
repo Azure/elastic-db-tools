@@ -2,12 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 using Dapper;
 using DapperExtensions;
-using System.Collections.Generic;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // This sample illustrates the adjustments that need to be made to use Dapper 

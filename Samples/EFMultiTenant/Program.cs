@@ -5,7 +5,6 @@ using System;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
-using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // This sample follows the CodeFirstNewDatabase Blogging tutorial for EF.

@@ -5,7 +5,6 @@
 // Trace helper for CrossShardQuery
 
 using System;
-using System.Diagnostics;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 {

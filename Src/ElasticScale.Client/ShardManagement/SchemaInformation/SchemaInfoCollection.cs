@@ -3,8 +3,6 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema

@@ -3,14 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.Schema;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
+using Microsoft.Data.SqlClient;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 {

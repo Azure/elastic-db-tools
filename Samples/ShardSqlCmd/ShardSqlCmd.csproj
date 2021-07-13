@@ -1,19 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net451</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Build.props))\Build.props" />
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.SqlDatabase.ElasticScale.Client" version="2.0.0" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="Microsoft.Azure.SqlDatabase.ElasticScale.Client" version="2.3.0" />
   </ItemGroup>
-
   <ItemGroup>
     <None Include="LICENSE" />
   </ItemGroup>

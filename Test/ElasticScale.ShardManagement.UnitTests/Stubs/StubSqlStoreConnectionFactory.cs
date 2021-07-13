@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Data.SqlClient;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stubs
 {

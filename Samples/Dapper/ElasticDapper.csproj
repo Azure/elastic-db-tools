@@ -1,31 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net451</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Build.props))\Build.props" />
-
   <ItemGroup>
-    <PackageReference Include="Dapper" version="1.36" />
-    <PackageReference Include="DapperExtensions" version="1.4.4" />
-    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling" version="6.0.1304.0" />
-    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Data" version="6.0.1304.1" />
+    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Data.NetCore" Version="6.0.1312" />
+    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.NetCore" Version="6.0.1312" />
     <PackageReference Include="Microsoft.Azure.SqlDatabase.ElasticScale.Client" version="2.0.0" />
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
+    <PackageReference Include="Dapper" Version="2.0.90" />
+    <PackageReference Include="DapperExtensions" Version="1.7.0" />
   </ItemGroup>
-
   <ItemGroup>
-    <None Include="App.config" />
     <None Include="LICENSE" />
   </ItemGroup>
 </Project>

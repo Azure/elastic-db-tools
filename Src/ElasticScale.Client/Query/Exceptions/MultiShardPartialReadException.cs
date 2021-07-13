@@ -9,9 +9,9 @@
 //
 // Notes:
 
-using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 using System;
 using System.Runtime.Serialization;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 {

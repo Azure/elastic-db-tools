@@ -4,8 +4,8 @@
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ClientTestCommon
 {
     using System;
-    using System.Data.SqlClient;
     using System.Diagnostics;
+    using Microsoft.Data.SqlClient;
 
     /// <summary>
     /// Manage SQL Authentication login for testing.
