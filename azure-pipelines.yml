@@ -32,14 +32,14 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: EsrpCodeSigning@1
+- task: EsrpCodeSigning@2
   displayName: ESRP CodeSigning - *.dll
   inputs:
-    ConnectedServiceName: c79f9758-1916-461b-a046-681af3058521
+    ConnectedServiceName: 'Code Signing'
     FolderPath: src
     Pattern: '*.dll'
-    signConfigType: inlineSignParams
-    inlineOperation: >-
+    signConfigType: 'inlineSignParams'
+    inlineOperation: |
       [
         {
           "keyCode": "CP-230012",
@@ -47,11 +47,11 @@ steps:
           "parameters": [
             {
               "parameterName": "OpusName",
-              "parameterValue": "Microsoft"
+              "parameterValue": "go-sqlcmd"
             },
             {
               "parameterName": "OpusInfo",
-              "parameterValue": "http://www.microsoft.com"
+              "parameterValue": "https://github.com/microsoft/go-sqlcmd"
             },
             {
               "parameterName": "PageHash",
@@ -68,8 +68,24 @@ steps:
           ],
           "toolName": "signtool.exe",
           "toolVersion": "6.2.9304.0"
+        },
+        {
+          "keyCode": "CP-230012",
+          "operationSetCode": "SigntoolVerify",
+          "parameters": [
+          {
+            "parameterName": "VerifyAll",
+            "parameterValue": "/all"
+          }
+              ],
+          "toolName": "signtool.exe",
+          "toolVersion": "6.2.9304.0"
         }
       ]
+    SessionTimeout: '60'
+    MaxConcurrency: '50'
+    MaxRetryAttempts: '5'
+    
 - task: DotNetCoreCLI@2
   name: DotNetCoreCLI3
   displayName: dotnet pack
@@ -78,6 +94,61 @@ steps:
     searchPatternPack: Src/**/*.csproj
     outputDir: $(Build.ArtifactStagingDirectory)\pkg
     nobuild: true
+
+- task: EsrpCodeSigning@2
+  displayName: ESRP CodeSigning - *.nupkg
+  inputs:
+    ConnectedServiceName: 'Code Signing'
+    FolderPath: $(Build.ArtifactStagingDirectory)\pkg
+    Pattern: '*.nupkg'
+    signConfigType: 'inlineSignParams'
+    inlineOperation: |
+      [
+        {
+          "keyCode": "CP-230012",
+          "operationSetCode": "SigntoolSign",
+          "parameters": [
+            {
+              "parameterName": "OpusName",
+              "parameterValue": "go-sqlcmd"
+            },
+            {
+              "parameterName": "OpusInfo",
+              "parameterValue": "https://github.com/microsoft/go-sqlcmd"
+            },
+            {
+              "parameterName": "PageHash",
+              "parameterValue": "/NPH"
+            },
+            {
+              "parameterName": "FileDigest",
+              "parameterValue": "/fd sha256"
+            },
+            {
+              "parameterName": "TimeStamp",
+              "parameterValue": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+            }
+          ],
+          "toolName": "signtool.exe",
+          "toolVersion": "6.2.9304.0"
+        },
+        {
+          "keyCode": "CP-230012",
+          "operationSetCode": "SigntoolVerify",
+          "parameters": [
+          {
+            "parameterName": "VerifyAll",
+            "parameterValue": "/all"
+          }
+              ],
+          "toolName": "signtool.exe",
+          "toolVersion": "6.2.9304.0"
+        }
+      ]
+    SessionTimeout: '60'
+    MaxConcurrency: '50'
+    MaxRetryAttempts: '5'
+
 - task: EsrpCodeSigning@1
   displayName: ESRP CodeSigning - *.nupkg
   enabled: False
