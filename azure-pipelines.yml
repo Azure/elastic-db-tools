@@ -47,11 +47,11 @@ steps:
           "parameters": [
             {
               "parameterName": "OpusName",
-              "parameterValue": "go-sqlcmd"
+              "parameterValue": "Microsoft"
             },
             {
               "parameterName": "OpusInfo",
-              "parameterValue": "https://github.com/microsoft/go-sqlcmd"
+              "parameterValue": "http://www.microsoft.com"
             },
             {
               "parameterName": "PageHash",
@@ -105,16 +105,16 @@ steps:
     inlineOperation: |
       [
         {
-          "keyCode": "CP-230012",
+          "keyCode": "CP-401405",
           "operationSetCode": "NuGetSign",
           "parameters": [
             {
               "parameterName": "OpusName",
-              "parameterValue": "go-sqlcmd"
+              "parameterValue": "Microsoft"
             },
             {
               "parameterName": "OpusInfo",
-              "parameterValue": "https://github.com/microsoft/go-sqlcmd"
+              "parameterValue": "http://www.microsoft.com"
             },
             {
               "parameterName": "PageHash",
@@ -133,7 +133,7 @@ steps:
           "toolVersion": "6.2.9304.0"
         },
         {
-          "keyCode": "CP-230012",
+          "keyCode": "CP-401405",
           "operationSetCode": "NuGetVerify",
           "parameters": [
           {
