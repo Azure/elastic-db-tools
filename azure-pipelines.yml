@@ -106,7 +106,7 @@ steps:
       [
         {
           "keyCode": "CP-230012",
-          "operationSetCode": "SigntoolSign",
+          "operationSetCode": "NuGetSign",
           "parameters": [
             {
               "parameterName": "OpusName",
@@ -134,7 +134,7 @@ steps:
         },
         {
           "keyCode": "CP-230012",
-          "operationSetCode": "SigntoolVerify",
+          "operationSetCode": "NuGetVerify",
           "parameters": [
           {
             "parameterName": "VerifyAll",
@@ -148,14 +148,3 @@ steps:
     SessionTimeout: '60'
     MaxConcurrency: '50'
     MaxRetryAttempts: '5'
-
-- task: EsrpCodeSigning@1
-  displayName: ESRP CodeSigning - *.nupkg
-  enabled: False
-  inputs:
-    ConnectedServiceName: c79f9758-1916-461b-a046-681af3058521
-    FolderPath: $(Build.ArtifactStagingDirectory)\pkg
-    Pattern: '*.nupkg'
-    signConfigType: inlineSignParams
-    CertificateId: 402
-    inlineOperation: "[ \n   {\n       \"keyCode\": \"CP-401405\",\n       \"operationSetCode\": \"NuGetSign\",\n       \"parameters\": [ ],\n       \"toolName\": \"sign\",\n       \"toolVersion\": \"1.0\"\n   },\n   {\n       \"keyCode\": \"CP-401405\",\n       \"operationSetCode\": \"NuGetVerify\",\n       \"parameters\": [ ],\n       \"toolName\": \"sign\",\n       \"toolVersion\": \"1.0\"\n   }\n]"
