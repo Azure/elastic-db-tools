@@ -148,3 +148,9 @@ steps:
     SessionTimeout: '60'
     MaxConcurrency: '50'
     MaxRetryAttempts: '5'
+    
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish release'
+  inputs:
+    targetPath: $(Build.ArtifactStagingDirectory)
+    artifactName: ElasticScaleClientLibrary
