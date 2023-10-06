@@ -53,7 +53,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
-        /// Invoked for deleting shard map in cache becase it no longer exists in store.
+        /// Invoked for deleting shard map in cache because it no longer exists in store.
         /// </summary>
         /// <param name="shardMap">Storage representation of shard map.</param>
         public virtual void DeleteShardMap(IStoreShardMap shardMap)
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         }
 
         /// <summary>
-        /// Invoked for deleting mapping in cache becase it no longer exists in store.
+        /// Invoked for deleting mapping in cache because it no longer exists in store.
         /// </summary>
         /// <param name="mapping">Storage representation of mapping.</param>
         public virtual void DeleteMapping(IStoreMapping mapping)

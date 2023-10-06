@@ -10,9 +10,9 @@
     <TargetFrameworks>net451;net46;netstandard2.0</TargetFrameworks>
     <PackageTags>Microsoft;Elastic;Scale;Azure;SQL;DB;Database;Shard;Sharding;Management;Query;azureofficial</PackageTags>
     <PackageReleaseNotes>Added support for SqlConnection.AccessToken. This can be provided by using OpenConnection methods that receive SqlConnectionInfo parameter. Using AccessToken requires .NET 4.6 or higher, or .NET Standard with System.Data.SqlClient 4.6 or higher.</PackageReleaseNotes>
-    <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
+    <PackageIcon>Icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/Azure/elastic-db-tools</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/Azure/elastic-db-tools/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Azure/elastic-db-tools</RepositoryUrl>
@@ -20,12 +20,11 @@
     <RootNamespace>Microsoft.Azure.SqlDatabase.ElasticScale</RootNamespace>
   </PropertyGroup>
   
-  
-
   <Import Project="$([MSBuild]::GetPathOfFileAbove('build.props'))" />
   <Import Project="$([MSBuild]::GetPathOfFileAbove('strongname.props'))" />
 
   <ItemGroup>
+    <None Include="Properties\Icon.png" Pack="true" PackagePath="\"/>
     <Compile Update="ShardManagement\Errors.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
