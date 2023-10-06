@@ -4,7 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+#if NETFRAMEWORK
+    using System.Data.SqlClient;
+#else
+    using Microsoft.Data.SqlClient;
+#endif
 using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Text;

@@ -11,7 +11,11 @@
 
 using System;
 using System.Data.Common;
-using System.Data.SqlClient;
+#if NETFRAMEWORK
+    using System.Data.SqlClient;
+#else
+    using Microsoft.Data.SqlClient;
+#endif
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
