@@ -2,8 +2,4 @@
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-  <PropertyGroup Condition=" $(TargetFramework.StartsWith(`net4`)) ">
-    <!-- Define constant that allows us to conditionally compile code for any version of .net framework -->
-    <DefineConstants>$(DefineConstants);NETFRAMEWORK</DefineConstants>
-  </PropertyGroup>
 </Project>

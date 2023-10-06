@@ -4,10 +4,10 @@
 // Purpose:
 // Public type to communicate failures when performing operations against a shard
 
-using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 using System;
 using System.Globalization;
 using System.Runtime.Serialization;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 {

@@ -3,9 +3,9 @@
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale
 {
-    using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Properties;
     using System;
     using System.Globalization;
+    using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Properties;
 
     internal partial class TransientFaultHandling
     {

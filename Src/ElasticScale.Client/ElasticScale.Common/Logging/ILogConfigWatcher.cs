@@ -4,9 +4,6 @@
 #region "Usings"
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 #endregion
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale

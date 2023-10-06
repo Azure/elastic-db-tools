@@ -12,15 +12,11 @@
 
 using System;
 using System.Collections.Generic;
-#if NETFRAMEWORK
-    using System.Data.SqlClient;
-#else
-    using Microsoft.Data.SqlClient;
-#endif
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale
 {

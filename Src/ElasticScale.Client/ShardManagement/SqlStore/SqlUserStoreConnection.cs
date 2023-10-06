@@ -2,12 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-#if NETFRAMEWORK
-    using System.Data.SqlClient;
-#else
-    using Microsoft.Data.SqlClient;
-#endif
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {

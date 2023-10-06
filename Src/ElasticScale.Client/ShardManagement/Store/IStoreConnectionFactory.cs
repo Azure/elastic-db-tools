@@ -3,12 +3,6 @@
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {
-#if NETFRAMEWORK
-    using System.Data.SqlClient;
-#else
-    using Microsoft.Data.SqlClient;
-#endif
-
     /// <summary>
     /// Factory for store connections.
     /// </summary>

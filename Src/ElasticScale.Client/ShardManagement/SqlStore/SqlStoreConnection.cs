@@ -3,12 +3,8 @@
 
 using System;
 using System.Data;
-#if NETFRAMEWORK
-    using System.Data.SqlClient;
-#else
-    using Microsoft.Data.SqlClient;
-#endif
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {

@@ -2,11 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
 {
@@ -22,10 +17,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
                 return TraceHelper.Tracer;
             }
         }
-
-#if NETFRAMEWORK
-        private PerformanceCounter _counter;
-#endif
 
         internal bool _isValid;
 
@@ -48,37 +39,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             this._categoryName = categoryName;
             this._instanceName = instanceName;
             this._counterName = counterName;
-
-#if NETFRAMEWORK
-            // Check if counter exists in the specified category and then create its instance
-            if (PerformanceCounterCategory.CounterExists(_counterName, _categoryName))
-            {
-                try
-                {
-                    _counter = new PerformanceCounter();
-                    _counter.InstanceLifetime = PerformanceCounterInstanceLifetime.Process;
-                    _counter.CategoryName = _categoryName;
-                    _counter.InstanceName = _instanceName;
-                    _counter.CounterName = _counterName;
-                    _counter.ReadOnly = false;
-
-                    _counter.RawValue = 0;
-
-                    _isValid = true;
-                }
-                catch (Exception e)
-                {
-                    PerformanceCounterWrapper.TraceException("initialize", "Performance counter initialization failed, no data will be collected.", e);
-                }
-            }
-            else
-            {
-                Tracer.TraceWarning(
-                TraceSourceConstants.ComponentNames.PerfCounter,
-                "initialize",
-                "Performance counter {0} does not exist in shard management catagory.", counterName);
-            }
-#endif
         }
 
         /// <summary>
@@ -86,12 +46,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         public void Close()
         {
-#if NETFRAMEWORK
-            if (_isValid)
-            {
-                _counter.Close();
-            }
-#endif
         }
 
         /// <summary>
@@ -100,19 +54,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public void Increment()
         {
-#if NETFRAMEWORK
-            if (_isValid)
-            {
-                try
-                {
-                    _counter.Increment();
-                }
-                catch (Exception e)
-                {
-                    PerformanceCounterWrapper.TraceException("increment", "counter increment failed.", e);
-                }
-            }
-#endif
         }
 
         /// <summary>
@@ -122,19 +63,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public void SetRawValue(long value)
         {
-#if NETFRAMEWORK
-            if (_isValid)
-            {
-                try
-                {
-                    _counter.RawValue = value;
-                }
-                catch (Exception e)
-                {
-                    PerformanceCounterWrapper.TraceException("SetRawValue", "failed to set raw value", e);
-                }
-            }
-#endif
         }
 
         /// <summary>
@@ -156,9 +84,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         public void Dispose()
         {
-#if NETFRAMEWORK
-            _counter.Dispose();
-#endif
         }
     }
 }

@@ -12,13 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-#if NETFRAMEWORK
-    using System.Data.SqlClient;
-#else
-    using Microsoft.Data.SqlClient;
-#endif
 using System.Linq;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
+using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 {

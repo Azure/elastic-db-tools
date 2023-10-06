@@ -3,12 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-#if NETFRAMEWORK
-    using System.Data.SqlClient;
-#else
-    using Microsoft.Data.SqlClient;
-#endif
-using System.Data.SqlTypes;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;

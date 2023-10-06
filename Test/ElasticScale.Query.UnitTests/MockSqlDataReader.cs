@@ -10,9 +10,6 @@ using System.Collections;
 using System.Data;
 using System.Data.Common;
 using System.IO;
-#if NETFRAMEWORK
-using System.Runtime.Remoting;
-#endif
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -155,16 +152,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         {
             _isClosed = false;
         }
-
-#if NETFRAMEWORK
-        /// <summary>
-        /// Not implemented
-        ///</summary>
-        public override ObjRef CreateObjRef(Type requestedType)
-        {
-            throw new NotImplementedException();
-        }
-#endif
 
         /// <summary>
         /// Gets the value of the specified column as a Boolean.
@@ -471,14 +458,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <param name="values">An array of Object into which to copy the attribute columns.</param>
         /// <returns>The number of instances of Object in the array.</returns>
         public override int GetValues(object[] values)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Not implemented
-        /// </summary>
-        public override object InitializeLifetimeService()
         {
             throw new NotImplementedException();
         }

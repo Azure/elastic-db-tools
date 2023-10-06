@@ -11,11 +11,9 @@
 //  Conversions from: 
 //  http://msdn.microsoft.com/en-us/library/vstudio/cc716729(v=vs.110).aspx
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
-using System.Xml;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 {

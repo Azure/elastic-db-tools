@@ -16,11 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-#if NETFRAMEWORK
-    using System.Data.SqlClient;
-#else
-    using Microsoft.Data.SqlClient;
-#endif
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
@@ -29,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
+using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
 {
