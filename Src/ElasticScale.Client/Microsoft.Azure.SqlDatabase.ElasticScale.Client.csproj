@@ -12,7 +12,7 @@
     <PackageReleaseNotes>Updated to net5.0 and migrated from System.Data.SqlClient to Microsoft.Data.SqlClient.</PackageReleaseNotes>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
     <PackageProjectUrl>https://github.com/Azure/elastic-db-tools</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/Azure/elastic-db-tools/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Azure/elastic-db-tools</RepositoryUrl>
@@ -28,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Properties\Icon.png" Pack="true" PackagePath="\"/>
     <Compile Update="ShardManagement\Errors.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -49,6 +50,12 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>PerformanceCounters.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="Microsoft.Data.SqlClient">
+      <Version>2.1.2</Version>
+    </PackageReference>
   </ItemGroup>
 
 </Project>
