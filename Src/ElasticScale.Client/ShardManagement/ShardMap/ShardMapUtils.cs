@@ -43,6 +43,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// because it may not be available in the .NET framework version that we are running in
         /// </summary>
         internal static readonly string ActiveDirectoryInteractiveStr = "ActiveDirectoryInteractive";
+        internal static readonly string ActiveDirectoryServicePrincipal = "ActiveDirectoryServicePrincipal";
+        internal static readonly string ActiveDirectoryDeviceCodeFlow = "ActiveDirectoryDeviceCodeFlow";
+        internal static readonly string ActiveDirectoryManagedIdentity = "ActiveDirectoryManagedIdentity";
+        internal static readonly string ActiveDirectoryMSI = "ActiveDirectoryMSI";
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static ShardMapUtils()
