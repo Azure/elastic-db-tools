@@ -702,7 +702,7 @@ end";
         // Sleeps are bad but this is just to really make sure
         // sqlclient has had a chance to begin command execution
         // Will not effect the test outcome
-        Thread.Sleep(TimeSpan.FromSeconds(2));
+        Thread.Sleep(TimeSpan.FromSeconds(5));
         cts.Cancel();
 
         // Validate that the task was cancelled
@@ -803,7 +803,7 @@ end";
     [TestCategory("ExcludeFromGatedCheckin")]
     public void TestCreateConnectionWithNoShards()
     {
-        using var conn = new MultiShardConnection(new Shard[] { }, string.Empty);
+        using var conn = new MultiShardConnection(new Shard[] { }, "TrustServerCertificate=true");
         Assert.Fail("Should have failed in the MultiShardConnection c-tor.");
     }
 
