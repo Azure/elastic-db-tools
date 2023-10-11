@@ -1,128 +1,114 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.SqlDatabase.ElasticScale.ClientTestCommon
+using Microsoft.Data.SqlClient;
+using System;
+using System.Diagnostics;
+
+namespace Microsoft.Azure.SqlDatabase.ElasticScale.ClientTestCommon;
+
+/// <summary>
+/// Manage SQL Authentication login for testing.
+/// </summary>
+public class SqlAuthenticationLogin
 {
-    using System;
-    using System.Diagnostics;
-    using Microsoft.Data.SqlClient;
+    /// <summary>
+    /// A counter to ensure each username is unique (to allow for concurrent unit test execution)
+    /// </summary>
+    private static int usernameUniquifier = 1;
 
     /// <summary>
-    /// Manage SQL Authentication login for testing.
+    /// The connection string.
     /// </summary>
-    public class SqlAuthenticationLogin
+    private readonly string connectionString;
+
+    /// <summary>
+    /// The s_test password.
+    /// </summary>
+    private readonly string testPassword;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SqlAuthenticationLogin"/> class.
+    /// </summary>
+    /// <param name="connectionString">
+    /// The connection string.
+    /// </param>
+    /// <param name="username">
+    /// The username.
+    /// </param>
+    /// <param name="password">
+    /// The password.
+    /// </param>
+    public SqlAuthenticationLogin(string connectionString, string username, string password)
     {
-        /// <summary>
-        /// A counter to ensure each username is unique (to allow for concurrent unit test execution)
-        /// </summary>
-        private static int usernameUniquifier = 1;
+        this.connectionString = connectionString;
+        UniquifiedUserName = username + "_" + usernameUniquifier++;
+        testPassword = password;
+    }
 
-        /// <summary>
-        /// The connection string.
-        /// </summary>
-        private readonly string connectionString;
+    /// <summary>
+    /// The uniquified user name (to allow for concurrent unit test execution)
+    /// </summary>
+    public string UniquifiedUserName { get; }
 
-        /// <summary>
-        /// The s_test user.
-        /// </summary>
-        private readonly string testUser;
-
-        /// <summary>
-        /// The s_test password.
-        /// </summary>
-        private readonly string testPassword;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SqlAuthenticationLogin"/> class.
-        /// </summary>
-        /// <param name="connectionString">
-        /// The connection string.
-        /// </param>
-        /// <param name="username">
-        /// The username.
-        /// </param>
-        /// <param name="password">
-        /// The password.
-        /// </param>
-        public SqlAuthenticationLogin(string connectionString, string username, string password)
+    /// <summary>
+    /// Create test login
+    /// </summary>
+    /// <returns>
+    /// <see cref="bool"/> to indicate success.
+    /// </returns>
+    public bool Create()
+    {
+        try
         {
-            this.connectionString = connectionString;
-            this.testUser = username + "_" + usernameUniquifier++;
-            this.testPassword = password;
-        }
-
-        /// <summary>
-        /// The uniquified user name (to allow for concurrent unit test execution)
-        /// </summary>
-        public string UniquifiedUserName => testUser;
-
-        /// <summary>
-        /// Create test login
-        /// </summary>
-        /// <returns>
-        /// <see cref="bool"/> to indicate success.
-        /// </returns>
-        public bool Create()
-        {
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(this.connectionString))
-                {
-                    conn.Open();
-                    conn.ChangeDatabase("master");
-                    using (SqlCommand cmd = new SqlCommand())
-                    {
-                        cmd.Connection = conn;
-                        cmd.CommandText = $@"
-if exists (select name from syslogins where name = '{this.testUser}')
+            using var conn = new SqlConnection(connectionString);
+            conn.Open();
+            conn.ChangeDatabase("master");
+            using var cmd = new SqlCommand();
+            cmd.Connection = conn;
+            cmd.CommandText = $@"
+if exists (select name from syslogins where name = '{UniquifiedUserName}')
 begin
-	drop login {this.testUser}
+	drop login {UniquifiedUserName}
 end
-create login {this.testUser} with password = '{this.testPassword}'";
-                        cmd.ExecuteNonQuery();
+create login {UniquifiedUserName} with password = '{testPassword}'";
+            _ = cmd.ExecuteNonQuery();
 
-                        cmd.CommandText = $"SP_ADDSRVROLEMEMBER  '{this.testUser}', 'sysadmin'";
-                        cmd.ExecuteNonQuery();
+            cmd.CommandText = $"SP_ADDSRVROLEMEMBER  '{UniquifiedUserName}', 'sysadmin'";
+            _ = cmd.ExecuteNonQuery();
 
-                        return true;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Trace.WriteLine($"Exception caught in CreateTestLogin(): {e}");
-            }
-
-            return false;
+            return true;
+        }
+        catch (Exception e)
+        {
+            Trace.WriteLine($"Exception caught in CreateTestLogin(): {e}");
         }
 
-        /// <summary>
-        /// Drop test login.
-        /// </summary>
-        public void Drop()
+        return false;
+    }
+
+    /// <summary>
+    /// Drop test login.
+    /// </summary>
+    public void Drop()
+    {
+        try
         {
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(this.connectionString))
-                {
-                    conn.Open();
-                    conn.ChangeDatabase("master");
-                    using (SqlCommand cmd = new SqlCommand())
-                    {
-                        cmd.Connection = conn;
-                        cmd.CommandText = $@"
-if exists (select name from syslogins where name = '{this.testUser}')
+            using var conn = new SqlConnection(connectionString);
+            conn.Open();
+            conn.ChangeDatabase("master");
+            using var cmd = new SqlCommand();
+            cmd.Connection = conn;
+            cmd.CommandText = $@"
+if exists (select name from syslogins where name = '{UniquifiedUserName}')
 begin
-	drop login {this.testUser}
+	drop login {UniquifiedUserName}
 end";
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Trace.WriteLine($"Exception caught in DropTestLogin(): {e}");
-            }
+            _ = cmd.ExecuteNonQuery();
+        }
+        catch (Exception e)
+        {
+            Trace.WriteLine($"Exception caught in DropTestLogin(): {e}");
         }
     }
 }

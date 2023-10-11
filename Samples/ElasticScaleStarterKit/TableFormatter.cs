@@ -6,94 +6,93 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ElasticScaleStarterKit
+namespace ElasticScaleStarterKit;
+
+/// <summary>
+/// Stores tabular data and formats it for writing to output.
+/// </summary>
+internal class TableFormatter
 {
     /// <summary>
-    /// Stores tabular data and formats it for writing to output.
+    /// Table column names.
     /// </summary>
-    internal class TableFormatter
+    private readonly string[] _columnNames;
+
+    /// <summary>
+    /// Table rows.
+    /// </summary>
+    private readonly List<string[]> _rows;
+
+    public TableFormatter(string[] columnNames)
     {
-        /// <summary>
-        /// Table column names.
-        /// </summary>
-        private readonly string[] _columnNames;
+        _columnNames = columnNames;
+        _rows = new List<string[]>();
+    }
 
-        /// <summary>
-        /// Table rows.
-        /// </summary>
-        private readonly List<string[]> _rows;
-
-        public TableFormatter(string[] columnNames)
+    public void AddRow(object[] values)
+    {
+        if (values.Length != _columnNames.Length)
         {
-            _columnNames = columnNames;
-            _rows = new List<string[]>();
+            throw new ArgumentException(string.Format("Incorrect number of fields. Expected {0}, actual {1}", _columnNames.Length, values.Length));
         }
 
-        public void AddRow(object[] values)
+        var valueStrings = values.Select(o => o.ToString()).ToArray();
+
+        _rows.Add(valueStrings);
+    }
+
+    public override string ToString()
+    {
+        var output = new StringBuilder();
+
+        // Determine column widths
+        var columnWidths = new int[_columnNames.Length];
+        for (var c = 0; c < _columnNames.Length; c++)
         {
-            if (values.Length != _columnNames.Length)
+            var maxValueLength = 0;
+
+            if (_rows.Any())
             {
-                throw new ArgumentException(string.Format("Incorrect number of fields. Expected {0}, actual {1}", _columnNames.Length, values.Length));
+                maxValueLength = _rows.Select(r => r[c].Length).Max();
             }
 
-            string[] valueStrings = values.Select(o => o.ToString()).ToArray();
-
-            _rows.Add(valueStrings);
+            columnWidths[c] = Math.Max(maxValueLength, _columnNames[c].Length);
         }
 
-        public override string ToString()
+        // Build format strings that are used to format the column names and fields
+        var formatStrings = new string[_columnNames.Length];
+        for (var c = 0; c < _columnNames.Length; c++)
         {
-            StringBuilder output = new StringBuilder();
-
-            // Determine column widths
-            int[] columnWidths = new int[_columnNames.Length];
-            for (int c = 0; c < _columnNames.Length; c++)
-            {
-                int maxValueLength = 0;
-
-                if (_rows.Any())
-                {
-                    maxValueLength = _rows.Select(r => r[c].Length).Max();
-                }
-
-                columnWidths[c] = Math.Max(maxValueLength, _columnNames[c].Length);
-            }
-
-            // Build format strings that are used to format the column names and fields
-            string[] formatStrings = new string[_columnNames.Length];
-            for (int c = 0; c < _columnNames.Length; c++)
-            {
-                formatStrings[c] = string.Format(" {{0,-{0}}} ", columnWidths[c]);
-            }
-
-            // Write header
-            for (int c = 0; c < _columnNames.Length; c++)
-            {
-                output.AppendFormat(formatStrings[c], _columnNames[c]);
-            }
-
-            output.AppendLine();
-
-            // Write separator
-            for (int c = 0; c < _columnNames.Length; c++)
-            {
-                output.AppendFormat(formatStrings[c], new string('-', _columnNames[c].Length));
-            }
-
-            output.AppendLine();
-
-            // Write rows
-            foreach (string[] row in _rows)
-            {
-                for (int c = 0; c < _columnNames.Length; c++)
-                {
-                    output.AppendFormat(formatStrings[c], row[c]);
-                }
-
-                output.AppendLine();
-            }
-
-            return output.ToString();
+            formatStrings[c] = string.Format(" {{0,-{0}}} ", columnWidths[c]);
         }
+
+        // Write header
+        for (var c = 0; c < _columnNames.Length; c++)
+        {
+            _ = output.AppendFormat(formatStrings[c], _columnNames[c]);
+        }
+
+        _ = output.AppendLine();
+
+        // Write separator
+        for (var c = 0; c < _columnNames.Length; c++)
+        {
+            _ = output.AppendFormat(formatStrings[c], new string('-', _columnNames[c].Length));
+        }
+
+        _ = output.AppendLine();
+
+        // Write rows
+        foreach (var row in _rows)
+        {
+            for (var c = 0; c < _columnNames.Length; c++)
+            {
+                _ = output.AppendFormat(formatStrings[c], row[c]);
+            }
+
+            _ = output.AppendLine();
+        }
+
+        return output.ToString();
     }
 }

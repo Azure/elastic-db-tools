@@ -1,12 +1,8 @@
 ﻿using System;
 
-namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stubs
+namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stubs;
+
+internal static class StubBehaviors
 {
-    static class StubBehaviors
-    {
-        public static IStubBehavior GetValueOrCurrent(IStubBehavior stubBehavior)
-        {
-            throw new NotImplementedException();
-        }
-    }
+    public static IStubBehavior GetValueOrCurrent(IStubBehavior stubBehavior) => throw new NotImplementedException();
 }

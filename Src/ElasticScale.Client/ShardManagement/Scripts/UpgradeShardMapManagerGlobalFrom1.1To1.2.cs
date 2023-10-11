@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
+namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
+
+/// <summary>
+/// Utility properties and methods used for managing scripts and errors.
+/// </summary>
+internal static partial class Scripts
 {
-    /// <summary>
-    /// Utility properties and methods used for managing scripts and errors.
-    /// </summary>
-    internal static partial class Scripts
-    {
-        internal static readonly UpgradeScript UpgradeShardMapManagerGlobalFrom1_1To1_2 = new UpgradeScript(1, 1, @"
+    internal static readonly UpgradeScript UpgradeShardMapManagerGlobalFrom1_1To1_2 = new(1, 1, @"
 -- Copyright (c) Microsoft. All rights reserved.
 -- Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
@@ -168,5 +168,4 @@ where
 
 go
 ");
-    }
 }

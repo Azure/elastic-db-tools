@@ -9,8 +9,8 @@
 // * Everything will be automated once we integrate with the larger framework.
 // * Currently the tests use the same methods to create shards as MultiShardDataReaderTests
 
-using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
-using Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common;
+using Microsoft.Azure.SqlDatabase.ElasticScale.ClientTestCommon;
+using Microsoft.Azure.SqlDatabase.ElasticScale.Query.Exceptions;
 using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;

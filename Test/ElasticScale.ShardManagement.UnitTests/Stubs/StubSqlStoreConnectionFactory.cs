@@ -4,99 +4,78 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stubs
+namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests.Stubs;
+
+/// <summary>
+/// Stub type of Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStoreConnectionFactory
+/// </summary>
+[DebuggerDisplay("Stub of SqlStoreConnectionFactory")]
+[DebuggerNonUserCode]
+internal class StubSqlStoreConnectionFactory : SqlStoreConnectionFactory
 {
     /// <summary>
-    /// Stub type of Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStoreConnectionFactory
+    /// Sets the stub of SqlStoreConnectionFactory.GetConnection(StoreConnectionKind kind, SqlStoreConnectionInfo connectionInfo)
     /// </summary>
-    [DebuggerDisplay("Stub of SqlStoreConnectionFactory")]
-    [DebuggerNonUserCode]
-    internal class StubSqlStoreConnectionFactory : SqlStoreConnectionFactory
+    internal Func<StoreConnectionKind, SqlConnectionInfo, IStoreConnection> GetConnectionStoreConnectionKindString;
+
+    /// <summary>
+    /// Sets the stub of SqlStoreConnectionFactory.GetUserConnection(SqlStoreConnectionInfo connectionInfo)
+    /// </summary>
+    internal Func<SqlConnectionInfo, IUserStoreConnection> GetUserConnectionString;
+    private IStubBehavior ___instanceBehavior;
+
+    /// <summary>
+    /// Gets or sets a value that indicates if the base method should be called instead of the fallback behavior
+    /// </summary>
+    public bool CallBase { get; set; }
+
+    /// <summary>
+    /// Gets or sets the instance behavior.
+    /// </summary>
+    public IStubBehavior InstanceBehavior
     {
-        /// <summary>
-        /// Sets the stub of SqlStoreConnectionFactory.GetConnection(StoreConnectionKind kind, SqlStoreConnectionInfo connectionInfo)
-        /// </summary>
-        internal Func<StoreConnectionKind, SqlConnectionInfo, IStoreConnection> GetConnectionStoreConnectionKindString;
+        get => StubBehaviors.GetValueOrCurrent(___instanceBehavior);
+        set => ___instanceBehavior = value;
+    }
 
-        /// <summary>
-        /// Sets the stub of SqlStoreConnectionFactory.GetUserConnection(SqlStoreConnectionInfo connectionInfo)
-        /// </summary>
-        internal Func<SqlConnectionInfo, IUserStoreConnection> GetUserConnectionString;
-        private bool ___callBase;
-        private IStubBehavior ___instanceBehavior;
+    /// <summary>
+    /// Initializes a new instance
+    /// </summary>
+    public StubSqlStoreConnectionFactory() => InitializeStub();
 
-        /// <summary>
-        /// Gets or sets a value that indicates if the base method should be called instead of the fallback behavior
-        /// </summary>
-        public bool CallBase
-        {
-            get
-            {
-                return this.___callBase;
-            }
-            set
-            {
-                this.___callBase = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the instance behavior.
-        /// </summary>
-        public IStubBehavior InstanceBehavior
-        {
-            get
-            {
-                return StubBehaviors.GetValueOrCurrent(this.___instanceBehavior);
-            }
-            set
-            {
-                this.___instanceBehavior = value;
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance
-        /// </summary>
-        public StubSqlStoreConnectionFactory()
-        {
-            this.InitializeStub();
-        }
-
-        /// <summary>
-        /// Sets the stub of SqlStoreConnectionFactory.GetConnection(StoreConnectionKind kind, SqlStoreConnectionInfo connectionInfo)
-        /// </summary>
-        public override IStoreConnection GetConnection(
-            StoreConnectionKind kind,
-            SqlConnectionInfo connectionInfo)
-        {
-            Func<StoreConnectionKind, SqlConnectionInfo, IStoreConnection> func1 = this.GetConnectionStoreConnectionKindString;
-            if (func1 != null)
-                return func1(kind, connectionInfo);
-            if (this.___callBase)
-                return base.GetConnection(kind, connectionInfo);
-            return this.InstanceBehavior.Result<StubSqlStoreConnectionFactory, IStoreConnection>(this, "GetConnection");
-        }
+    /// <summary>
+    /// Sets the stub of SqlStoreConnectionFactory.GetConnection(StoreConnectionKind kind, SqlStoreConnectionInfo connectionInfo)
+    /// </summary>
+    public override IStoreConnection GetConnection(
+        StoreConnectionKind kind,
+        SqlConnectionInfo connectionInfo)
+    {
+        var func1 = GetConnectionStoreConnectionKindString;
+        return func1 != null
+            ? func1(kind, connectionInfo)
+            : CallBase
+            ? base.GetConnection(kind, connectionInfo)
+            : InstanceBehavior.Result<StubSqlStoreConnectionFactory, IStoreConnection>(this, "GetConnection");
+    }
 
 
-        /// <summary>
-        /// Sets the stub of SqlStoreConnectionFactory.GetUserConnection(SqlStoreConnectionInfo connectionInfo)
-        /// </summary>
-        public override IUserStoreConnection GetUserConnection(SqlConnectionInfo connectionInfo)
-        {
-            Func<SqlConnectionInfo, IUserStoreConnection> func1 = this.GetUserConnectionString;
-            if (func1 != null)
-                return func1(connectionInfo);
-            if (this.___callBase)
-                return base.GetUserConnection(connectionInfo);
-            return this.InstanceBehavior.Result<StubSqlStoreConnectionFactory, IUserStoreConnection>(this, "GetUserConnection");
-        }
+    /// <summary>
+    /// Sets the stub of SqlStoreConnectionFactory.GetUserConnection(SqlStoreConnectionInfo connectionInfo)
+    /// </summary>
+    public override IUserStoreConnection GetUserConnection(SqlConnectionInfo connectionInfo)
+    {
+        var func1 = GetUserConnectionString;
+        return func1 != null
+            ? func1(connectionInfo)
+            : CallBase
+            ? base.GetUserConnection(connectionInfo)
+            : InstanceBehavior.Result<StubSqlStoreConnectionFactory, IUserStoreConnection>(this, "GetUserConnection");
+    }
 
-        /// <summary>
-        /// Initializes a new instance of type StubSqlStoreConnectionFactory
-        /// </summary>
-        private void InitializeStub()
-        {
-        }
+    /// <summary>
+    /// Initializes a new instance of type StubSqlStoreConnectionFactory
+    /// </summary>
+    private void InitializeStub()
+    {
     }
 }

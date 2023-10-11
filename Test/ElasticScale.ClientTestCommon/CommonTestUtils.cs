@@ -2,21 +2,18 @@
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace Microsoft.Azure.SqlDatabase.ElasticScale.Test.Common
+namespace Microsoft.Azure.SqlDatabase.ElasticScale.ClientTestCommon;
+
+public static class CommonTestUtils
 {
-    public static class CommonTestUtils
+    public static T SerializeDeserialize<T>(T originalException) where T : Exception
     {
-        public static T SerializeDeserialize<T>(T originalException) where T : Exception
-        {
-            using (MemoryStream memStream = new MemoryStream())
-            {
-                BinaryFormatter formatter = new BinaryFormatter();
+        using var memStream = new MemoryStream();
+        var formatter = new BinaryFormatter();
 
-                formatter.Serialize(memStream, originalException);
-                memStream.Seek(0, SeekOrigin.Begin);
+        formatter.Serialize(memStream, originalException);
+        _ = memStream.Seek(0, SeekOrigin.Begin);
 
-                return (T)formatter.Deserialize(memStream);
-            }
-        }
+        return (T)formatter.Deserialize(memStream);
     }
 }
