@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+using Microsoft.Data.SqlClient;
 
 namespace ElasticDapper
 {
@@ -12,11 +12,21 @@ namespace ElasticDapper
     internal static class SqlDatabaseUtils
     {
         /// <summary>
+        /// Create a retry logic provider
+        /// </summary>
+        public static SqlRetryLogicBaseProvider SqlRetryProvider = SqlConfigurableRetryFactory.CreateExponentialRetryProvider(SqlRetryPolicy);
+
+        /// <summary>
         /// Gets the retry policy to use for connections to SQL Server.
         /// </summary>
-        public static RetryPolicy SqlRetryPolicy
+        private static SqlRetryLogicOption SqlRetryPolicy => new()
         {
-            get { return new RetryPolicy<SqlDatabaseTransientErrorDetectionStrategy>(10, TimeSpan.FromSeconds(5)); }
-        }
+            // Tries 5 times before throwing an exception
+            NumberOfTries = 5,
+            // Preferred gap time to delay before retry
+            DeltaTime = TimeSpan.FromSeconds(1),
+            // Maximum gap time for each delay time before retry
+            MaxTimeInterval = TimeSpan.FromSeconds(20)
+        };
     }
 }

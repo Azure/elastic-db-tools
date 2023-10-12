@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Linq;
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -58,81 +58,66 @@ namespace EFCodeFirstElasticScale
             Console.Write("Enter a name for a new Blog: ");
             var name = Console.ReadLine();
 
-            SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+            using (var db = new ElasticScaleContext<int>(sharding.ShardMap, s_tenantId1, connStrBldr.ConnectionString))
             {
-                using (var db = new ElasticScaleContext<int>(sharding.ShardMap, s_tenantId1, connStrBldr.ConnectionString))
-                {
-                    var blog = new Blog { Name = name };
-                    db.Blogs.Add(blog);
-                    db.SaveChanges();
-                }
-            });
+                var blog = new Blog { Name = name };
+                db.Blogs.Add(blog);
+                db.SaveChanges();
+            }
 
-            SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+            using (var db = new ElasticScaleContext<int>(sharding.ShardMap, s_tenantId1, connStrBldr.ConnectionString))
             {
-                using (var db = new ElasticScaleContext<int>(sharding.ShardMap, s_tenantId1, connStrBldr.ConnectionString))
-                {
-                    // Display all Blogs for tenant 1
-                    var query = from b in db.Blogs
-                                orderby b.Name
-                                select b;
+                // Display all Blogs for tenant 1
+                var query = from b in db.Blogs
+                            orderby b.Name
+                            select b;
 
-                    Console.WriteLine("All blogs for tenant id {0}:", s_tenantId1);
-                    foreach (var item in query)
-                    {
-                        Console.WriteLine(item.Name);
-                    }
+                Console.WriteLine("All blogs for tenant id {0}:", s_tenantId1);
+                foreach (var item in query)
+                {
+                    Console.WriteLine(item.Name);
                 }
-            });
+            }
 
             // Do work for tenant 2 :-)
-            SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+            using (var db = new ElasticScaleContext<int>(sharding.ShardMap, s_tenantId2, connStrBldr.ConnectionString))
             {
-                using (var db = new ElasticScaleContext<int>(sharding.ShardMap, s_tenantId2, connStrBldr.ConnectionString))
-                {
-                    // Display all Blogs from the database 
-                    var query = from b in db.Blogs
-                                orderby b.Name
-                                select b;
+                // Display all Blogs from the database 
+                var query = from b in db.Blogs
+                            orderby b.Name
+                            select b;
 
-                    Console.WriteLine("All blogs for tenant id {0}:", s_tenantId2);
-                    foreach (var item in query)
-                    {
-                        Console.WriteLine(item.Name);
-                    }
+                Console.WriteLine("All blogs for tenant id {0}:", s_tenantId2);
+                foreach (var item in query)
+                {
+                    Console.WriteLine(item.Name);
                 }
-            });
+            }
 
             // Create and save a new Blog 
             Console.Write("Enter a name for a new Blog: ");
             var name2 = Console.ReadLine();
 
-            SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+            using (var db = new ElasticScaleContext<int>(sharding.ShardMap, s_tenantId2, connStrBldr.ConnectionString))
             {
-                using (var db = new ElasticScaleContext<int>(sharding.ShardMap, s_tenantId2, connStrBldr.ConnectionString))
-                {
-                    var blog = new Blog { Name = name2 };
-                    db.Blogs.Add(blog);
-                    db.SaveChanges();
-                }
-            });
+                var blog = new Blog { Name = name2 };
+                db.Blogs.Add(blog);
+                db.SaveChanges();
+            }
 
-            SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+            using (var db = new ElasticScaleContext<int>(sharding.ShardMap, s_tenantId2, connStrBldr.ConnectionString))
             {
-                using (var db = new ElasticScaleContext<int>(sharding.ShardMap, s_tenantId2, connStrBldr.ConnectionString))
-                {
-                    // Display all Blogs from the database 
-                    var query = from b in db.Blogs
-                                orderby b.Name
-                                select b;
+                // Display all Blogs from the database 
+                var query = from b in db.Blogs
+                            orderby b.Name
+                            select b;
 
-                    Console.WriteLine("All blogs for tenant id {0}:", s_tenantId2);
-                    foreach (var item in query)
-                    {
-                        Console.WriteLine(item.Name);
-                    }
+                Console.WriteLine("All blogs for tenant id {0}:", s_tenantId2);
+                foreach (var item in query)
+                {
+                    Console.WriteLine(item.Name);
                 }
-            });
+            }
 
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();

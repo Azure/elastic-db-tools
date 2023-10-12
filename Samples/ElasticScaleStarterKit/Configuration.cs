@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Configuration;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace ElasticScaleStarterKit
 {
@@ -81,12 +81,14 @@ namespace ElasticScaleStarterKit
             string integratedSecurityString = ConfigurationManager.AppSettings["IntegratedSecurity"];
             bool integratedSecurity = integratedSecurityString != null && bool.Parse(integratedSecurityString);
 
+            var entraSecurityString = ConfigurationManager.AppSettings["EntraSecurity"];
+            var entraSecurity = entraSecurityString != null && bool.Parse(entraSecurityString);
+
             SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder
-            {
-                // DDR and MSQ require credentials to be set
-                UserID = userId,
-                Password = password,
+            {                
                 IntegratedSecurity = integratedSecurity,
+
+                Authentication = entraSecurity ? SqlAuthenticationMethod.ActiveDirectoryInteractive : SqlAuthenticationMethod.NotSpecified,
 
                 // DataSource and InitialCatalog cannot be set for DDR and MSQ APIs, because these APIs will
                 // determine the DataSource and InitialCatalog for you.
@@ -100,6 +102,14 @@ namespace ElasticScaleStarterKit
                 ApplicationName = "ESC_SKv1.0",
                 ConnectTimeout = 30
             };
+
+            if (!integratedSecurity && !entraSecurity)
+            {
+                // DDR and MSQ require credentials to be set
+                connStr.UserID = userId;
+                connStr.Password = password;
+            }
+
             return connStr.ToString();
         }
     }

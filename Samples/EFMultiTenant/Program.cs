@@ -3,7 +3,7 @@
 
 using System;
 using System.Data.Entity.Infrastructure;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Linq;
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -69,69 +69,62 @@ namespace EFMultiTenantElasticScale
                 Console.Write("\nEnter a name for a new Blog for TenantId {0}: ", tenantId);
                 var name = Console.ReadLine();
 
-                SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+                using (var db = new ElasticScaleContext<int>(sharding.ShardMap, tenantId, connStrBldr.ConnectionString))
                 {
-                    using (var db = new ElasticScaleContext<int>(sharding.ShardMap, tenantId, connStrBldr.ConnectionString))
+                    var blog = new Blog { Name = name, TenantId = tenantId }; // must specify TenantId unless using default constraints to auto-populate
+                    db.Blogs.Add(blog);
+                    db.SaveChanges();
+
+                    // If Row-Level Security is enabled, tenants will only display their own blogs
+                    // Otherwise, tenants will see blogs for all tenants on the shard db
+                    var query = from b in db.Blogs
+                                orderby b.Name
+                                select b;
+
+                    Console.WriteLine("All blogs for TenantId {0}:", tenantId);
+                    foreach (var item in query)
                     {
-                        var blog = new Blog { Name = name, TenantId = tenantId }; // must specify TenantId unless using default constraints to auto-populate
-                        db.Blogs.Add(blog);
-                        db.SaveChanges();
-
-                        // If Row-Level Security is enabled, tenants will only display their own blogs
-                        // Otherwise, tenants will see blogs for all tenants on the shard db
-                        var query = from b in db.Blogs
-                                    orderby b.Name
-                                    select b;
-
-                        Console.WriteLine("All blogs for TenantId {0}:", tenantId);
-                        foreach (var item in query)
-                        {
-                            Console.WriteLine(item.Name);
-                        }
+                        Console.WriteLine(item.Name);
                     }
-                });
+                }
             }
 
             // Example query via ADO.NET SqlClient
             // If Row-Level Security is enabled, only Tenant 4's blogs will be listed
-            SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+            // Note: We are using a wrapper function OpenDDRConnection that automatically set SESSION_CONTEXT with the specified TenantId. 
+            // This is a best practice to ensure that SESSION_CONTEXT is always set before executing a query.
+            using (SqlConnection conn = ElasticScaleContext<int>.OpenDDRConnection(sharding.ShardMap, s_tenantId4, connStrBldr.ConnectionString))
             {
-                // Note: We are using a wrapper function OpenDDRConnection that automatically set SESSION_CONTEXT with the specified TenantId. 
-                // This is a best practice to ensure that SESSION_CONTEXT is always set before executing a query.
-                using (SqlConnection conn = ElasticScaleContext<int>.OpenDDRConnection(sharding.ShardMap, s_tenantId4, connStrBldr.ConnectionString))
+                SqlCommand cmd = conn.CreateCommand();
+                cmd.RetryLogicProvider = SqlDatabaseUtils.SqlRetryProvider;
+                cmd.CommandText = @"SELECT * FROM Blogs";
+
+                Console.WriteLine("\n--\n\nAll blogs for TenantId {0} (using ADO.NET SqlClient):", s_tenantId4);
+                SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
                 {
-                    SqlCommand cmd = conn.CreateCommand();
-                    cmd.CommandText = @"SELECT * FROM Blogs";
-
-                    Console.WriteLine("\n--\n\nAll blogs for TenantId {0} (using ADO.NET SqlClient):", s_tenantId4);
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        Console.WriteLine("{0}", reader["Name"]);
-                    }
+                    Console.WriteLine("{0}", reader["Name"]);
                 }
-            });
-
+            }
+ 
             // Because of the RLS block predicate, attempting to insert a row for the wrong tenant will throw an error.
             Console.WriteLine("\n--\n\nTrying to create a new Blog for TenantId {0} while connected as TenantId {1}: ", s_tenantId2, s_tenantId3);
-            SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+
+            using (var db = new ElasticScaleContext<int>(sharding.ShardMap, s_tenantId3, connStrBldr.ConnectionString))
             {
-                using (var db = new ElasticScaleContext<int>(sharding.ShardMap, s_tenantId3, connStrBldr.ConnectionString))
+                // Verify that block predicate prevents Tenant 3 from inserting rows for Tenant 2
+                try
                 {
-                    // Verify that block predicate prevents Tenant 3 from inserting rows for Tenant 2
-                    try
-                    {
-                        var bad_blog = new Blog { Name = "BAD BLOG", TenantId = s_tenantId2 };
-                        db.Blogs.Add(bad_blog);
-                        db.SaveChanges();
-                        Console.WriteLine("No error thrown - make sure your security policy has a block predicate on this table in each shard database.");
-                    }
-                    catch (DbUpdateException)
-                    {
-                        Console.WriteLine("Can't insert blog for incorrect tenant.");
-                    }
+                    var bad_blog = new Blog { Name = "BAD BLOG", TenantId = s_tenantId2 };
+                    db.Blogs.Add(bad_blog);
+                    db.SaveChanges();
+                    Console.WriteLine("No error thrown - make sure your security policy has a block predicate on this table in each shard database.");
                 }
-            });
+                catch (DbUpdateException)
+                {
+                    Console.WriteLine("Can't insert blog for incorrect tenant.");
+                }
+            }
 
             Console.WriteLine("\n--\n\nPress any key to exit...");
             Console.ReadKey();

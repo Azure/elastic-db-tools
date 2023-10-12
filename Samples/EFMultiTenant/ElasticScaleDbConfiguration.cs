@@ -17,7 +17,7 @@ namespace EFMultiTenantElasticScale
             // the SqlAzureExecutionStrategy which would lead to wrong retry behavior
             // since it would not use the OpenConnectionForKey call. 
             // For more details, see http://msdn.microsoft.com/en-us/data/dn456835.aspx. 
-            this.SetExecutionStrategy("System.Data.SqlClient", () => new DefaultExecutionStrategy());
+            this.SetExecutionStrategy("Microsoft.Data.SqlClient", () => new DefaultExecutionStrategy());
 
             // There are legitimate cases, typically for migrations during development 
             // using Add-Migration and Update-Datase, where a connection to a 
