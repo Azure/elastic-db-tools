@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Dapper;
 using DapperExtensions;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
@@ -67,89 +67,74 @@ namespace ElasticDapper
             Console.Write("Enter a name for a new Blog: ");
             var name = Console.ReadLine();
 
-            SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+            using (SqlConnection sqlconn = shardingLayer.ShardMap.OpenConnectionForKey(
+                key: s_tenantId1,
+                connectionString: connStrBldr.ConnectionString,
+                options: ConnectionOptions.Validate))
             {
-                using (SqlConnection sqlconn = shardingLayer.ShardMap.OpenConnectionForKey(
-                    key: s_tenantId1,
-                    connectionString: connStrBldr.ConnectionString,
-                    options: ConnectionOptions.Validate))
-                {
-                    var blog = new Blog { Name = name };
-                    sqlconn.Insert(blog);
-                }
-            });
+                var blog = new Blog { Name = name };
+                sqlconn.Insert(blog);
+            }
 
-            SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+            using (SqlConnection sqlconn = shardingLayer.ShardMap.OpenConnectionForKey(
+                key: s_tenantId1,
+                connectionString: connStrBldr.ConnectionString,
+                options: ConnectionOptions.Validate))
             {
-                using (SqlConnection sqlconn = shardingLayer.ShardMap.OpenConnectionForKey(
-                    key: s_tenantId1,
-                    connectionString: connStrBldr.ConnectionString,
-                    options: ConnectionOptions.Validate))
-                {
-                    // Display all Blogs for tenant 1
-                    IEnumerable<Blog> result = sqlconn.Query<Blog>(@"
-                        SELECT * 
-                        FROM Blog
-                        ORDER BY Name");
+                // Display all Blogs for tenant 1
+                IEnumerable<Blog> result = sqlconn.Query<Blog>(@"
+                    SELECT * 
+                    FROM Blog
+                    ORDER BY Name");
 
-                    Console.WriteLine("All blogs for tenant id {0}:", s_tenantId1);
-                    foreach (var item in result)
-                    {
-                        Console.WriteLine(item.Name);
-                    }
+                Console.WriteLine("All blogs for tenant id {0}:", s_tenantId1);
+                foreach (var item in result)
+                {
+                    Console.WriteLine(item.Name);
                 }
-            });
+            }
 
             // Do work for tenant 2 :-)
             // Here I am going to illustrate how to integrate
             // with DapperExtensions which saves us the T-SQL 
             //
-            SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+            using (SqlConnection sqlconn = shardingLayer.ShardMap.OpenConnectionForKey(
+                key: s_tenantId2,
+                connectionString: connStrBldr.ConnectionString,
+                options: ConnectionOptions.Validate))
             {
-                using (SqlConnection sqlconn = shardingLayer.ShardMap.OpenConnectionForKey(
-                    key: s_tenantId2,
-                    connectionString: connStrBldr.ConnectionString,
-                    options: ConnectionOptions.Validate))
+                // Display all Blogs for tenant 2
+                IEnumerable<Blog> result = sqlconn.GetList<Blog>();
+                Console.WriteLine("All blogs for tenant id {0}:", s_tenantId2);
+                foreach (var item in result)
                 {
-                    // Display all Blogs for tenant 2
-                    IEnumerable<Blog> result = sqlconn.GetList<Blog>();
-                    Console.WriteLine("All blogs for tenant id {0}:", s_tenantId2);
-                    foreach (var item in result)
-                    {
-                        Console.WriteLine(item.Name);
-                    }
+                    Console.WriteLine(item.Name);
                 }
-            });
+            }
 
             // Create and save a new Blog 
             Console.Write("Enter a name for a new Blog: ");
             var name2 = Console.ReadLine();
 
-            SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+            using (SqlConnection sqlconn = shardingLayer.ShardMap.OpenConnectionForKey(
+                key: s_tenantId2,
+                connectionString: connStrBldr.ConnectionString,
+                options: ConnectionOptions.Validate))
             {
-                using (SqlConnection sqlconn = shardingLayer.ShardMap.OpenConnectionForKey(
-                    key: s_tenantId2,
-                    connectionString: connStrBldr.ConnectionString,
-                    options: ConnectionOptions.Validate))
-                {
-                    var blog = new Blog { Name = name2 };
-                    sqlconn.Insert(blog);
-                }
-            });
+                var blog = new Blog { Name = name2 };
+                sqlconn.Insert(blog);
+            }
 
-            SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+            using (SqlConnection sqlconn = shardingLayer.ShardMap.OpenConnectionForKey(s_tenantId2, connStrBldr.ConnectionString, ConnectionOptions.Validate))
             {
-                using (SqlConnection sqlconn = shardingLayer.ShardMap.OpenConnectionForKey(s_tenantId2, connStrBldr.ConnectionString, ConnectionOptions.Validate))
+                // Display all Blogs for tenant 2
+                IEnumerable<Blog> result = sqlconn.GetList<Blog>();
+                Console.WriteLine("All blogs for tenant id {0}:", s_tenantId2);
+                foreach (var item in result)
                 {
-                    // Display all Blogs for tenant 2
-                    IEnumerable<Blog> result = sqlconn.GetList<Blog>();
-                    Console.WriteLine("All blogs for tenant id {0}:", s_tenantId2);
-                    foreach (var item in result)
-                    {
-                        Console.WriteLine(item.Name);
-                    }
+                    Console.WriteLine(item.Name);
                 }
-            });
+            }
 
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
@@ -168,6 +153,7 @@ namespace ElasticDapper
 
             using (SqlConnection conn = new SqlConnection(connStrBldr.ToString()))
             {
+                conn.RetryLogicProvider = SqlDatabaseUtils.SqlRetryProvider;
                 conn.Open();
                 conn.Execute(@"
                     IF (OBJECT_ID('[dbo].[Blog]', 'U') IS NULL)

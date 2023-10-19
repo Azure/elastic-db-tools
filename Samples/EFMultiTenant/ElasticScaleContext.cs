@@ -3,7 +3,7 @@
 
 using System;
 using System.Data.Entity;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 
 namespace EFMultiTenantElasticScale

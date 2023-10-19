@@ -3,12 +3,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.IO;
 using System.Text;
 using System.Threading;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+using Azure.Identity;
+using Azure.Core;
+using System.Threading.Tasks;
+using System.Configuration;
+using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 
 namespace ElasticScaleStarterKit
 {
@@ -25,20 +28,32 @@ namespace ElasticScaleStarterKit
         /// <summary>
         /// Returns true if we can connect to the database.
         /// </summary>
-        public static bool TryConnectToSqlDatabase()
+        public static bool TryConnectToSqlDatabaseAsync()
         {
             string connectionString =
                 Configuration.GetConnectionString(
                     Configuration.ShardMapManagerServerName,
                     MasterDatabaseName);
 
+            // stuartpa: Testing MSI Auth
+
+            // Uncomment one of the two lines depending on the identity type
+            //var credential = new DefaultAzureCredential(); // system-assigned identity
+            // var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = ConfigurationManager.AppSettings["UserName"] }); // user-assigned identity
+
+            // Get token for Azure SQL Database
+            // var token = credential.GetToken(new TokenRequestContext(new[] { "https://database.windows.net/.default" }));
+
             try
             {
-                using (ReliableSqlConnection conn = new ReliableSqlConnection(
-                    connectionString,
-                    SqlRetryPolicy,
-                    SqlRetryPolicy))
+                using (SqlConnection conn = new SqlConnection(
+                    connectionString))
                 {
+                    conn.RetryLogicProvider = SqlRetryProvider;
+                    
+                    // Open the connection to the Azure SQL Database
+                    // conn.AccessToken = token.Token;
+
                     conn.Open();
                 }
 
@@ -55,18 +70,20 @@ namespace ElasticScaleStarterKit
 
         public static bool DatabaseExists(string server, string db)
         {
-            using (ReliableSqlConnection conn = new ReliableSqlConnection(
-                Configuration.GetConnectionString(server, MasterDatabaseName),
-                SqlRetryPolicy,
-                SqlRetryPolicy))
+            using (SqlConnection conn = new SqlConnection(
+                Configuration.GetConnectionString(server, MasterDatabaseName)))
             {
+                conn.RetryLogicProvider = SqlRetryProvider;
                 conn.Open();
 
                 SqlCommand cmd = conn.CreateCommand();
+                cmd.RetryLogicProvider = SqlRetryProvider;
+
                 cmd.CommandText = "select count(*) from sys.databases where name = @dbname";
                 cmd.Parameters.AddWithValue("@dbname", db);
                 cmd.CommandTimeout = 60;
-                int count = conn.ExecuteCommand<int>(cmd);
+                
+                int count = (int)cmd.ExecuteScalar();
 
                 bool exists = count > 0;
                 return exists;
@@ -75,18 +92,20 @@ namespace ElasticScaleStarterKit
 
         public static bool DatabaseIsOnline(string server, string db)
         {
-            using (ReliableSqlConnection conn = new ReliableSqlConnection(
-                Configuration.GetConnectionString(server, MasterDatabaseName),
-                SqlRetryPolicy,
-                SqlRetryPolicy))
+            using (SqlConnection conn = new SqlConnection(
+                Configuration.GetConnectionString(server, MasterDatabaseName)))
             {
+                conn.RetryLogicProvider = SqlRetryProvider;
                 conn.Open();
 
                 SqlCommand cmd = conn.CreateCommand();
+                cmd.RetryLogicProvider = SqlRetryProvider;
+
                 cmd.CommandText = "select count(*) from sys.databases where name = @dbname and state = 0"; // online
                 cmd.Parameters.AddWithValue("@dbname", db);
                 cmd.CommandTimeout = 60;
-                int count = conn.ExecuteCommand<int>(cmd);
+
+                int count = (int)cmd.ExecuteScalar();
 
                 bool exists = count > 0;
                 return exists;
@@ -96,35 +115,33 @@ namespace ElasticScaleStarterKit
         public static void CreateDatabase(string server, string db)
         {
             ConsoleUtils.WriteInfo("Creating database {0}", db);
-            using (ReliableSqlConnection conn = new ReliableSqlConnection(
-                Configuration.GetConnectionString(server, MasterDatabaseName),
-                SqlRetryPolicy,
-                SqlRetryPolicy))
+            using (SqlConnection conn = new SqlConnection(
+                Configuration.GetConnectionString(server, MasterDatabaseName)))
             {
+                conn.RetryLogicProvider = SqlRetryProvider;
                 conn.Open();
                 SqlCommand cmd = conn.CreateCommand();
 
                 // Determine if we are connecting to Azure SQL DB
                 cmd.CommandText = "SELECT SERVERPROPERTY('EngineEdition')";
                 cmd.CommandTimeout = 60;
-                int engineEdition = conn.ExecuteCommand<int>(cmd);
+                cmd.RetryLogicProvider = SqlRetryProvider;
+
+                int engineEdition = (int)cmd.ExecuteScalar();
 
                 if (engineEdition == 5)
                 {
                     // Azure SQL DB
-                    SqlRetryPolicy.ExecuteAction(() =>
-                        {
-                            if (!DatabaseExists(server, db))
-                            {
-                                // Begin creation (which is async for Standard/Premium editions)
-                                cmd.CommandText = string.Format(
-                                    "CREATE DATABASE {0} (EDITION = '{1}')",
-                                    BracketEscapeName(db),
-                                    Configuration.DatabaseEdition);
-                                cmd.CommandTimeout = 60;
-                                cmd.ExecuteNonQuery();
-                            }
-                        });
+                    if (!DatabaseExists(server, db))
+                    {
+                        // Begin creation (which is async for Standard/Premium editions)
+                        cmd.CommandText = string.Format(
+                            "CREATE DATABASE {0} (EDITION = '{1}')",
+                            BracketEscapeName(db),
+                            Configuration.DatabaseEdition);
+                        cmd.CommandTimeout = 180;
+                        cmd.ExecuteNonQuery();
+                    }
 
                     // Wait for the operation to complete
                     while (!DatabaseIsOnline(server, db))
@@ -139,7 +156,7 @@ namespace ElasticScaleStarterKit
                 {
                     // Other edition of SQL DB
                     cmd.CommandText = string.Format("CREATE DATABASE {0}", BracketEscapeName(db));
-                    conn.ExecuteCommand(cmd);
+                    cmd.ExecuteNonQuery();
                 }
             }
         }
@@ -147,18 +164,17 @@ namespace ElasticScaleStarterKit
         public static void DropDatabase(string server, string db)
         {
             ConsoleUtils.WriteInfo("Dropping database {0}", db);
-            using (ReliableSqlConnection conn = new ReliableSqlConnection(
-                Configuration.GetConnectionString(server, MasterDatabaseName),
-                SqlRetryPolicy,
-                SqlRetryPolicy))
+            using (SqlConnection conn = new SqlConnection(
+                Configuration.GetConnectionString(server, MasterDatabaseName)))
             {
+                conn.RetryLogicProvider = SqlRetryProvider;
                 conn.Open();
                 SqlCommand cmd = conn.CreateCommand();
 
                 // Determine if we are connecting to Azure SQL DB
                 cmd.CommandText = "SELECT SERVERPROPERTY('EngineEdition')";
                 cmd.CommandTimeout = 60;
-                int engineEdition = conn.ExecuteCommand<int>(cmd);
+                int engineEdition = (int)cmd.ExecuteScalar();
 
                 // Drop the database
                 if (engineEdition == 5)
@@ -182,13 +198,13 @@ namespace ElasticScaleStarterKit
         public static void ExecuteSqlScript(string server, string db, string schemaFile)
         {
             ConsoleUtils.WriteInfo("Executing script {0}", schemaFile);
-            using (ReliableSqlConnection conn = new ReliableSqlConnection(
-                Configuration.GetConnectionString(server, db),
-                SqlRetryPolicy,
-                SqlRetryPolicy))
+            using (SqlConnection conn = new SqlConnection(
+                Configuration.GetConnectionString(server, db)))
             {
+                conn.RetryLogicProvider = SqlRetryProvider;
                 conn.Open();
                 SqlCommand cmd = conn.CreateCommand();
+                cmd.RetryLogicProvider = SqlRetryProvider;
 
                 // Read the commands from the sql script file
                 IEnumerable<string> commands = ReadSqlScript(schemaFile);
@@ -197,7 +213,7 @@ namespace ElasticScaleStarterKit
                 {
                     cmd.CommandText = command;
                     cmd.CommandTimeout = 60;
-                    conn.ExecuteCommand(cmd);
+                    cmd.ExecuteNonQuery();
                 }
             }
         }
@@ -234,68 +250,20 @@ namespace ElasticScaleStarterKit
             return '[' + sqlName.Replace("]", "]]") + ']';
         }
 
+        // Create a retry logic provider
+        public static SqlRetryLogicBaseProvider SqlRetryProvider = SqlConfigurableRetryFactory.CreateExponentialRetryProvider(SqlRetryPolicy);
+
         /// <summary>
         /// Gets the retry policy to use for connections to SQL Server.
         /// </summary>
-        public static RetryPolicy SqlRetryPolicy
+        private static SqlRetryLogicOption SqlRetryPolicy => new()
         {
-            get
-            {
-                return new RetryPolicy<ExtendedSqlDatabaseTransientErrorDetectionStrategy>(10, TimeSpan.FromSeconds(5));
-            }
-        }
-
-        /// <summary>
-        /// Extended sql transient error detection strategy that performs additional transient error
-        /// checks besides the ones done by the enterprise library.
-        /// </summary>
-        private class ExtendedSqlDatabaseTransientErrorDetectionStrategy : ITransientErrorDetectionStrategy
-        {
-            /// <summary>
-            /// Enterprise transient error detection strategy.
-            /// </summary>
-            private SqlDatabaseTransientErrorDetectionStrategy _sqltransientErrorDetectionStrategy = new SqlDatabaseTransientErrorDetectionStrategy();
-
-            /// <summary>
-            /// Checks with enterprise library's default handler to see if the error is transient, additionally checks
-            /// for such errors using the code in the in <see cref="IsTransientException"/> function.
-            /// </summary>
-            /// <param name="ex">Exception being checked.</param>
-            /// <returns><c>true</c> if exception is considered transient, <c>false</c> otherwise.</returns>
-            public bool IsTransient(Exception ex)
-            {
-                return _sqltransientErrorDetectionStrategy.IsTransient(ex) || IsTransientException(ex);
-            }
-
-            /// <summary>
-            /// Detects transient errors not currently considered as transient by the enterprise library's strategy.
-            /// </summary>
-            /// <param name="ex">Input exception.</param>
-            /// <returns><c>true</c> if exception is considered transient, <c>false</c> otherwise.</returns>
-            private static bool IsTransientException(Exception ex)
-            {
-                SqlException se = ex as SqlException;
-
-                if (se != null && se.InnerException != null)
-                {
-                    Win32Exception we = se.InnerException as Win32Exception;
-
-                    if (we != null)
-                    {
-                        switch (we.NativeErrorCode)
-                        {
-                            case 0x102:
-                                // Transient wait expired error resulting in timeout
-                                return true;
-                            case 0x121:
-                                // Transient semaphore wait expired error resulting in timeout
-                                return true;
-                        }
-                    }
-                }
-
-                return false;
-            }
-        }
+            // Tries 5 times before throwing an exception
+            NumberOfTries = 5,
+            // Preferred gap time to delay before retry
+            DeltaTime = TimeSpan.FromSeconds(1),
+            // Maximum gap time for each delay time before retry
+            MaxTimeInterval = TimeSpan.FromSeconds(20)
+        };
     }
 }

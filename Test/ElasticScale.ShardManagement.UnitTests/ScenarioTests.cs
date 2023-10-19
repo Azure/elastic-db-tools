@@ -308,14 +308,14 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 {
                     // Also verify we can connect to the shard with Sql Auth, and Sql Auth using a secure credential
                     using (shardForConnection.OpenConnectionAsync(
-                        string.Empty,
+                        "TrustServerCertificate=True;",
                         Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
                         ConnectionOptions.None).Result)
                     {
                     }
 
                     using (shardForConnection.OpenConnectionAsync(
-                        string.Empty,
+                        "TrustServerCertificate=True;",
                         Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName)).Result)
                     {
                     }
@@ -1142,7 +1142,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     // Cover the OpenConnectionForKey overloads
                     using (SqlConnection conn = newMultiTenantShardMap.OpenConnectionForKey(
                         20,
-                        string.Empty,
+                        "TrustServerCertificate=True;",
                         Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName)))
                     {
                     }
@@ -1237,7 +1237,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                     // Cover the OpenConnectionForKeyAsync overloads
                     using (SqlConnection conn = multiTenantShardMap.OpenConnectionForKeyAsync(
                         20,
-                        string.Empty,
+                        "TrustServerCertificate=True;",
                         Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
                         ConnectionOptions.None).Result)
                     {
@@ -1245,7 +1245,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
 
                     using (SqlConnection conn = multiTenantShardMap.OpenConnectionForKeyAsync(
                         20,
-                        string.Empty,
+                        "TrustServerCertificate=True;",
                         Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName)).Result)
                     {
                     }

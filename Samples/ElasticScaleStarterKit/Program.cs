@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
@@ -19,9 +20,11 @@ namespace ElasticScaleStarterKit
             Console.WriteLine("***    Welcome to Elastic Database Tools Starter Kit    ***");
             Console.WriteLine("***********************************************************");
             Console.WriteLine();
+            Console.WriteLine("Authentication method used: {0}", ConfigurationManager.AppSettings["SqlAuthenticationMethod"]);
+            Console.WriteLine();
 
             // Verify that we can connect to the Sql Database that is specified in App.config settings
-            if (!SqlDatabaseUtils.TryConnectToSqlDatabase())
+            if (!SqlDatabaseUtils.TryConnectToSqlDatabaseAsync())
             {
                 // Connecting to the server failed - please update the settings in App.Config
 

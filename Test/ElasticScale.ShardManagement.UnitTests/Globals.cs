@@ -22,22 +22,22 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Connection string for global shard map manager for Integrated Auth
         /// </summary>
-        private const string ShardMapManagerConnString = ShardMapManagerConnStringBase + "Integrated Security=SSPI;";
+        private const string ShardMapManagerConnString = ShardMapManagerConnStringBase + "Integrated Security=SSPI;TrustServerCertificate=True;";
 
         /// <summary>
         /// Connection string for global shard map manager for Sql Auth
         /// </summary>
-        private const string ShardMapManagerConnStringForSqlAuth = ShardMapManagerConnStringBase + "Integrated Security=False;";
+        private const string ShardMapManagerConnStringForSqlAuth = ShardMapManagerConnStringBase + "Integrated Security=False;TrustServerCertificate=True;";
 
         /// <summary>
         /// Connect string for local shard user.
         /// </summary>
-        private const string ShardUserConnString = @"Integrated Security=SSPI;";
+        private const string ShardUserConnString = @"Integrated Security=SSPI;TrustServerCertificate=True;";
 
         /// <summary>
         /// Connect string for local shard user.
         /// </summary>
-        private const string ShardUserConnStringForSqlAuth = @"User={0};Password={1}";
+        private const string ShardUserConnStringForSqlAuth = @"User={0};Password={1};TrustServerCertificate=True;";
 
         /// <summary>
         /// shardMapManager datasource name for unit tests.
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         /// <summary>
         /// Connection string for connecting to test server.
         /// </summary>
-        internal const string ShardMapManagerTestConnectionString = @"Data Source=" + Globals.ShardMapManagerTestsDatasourceName + ";Integrated Security=SSPI;";
+        internal const string ShardMapManagerTestConnectionString = @"Data Source=" + Globals.ShardMapManagerTestsDatasourceName + ";Integrated Security=SSPI;TrustServerCertificate=True;";
 
         /// <summary>
         /// Query to create database.
