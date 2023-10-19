@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Data.SqlClient;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace EFMultiTenantElasticScale
 {

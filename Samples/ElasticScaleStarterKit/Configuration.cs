@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Configuration;
 using Microsoft.Data.SqlClient;
 
@@ -76,19 +77,21 @@ namespace ElasticScaleStarterKit
             string userId = ConfigurationManager.AppSettings["UserName"] ?? string.Empty;
             string password = ConfigurationManager.AppSettings["Password"] ?? string.Empty;
 
-            // Get Integrated Security from the app.config file. 
-            // If it exists, then parse it (throw exception on failure), otherwise default to false.
-            string integratedSecurityString = ConfigurationManager.AppSettings["IntegratedSecurity"];
-            bool integratedSecurity = integratedSecurityString != null && bool.Parse(integratedSecurityString);
+            string trustServerCertificateString = ConfigurationManager.AppSettings["TrustServerCertificate"] ?? string.Empty;
 
-            var entraSecurityString = ConfigurationManager.AppSettings["EntraSecurity"];
-            var entraSecurity = entraSecurityString != null && bool.Parse(entraSecurityString);
+            var trustServerCertificate = trustServerCertificateString != null && bool.Parse(trustServerCertificateString);
+
+            // Get Sql Auth method from the app.config file. 
+            SqlAuthenticationMethod authMethod;
+            var enumString = ConfigurationManager.AppSettings["SqlAuthenticationMethod"];
+            if (!Enum.TryParse(enumString, out authMethod))
+            {
+                throw new ArgumentException("Invalid SqlAuthenticationMethod in app.config");
+            }
 
             SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder
-            {                
-                IntegratedSecurity = integratedSecurity,
-
-                Authentication = entraSecurity ? SqlAuthenticationMethod.ActiveDirectoryInteractive : SqlAuthenticationMethod.NotSpecified,
+            {             
+                Authentication = authMethod,
 
                 // DataSource and InitialCatalog cannot be set for DDR and MSQ APIs, because these APIs will
                 // determine the DataSource and InitialCatalog for you.
@@ -99,15 +102,49 @@ namespace ElasticScaleStarterKit
                 //
                 // Other SqlClient ConnectionString keywords are supported.
 
+                TrustServerCertificate = trustServerCertificate,
+
                 ApplicationName = "ESC_SKv1.0",
-                ConnectTimeout = 30
+
+                // Set to 120 if ActiveDirectoryDeviceCodeFlow
+                // not even the fastest cut and pasters can get the device code
+                // into the browser and click through in 30 seconds.
+                ConnectTimeout = authMethod == SqlAuthenticationMethod.ActiveDirectoryDeviceCodeFlow ? 120 : 30
             };
 
-            if (!integratedSecurity && !entraSecurity)
+            // DEVNOTE: NotSpecified behaves the same as SqlPassword (i.e. Sql Auth)
+            if (authMethod == SqlAuthenticationMethod.ActiveDirectoryManagedIdentity ||
+                authMethod == SqlAuthenticationMethod.ActiveDirectoryMSI ||
+                authMethod == SqlAuthenticationMethod.ActiveDirectoryServicePrincipal || 
+                authMethod == SqlAuthenticationMethod.ActiveDirectoryPassword ||
+                authMethod == SqlAuthenticationMethod.SqlPassword ||
+                authMethod == SqlAuthenticationMethod.NotSpecified)
             {
                 // DDR and MSQ require credentials to be set
+
+                // ActiveDirectoryManagedIdentity / ActiveDirectoryMSI when using a System Managed System Identify does not use a UserID 
+                if (authMethod != SqlAuthenticationMethod.ActiveDirectoryManagedIdentity &&
+                    authMethod != SqlAuthenticationMethod.ActiveDirectoryMSI)
+                {
+                    if (userId == string.Empty)
+                    {
+                        throw new ArgumentException("UserName must be specified in app.config");
+                    }
+                }
+
                 connStr.UserID = userId;
-                connStr.Password = password;
+
+                // ActiveDirectoryManagedIdentity/ActiveDirectoryMSI does not use a Password.
+                if (authMethod != SqlAuthenticationMethod.ActiveDirectoryManagedIdentity &&
+                    authMethod != SqlAuthenticationMethod.ActiveDirectoryMSI)
+                {
+                    if (password == string.Empty)
+                    {
+                        throw new ArgumentException("Password must be specified in app.config");
+                    }
+
+                    connStr.Password = password;
+                }
             }
 
             return connStr.ToString();

@@ -3,12 +3,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using Microsoft.Data.SqlClient;
 using System.IO;
 using System.Text;
 using System.Threading;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+using Azure.Identity;
+using Azure.Core;
+using System.Threading.Tasks;
+using System.Configuration;
+using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 
 namespace ElasticScaleStarterKit
 {
@@ -25,12 +28,21 @@ namespace ElasticScaleStarterKit
         /// <summary>
         /// Returns true if we can connect to the database.
         /// </summary>
-        public static bool TryConnectToSqlDatabase()
+        public static bool TryConnectToSqlDatabaseAsync()
         {
             string connectionString =
                 Configuration.GetConnectionString(
                     Configuration.ShardMapManagerServerName,
                     MasterDatabaseName);
+
+            // stuartpa: Testing MSI Auth
+
+            // Uncomment one of the two lines depending on the identity type
+            //var credential = new DefaultAzureCredential(); // system-assigned identity
+            // var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = ConfigurationManager.AppSettings["UserName"] }); // user-assigned identity
+
+            // Get token for Azure SQL Database
+            // var token = credential.GetToken(new TokenRequestContext(new[] { "https://database.windows.net/.default" }));
 
             try
             {
@@ -38,6 +50,10 @@ namespace ElasticScaleStarterKit
                     connectionString))
                 {
                     conn.RetryLogicProvider = SqlRetryProvider;
+                    
+                    // Open the connection to the Azure SQL Database
+                    // conn.AccessToken = token.Token;
+
                     conn.Open();
                 }
 

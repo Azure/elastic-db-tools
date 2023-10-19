@@ -6,7 +6,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale
     using System;
     using System.Threading;
     using System.Threading.Tasks;
-
+    
     internal partial class TransientFaultHandling
     {
         /// <summary>
