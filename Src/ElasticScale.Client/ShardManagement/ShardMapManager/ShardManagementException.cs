@@ -326,6 +326,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="info">The object that holds the serialized object data</param>
         /// <param name="context">The contextual information about the source or destination</param>
+        [Obsolete]
         private ShardManagementException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -339,7 +340,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// </summary>
         /// <param name="info">The SerializationInfo to populate with data.</param>
         /// <param name="context">The destination (see StreamingContext) for this serialization.</param>
+        [Obsolete]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
         {
             if (info != null)
             {

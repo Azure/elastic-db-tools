@@ -121,6 +121,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <param name="context">
         /// The <see cref="StreamingContext"/> that contains contextual information about the source or destination.
         /// </param>
+        [Obsolete]
         protected MultiShardException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -136,7 +137,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// </summary>
         /// <param name="info"><see cref="SerializationInfo"/> object to populate with data.</param>
         /// <param name="context">The destination <see cref=" StreamingContext"/> object for this serialization.</param>
+        [Obsolete]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
         {
             base.GetObjectData(info, context);
             info.AddValue("ShardLocation", _shardLocation);
