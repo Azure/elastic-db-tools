@@ -8,7 +8,7 @@ using System.Linq;
 ////////////////////////////////////////////////////////////////////////////////////////
 // This sample follows the CodeFirstNewDatabase Blogging tutorial for EF.
 // It illustrates the adjustments that need to be made to use EF in combination
-// with the Entity Framewor to scale out your data tier across many databases and
+// with the Entity Framework to scale out your data tier across many databases and
 // benefit from Elastic Scale capabilities for Data Dependent Routing and 
 // Shard Map Management.
 ////////////////////////////////////////////////////////////////////////////////////////
