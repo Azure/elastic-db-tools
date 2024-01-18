@@ -8,8 +8,8 @@
     <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Data.NetCore" Version="6.0.1312" />
     <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.NetCore" Version="6.0.1312" />
     <PackageReference Include="Microsoft.Azure.SqlDatabase.ElasticScale.Client" version="2.3.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
-    <PackageReference Include="Dapper" Version="2.0.90" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+    <PackageReference Include="Dapper" Version="2.1.28" />
     <PackageReference Include="DapperExtensions" Version="1.7.0" />
   </ItemGroup>
   <ItemGroup>
