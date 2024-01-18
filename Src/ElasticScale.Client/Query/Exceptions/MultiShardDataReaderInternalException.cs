@@ -62,6 +62,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query
         /// <param name="context">
         /// The <see cref="StreamingContext"/> that contains contextual information about the source or destination.
         /// </param>
+        [Obsolete]
         protected MultiShardDataReaderInternalException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
