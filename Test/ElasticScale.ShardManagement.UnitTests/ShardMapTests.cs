@@ -221,12 +221,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
                 }
 
                 // Validate that we can connect to the shard using a secure Sql Auth Credential
-                using (sNew.OpenConnection(string.Empty, Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName)))
+                using (sNew.OpenConnection("TrustServerCertificate=True;", Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName)))
                 {
                 }
 
                 using (sNew.OpenConnection(
-                    string.Empty,
+                    "TrustServerCertificate=True;",
                     Globals.ShardUserCredentialForSqlAuth(sqlAuthLogin.UniquifiedUserName),
                     ConnectionOptions.Validate))
                 {

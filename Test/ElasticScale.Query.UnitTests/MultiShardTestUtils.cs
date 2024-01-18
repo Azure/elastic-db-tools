@@ -47,12 +47,12 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <summary>
         /// Connection string for local shard user.
         /// </summary>
-        internal static string ShardConnectionString = @"Integrated Security=SSPI;";
+        internal static string ShardConnectionString = @"Integrated Security=SSPI;TrustServerCertificate=True;";
 
         /// <summary>
         /// Connection string for global shard map manager operations.
         /// </summary>
-        internal static string ShardMapManagerConnectionString = @"Data Source=localhost;Initial Catalog=ShardMapManager;Integrated Security=SSPI;";
+        internal static string ShardMapManagerConnectionString = @"Data Source=localhost;Initial Catalog=ShardMapManager;Integrated Security=SSPI;TrustServerCertificate=True;";
 
         /// <summary>
         /// Name of the database where the ShardMapManager persists its data.
@@ -214,6 +214,8 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             builder.DataSource = s_serverLocation;
             builder.IntegratedSecurity = true;
             builder.InitialCatalog = database;
+            builder.TrustServerCertificate = true;
+
             return builder.ConnectionString;
         }
 
