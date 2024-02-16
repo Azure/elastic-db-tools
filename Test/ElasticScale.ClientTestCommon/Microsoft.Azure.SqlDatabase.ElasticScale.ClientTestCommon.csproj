@@ -6,7 +6,7 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('build.props'))" />
   <Import Project="$([MSBuild]::GetPathOfFileAbove('strongname.props'))" />
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.4" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0-preview5.24024.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.2.1" />
   </ItemGroup>
 </Project>
