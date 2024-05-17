@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.Azure.SqlDatabase.ElasticScale.Query;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
+using Microsoft.Data.SqlClient;
 
 namespace ShardSqlCmd
 {
