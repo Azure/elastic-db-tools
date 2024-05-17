@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Data.SqlClient;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
+using Microsoft.Data.SqlClient;
 
 namespace ElasticDapper
 {
@@ -25,41 +25,41 @@ namespace ElasticDapper
             ShardMapManager smm;
             if (!ShardMapManagerFactory.TryGetSqlShardMapManager(connStrBldr.ConnectionString, ShardMapManagerLoadPolicy.Lazy, out smm))
             {
-                this.ShardMapManager = ShardMapManagerFactory.CreateSqlShardMapManager(connStrBldr.ConnectionString);
+                ShardMapManager = ShardMapManagerFactory.CreateSqlShardMapManager(connStrBldr.ConnectionString);
             }
             else
             {
-                this.ShardMapManager = smm;
+                ShardMapManager = smm;
             }
 
             ListShardMap<int> sm;
             if (!ShardMapManager.TryGetListShardMap<int>("ElasticScaleWithDapper", out sm))
             {
-                this.ShardMap = ShardMapManager.CreateListShardMap<int>("ElasticScaleWithDapper");
+                ShardMap = ShardMapManager.CreateListShardMap<int>("ElasticScaleWithDapper");
             }
             else
             {
-                this.ShardMap = sm;
+                ShardMap = sm;
             }
         }
 
         // Enter a new shard - i.e. an empty database - to the shard map, allocate a first tenant to it 
-        public void RegisterNewShard(string server, string database, string connstr, int key)
+        public void RegisterNewShard(string server, string database, int key)
         {
             Shard shard;
             ShardLocation shardLocation = new ShardLocation(server, database);
 
-            if (!this.ShardMap.TryGetShard(shardLocation, out shard))
+            if (!ShardMap.TryGetShard(shardLocation, out shard))
             {
-                shard = this.ShardMap.CreateShard(shardLocation);
+                shard = ShardMap.CreateShard(shardLocation);
             }
 
             // Register the mapping of the tenant to the shard in the shard map.
             // After this step, DDR on the shard map can be used
             PointMapping<int> mapping;
-            if (!this.ShardMap.TryGetMappingForKey(key, out mapping))
+            if (!ShardMap.TryGetMappingForKey(key, out mapping))
             {
-                this.ShardMap.CreatePointMapping(key, shard);
+                ShardMap.CreatePointMapping(key, shard);
             }
         }
     }
