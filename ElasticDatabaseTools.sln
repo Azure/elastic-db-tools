@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29709.97
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.SqlDatabase.ElasticScale.Client", "Src\ElasticScale.Client\Microsoft.Azure.SqlDatabase.ElasticScale.Client.csproj", "{4C3B3EC4-5702-469E-800E-313FB27A0A2B}"
 EndProject
@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.SqlDatabase
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests", "Test\ElasticScale.Query.UnitTests\Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests.csproj", "{74CEE77F-D2C7-4B8B-9411-8F97F4E803FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticScaleStarterKit", "Samples\ElasticScaleStarterKit\ElasticScaleStarterKit.csproj", "{115A0283-AC42-4D37-97F2-106D168E04D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElasticScaleStarterKit", "Samples\ElasticScaleStarterKit\ElasticScaleStarterKit.csproj", "{115A0283-AC42-4D37-97F2-106D168E04D2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFrameworkMultiTenant", "Samples\EFMultiTenant\EntityFrameworkMultiTenant.csproj", "{BC17F3EF-FEB4-4186-9342-E2D18F1E56AB}"
 EndProject
@@ -20,6 +20,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElasticDapper", "Samples\Dapper\ElasticDapper.csproj", "{AC76C04B-881E-4CB9-B491-4D19B68459F1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardSqlCmd", "Samples\ShardSqlCmd\ShardSqlCmd.csproj", "{B210D6E5-7171-4117-9C77-3F2CB59D04D8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{F7A2F005-3B53-495D-B0EC-CE41FAB4DC75}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9C78C56E-7738-4D3B-9722-67A4CB028A75}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{A0CBF252-A093-4448-BC10-1A1EF10DB64E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -142,6 +148,17 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4C3B3EC4-5702-469E-800E-313FB27A0A2B} = {A0CBF252-A093-4448-BC10-1A1EF10DB64E}
+		{9336E9E7-19BF-49AC-92E3-19FA6B98921E} = {9C78C56E-7738-4D3B-9722-67A4CB028A75}
+		{BEA6F911-BA98-462C-99AF-3B0595DE2307} = {9C78C56E-7738-4D3B-9722-67A4CB028A75}
+		{74CEE77F-D2C7-4B8B-9411-8F97F4E803FA} = {9C78C56E-7738-4D3B-9722-67A4CB028A75}
+		{115A0283-AC42-4D37-97F2-106D168E04D2} = {F7A2F005-3B53-495D-B0EC-CE41FAB4DC75}
+		{BC17F3EF-FEB4-4186-9342-E2D18F1E56AB} = {F7A2F005-3B53-495D-B0EC-CE41FAB4DC75}
+		{8EB66613-D5A2-4683-B91A-6AF904FD6B70} = {F7A2F005-3B53-495D-B0EC-CE41FAB4DC75}
+		{AC76C04B-881E-4CB9-B491-4D19B68459F1} = {F7A2F005-3B53-495D-B0EC-CE41FAB4DC75}
+		{B210D6E5-7171-4117-9C77-3F2CB59D04D8} = {F7A2F005-3B53-495D-B0EC-CE41FAB4DC75}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {24237160-521B-4CD0-87AB-8994A5E50BE2}
