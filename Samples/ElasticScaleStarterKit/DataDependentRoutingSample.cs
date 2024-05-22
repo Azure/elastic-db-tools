@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Data.SqlClient;
 using System.Linq;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
+using Microsoft.Data.SqlClient;
 
 namespace ElasticScaleStarterKit
 {
@@ -64,21 +64,23 @@ namespace ElasticScaleStarterKit
             // Open and execute the command with retry for transient faults. Note that if the command fails, the connection is closed, so
             // the entire block is wrapped in a retry. This means that only one command should be executed per block, since if we had multiple
             // commands then the first command may be executed multiple times if later commands fail.
-            SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+
+            // Looks up the key in the shard map and opens a connection to the shard
+            using (SqlConnection conn = shardMap.OpenConnectionForKey(customerId, credentialsConnectionString))
             {
-                // Looks up the key in the shard map and opens a connection to the shard
-                using (SqlConnection conn = shardMap.OpenConnectionForKey(customerId, credentialsConnectionString))
+                // Create a simple command that will insert or update the customer information
+                using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    // Create a simple command that will insert or update the customer information
-                    SqlCommand cmd = conn.CreateCommand();
+                    cmd.RetryLogicProvider = SqlDatabaseUtils.SqlRetryProvider;
+
                     cmd.CommandText = @"
-                    IF EXISTS (SELECT 1 FROM Customers WHERE CustomerId = @customerId)
-                        UPDATE Customers
-                            SET Name = @name, RegionId = @regionId
-                            WHERE CustomerId = @customerId
-                    ELSE
-                        INSERT INTO Customers (CustomerId, Name, RegionId)
-                        VALUES (@customerId, @name, @regionId)";
+                        IF EXISTS (SELECT 1 FROM Customers WHERE CustomerId = @customerId)
+                            UPDATE Customers
+                                SET Name = @name, RegionId = @regionId
+                                WHERE CustomerId = @customerId
+                        ELSE
+                            INSERT INTO Customers (CustomerId, Name, RegionId)
+                            VALUES (@customerId, @name, @regionId)";
                     cmd.Parameters.AddWithValue("@customerId", customerId);
                     cmd.Parameters.AddWithValue("@name", name);
                     cmd.Parameters.AddWithValue("@regionId", regionId);
@@ -87,7 +89,7 @@ namespace ElasticScaleStarterKit
                     // Execute the command
                     cmd.ExecuteNonQuery();
                 }
-            });
+            }
         }
 
         /// <summary>
@@ -99,13 +101,13 @@ namespace ElasticScaleStarterKit
             int customerId,
             int productId)
         {
-            SqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>
+            // Looks up the key in the shard map and opens a connection to the shard
+            using (SqlConnection conn = shardMap.OpenConnectionForKey(customerId, credentialsConnectionString))
             {
-                // Looks up the key in the shard map and opens a connection to the shard
-                using (SqlConnection conn = shardMap.OpenConnectionForKey(customerId, credentialsConnectionString))
+                // Create a simple command that will insert a new order
+                using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    // Create a simple command that will insert a new order
-                    SqlCommand cmd = conn.CreateCommand();
+                    cmd.RetryLogicProvider = SqlDatabaseUtils.SqlRetryProvider;
 
                     // Create a simple command
                     cmd.CommandText = @"INSERT INTO dbo.Orders (CustomerId, OrderDate, ProductId)
@@ -118,7 +120,7 @@ namespace ElasticScaleStarterKit
                     // Execute the command
                     cmd.ExecuteNonQuery();
                 }
-            });
+            }
 
             ConsoleUtils.WriteInfo("Inserted order for customer ID: {0}", customerId);
         }
