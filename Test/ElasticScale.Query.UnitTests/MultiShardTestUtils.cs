@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlTypes;
+using System.Globalization;
 using System.Text;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 using Microsoft.Data.SqlClient;
@@ -728,7 +729,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
             // .NET range to test these consistently.
             //
             double theValue = s_random.NextDouble() * Decimal.ToDouble(Decimal.MaxValue);
-            return string.Format("CAST({0} AS {1})", theValue, column.ColumnTypeDeclaration);
+            return string.Format("CAST({0} AS {1})", theValue.ToString(CultureInfo.InvariantCulture), column.ColumnTypeDeclaration);
         }
 
         /// <summary>
@@ -773,7 +774,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         /// <returns>Tsql to cast the value.</returns>
         private static string GetSpecificDoubleCastAsArg(double theValue, MutliShardTestCaseColumn column)
         {
-            return string.Format("CAST({0} AS {1})", theValue, column.SqlServerDatabaseEngineType);
+            return string.Format("CAST({0} AS {1})", theValue.ToString(CultureInfo.InvariantCulture), column.SqlServerDatabaseEngineType);
         }
 
         /// <summary>
