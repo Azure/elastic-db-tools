@@ -16,19 +16,19 @@
 .EXAMPLES
     .\SetupSampleSplitMergeEnvironment.ps1 `
         -UserName 'mysqluser' `
-        -Password 'MySqlPassw0rd' `
+        -Password '<my-sql-pwd-of-choice>' `
         -ShardMapManagerServerName 'abcdefghij.database.windows.net' `
         -ShardKeyType 'Int32'
 
     .\SetupSampleSplitMergeEnvironment.ps1 `
         -UserName 'mysqluser' `
-        -Password 'MySqlPassw0rd' `
+        -Password '<my-sql-pwd-of-choice>' `
         -ShardMapManagerServerName 'abcdefghij.database.windows.net' `
         -ShardKeyType 'Int64'
 
     .\SetupSampleSplitMergeEnvironment.ps1 `
         -UserName 'mysqluser' `
-        -Password 'MySqlPassw0rd' `
+        -Password '<my-sql-pwd-of-choice>' `
         -ShardMapManagerServerName 'abcdefghij.database.windows.net' `
         -ShardKeyType 'Guid' `
         -SplitRangeLow '00000000-0000-0000-0000-000000000000' `
@@ -37,7 +37,7 @@
 
     .\SetupSampleSplitMergeEnvironment.ps1 `
         -UserName 'mysqluser' `
-        -Password 'MySqlPassw0rd' `
+        -Password '<my-sql-pwd-of-choice>' `
         -ShardMapManagerServerName 'abcdefghij.database.windows.net' `
         -ShardKeyType 'Binary' `
         -SplitRangeLow '0x00' `
@@ -46,7 +46,7 @@
 
     .\SetupSampleSplitMergeEnvironment.ps1 `
         -UserName 'mysqluser' `
-        -Password 'MySqlPassw0rd' `
+        -Password '<my-sql-pwd-of-choice>' `
         -ShardMapManagerServerName 'abcdefghij.database.windows.net' `
         -ShardKeyType 'Datetime' `
         -SplitRangeLow '2010-3-21 12:00:00' `

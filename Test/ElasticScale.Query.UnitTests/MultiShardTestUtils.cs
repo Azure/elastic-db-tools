@@ -31,11 +31,6 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
         private static string s_testUserId = "TestUser";
 
         /// <summary>
-        /// User password to use when connecting to shards during a fanout query.
-        /// </summary>
-        private static string s_testPassword = "J8X2ndQTZ8cvu1r";
-
-        /// <summary>
         /// Table name for the sharded table we will issue fanout queries against.
         /// </summary>
         private static string s_testTableName = "ConsistentShardedTable";
@@ -326,7 +321,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.Query.UnitTests
 
             // Then re create it.
             //
-            output.Add(string.Format("CREATE LOGIN {0} WITH Password = '{1}';", s_testUserId, s_testPassword));
+            output.Add(string.Format("CREATE LOGIN {0} WITH Password = '{1}';", s_testUserId, Guid.NewGuid().ToString()));
 
             // Then grant it lots of permissions.
             //

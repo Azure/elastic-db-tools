@@ -15,7 +15,7 @@
 .EXAMPLES
     .\GetShards.ps1 `
         -UserName 'mysqluser' `
-        -Password 'MySqlPassw0rd' `
+        -Password '<my-sql-pwd-of-choice>' `
         -ShardMapManagerServerName 'abcdefghij.database.windows.net' `
         -ShardMapManagerDatabaseName 'MyShardMapManagerDB'
         -ShardMapName 'CustomerIdShardMap'

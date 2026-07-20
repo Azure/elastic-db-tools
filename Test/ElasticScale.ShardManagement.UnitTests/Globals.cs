@@ -83,9 +83,10 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UnitTests
         internal static string SqlLoginTestUser = "ElasticDatabaseToolsTestUser_" + System.Environment.CurrentManagedThreadId;
 
         /// <summary>
-        /// Password for test user. (with ' and ; replaced with _ to enable test code to work without T/SQL and connection string escaping)
+        /// Password for test user. Randomly generated per run so no credential is hard-coded in source. A GUID
+        /// contains no quote/semicolon and satisfies SQL Server password complexity (lowercase, digits, hyphens).
         /// </summary>
-        internal static readonly string SqlLoginTestPassword = "TestPa$$w0rd" + Guid.NewGuid().ToString("N");
+        internal static readonly string SqlLoginTestPassword = Guid.NewGuid().ToString();
 
         /// <summary>
         /// SMM connection string.
