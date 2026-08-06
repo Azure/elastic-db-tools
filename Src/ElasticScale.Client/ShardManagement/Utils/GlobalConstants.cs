@@ -18,7 +18,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
         /// <summary>
         /// LSM version of store supported by this library.
         /// </summary>
-        internal static Version LsmVersionClient = new Version(1, 2);
+        internal static Version LsmVersionClient = new Version(1, 3);
 
         /// <summary>
         /// Default locking timeout value for application locks.

@@ -76,6 +76,7 @@ namespace Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement
             UpgradeShardMapManagerLocalFrom0_0To1_0,
             UpgradeShardMapManagerLocalFrom1_0To1_1,
             UpgradeShardMapManagerLocalFrom1_1To1_2,
+            UpgradeShardMapManagerLocalFrom1_2To1_3,
             UpgradeShardMapManagerLocalFrom1000_0To1000_1
         };
     }
